@@ -12,7 +12,6 @@ export interface TabNavigatorType {
     navigatorOptions?: React.ComponentProps<ReturnType<typeof createBottomTabNavigator>['Navigator']>;
 }
 
-
 export interface StackNavigatorType {
     name: string;
     component: () => React.JSX.Element | TabNavigatorType;
