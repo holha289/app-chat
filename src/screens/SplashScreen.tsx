@@ -1,80 +1,134 @@
 import { colors } from "@app/styles/main.style";
-import { Text, View, Animated, Easing, Dimensions } from "react-native";
+import { Text, View, Animated, Easing } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useRef, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 
-const { width } = Dimensions.get('window');
-
 const SplashScreen = () => {
-    const Navigate = useNavigation();
-
-    // Animation values for splash logo
-    const logoAnimations = useRef({
-        scale: new Animated.Value(0),
-        opacity: new Animated.Value(0),
-        rotate: new Animated.Value(0),
-    }).current;
+    const navigation = useNavigation();
+    const logoScale = useRef(new Animated.Value(0)).current;
+    const logoOpacity = useRef(new Animated.Value(0)).current;
+    const textOpacity = useRef(new Animated.Value(0)).current;
+    const pulse = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        logoAnimations.scale.setValue(0);
-        logoAnimations.opacity.setValue(0);
-        logoAnimations.rotate.setValue(0);
+        Animated.loop(
+            Animated.timing(pulse, {
+                toValue: 1,
+                duration: 2000,
+                easing: Easing.inOut(Easing.sin),
+                useNativeDriver: true,
+            })
+        ).start();
+
         Animated.sequence([
             Animated.parallel([
-                Animated.timing(logoAnimations.scale, {
+                Animated.timing(logoScale, {
                     toValue: 1,
                     duration: 800,
-                    easing: Easing.out(Easing.back(1.2)),
+                    easing: Easing.out(Easing.back(1.3)),
                     useNativeDriver: true,
                 }),
-                Animated.timing(logoAnimations.opacity, {
+                Animated.timing(logoOpacity, {
                     toValue: 1,
                     duration: 600,
-                    easing: Easing.out(Easing.quad),
                     useNativeDriver: true,
                 }),
             ]),
-            Animated.timing(logoAnimations.rotate, {
+            Animated.timing(textOpacity, {
                 toValue: 1,
-                duration: 1000,
-                easing: Easing.inOut(Easing.sin),
+                duration: 500,
                 useNativeDriver: true,
             }),
         ]).start();
+
         setTimeout(() => {
-            Navigate.navigate("Start");
+            navigation.navigate("Start" as never);
         }, 2500);
     }, []);
 
     return (
         <View 
-            className={"flex-1 items-center justify-center"}
+            className="flex-1 items-center justify-center"
             style={{ backgroundColor: colors.color1 }}
         >
+            {/* Background Pulse */}
             <Animated.View
-                className={"w-48 h-48 rounded-full items-center justify-center mb-8 border-4"}
-                style={{ 
-                    backgroundColor: colors.color1, 
-                    borderColor: colors.color1,
-                    opacity: logoAnimations.opacity,
+                className="absolute w-80 h-80 rounded-full"
+                style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    opacity: pulse.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 0.6],
+                    }),
                     transform: [
-                        { scale: logoAnimations.scale },
-                        { 
-                            rotate: logoAnimations.rotate.interpolate({
+                        {
+                            scale: pulse.interpolate({
                                 inputRange: [0, 1],
-                                outputRange: ['0deg', '360deg'],
-                            })
-                        }
-                    ]
+                                outputRange: [0.9, 1.1],
+                            }),
+                        },
+                    ],
+                }}
+            />
+
+            {/* Logo */}
+            <Animated.View
+                className="w-40 h-40 rounded-full items-center justify-center mb-8"
+                style={{ 
+                    backgroundColor: colors.color1,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 5 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 10,
+                    elevation: 10,
+                    opacity: logoOpacity,
+                    transform: [{ scale: logoScale }],
                 }}
             >
-                <Ionicons name="chatbubbles-outline" size={100} color="white" />
+                <Ionicons name="chatbubbles-outline" size={80} color="white" />
             </Animated.View>
-            <Text className={"text-white text-3xl font-bold"}>WETALK</Text>
+
+            {/* Text */}
+            <Animated.View
+                style={{ opacity: textOpacity }}
+            >
+                <Text 
+                    className="text-white text-4xl font-bold tracking-wider mb-2"
+                    style={{
+                        textShadowColor: 'rgba(255, 255, 255, 0.5)',
+                        textShadowOffset: { width: 0, height: 2 },
+                        textShadowRadius: 5,
+                    }}
+                >
+                    WETALK
+                </Text>
+                <Text className="text-white text-base text-center opacity-80">
+                    Kết nối - Trò chuyện - Chia sẻ
+                </Text>
+            </Animated.View>
+
+            {/* Loading Dots */}
+            <Animated.View 
+                className="flex-row mt-8"
+                style={{ opacity: textOpacity }}
+            >
+                {[0, 1, 2].map((index) => (
+                    <Animated.View
+                        key={index}
+                        className="w-2 h-2 rounded-full mx-1"
+                        style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                            opacity: pulse.interpolate({
+                                inputRange: [0, 0.5, 1],
+                                outputRange: index === 1 ? [0.3, 1, 0.3] : [0.5, 0.8, 0.5],
+                            }),
+                        }}
+                    />
+                ))}
+            </Animated.View>
         </View>
     );
 };
-
 
 export default SplashScreen;

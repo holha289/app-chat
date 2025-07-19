@@ -9,25 +9,25 @@ const { width } = Dimensions.get('window');
 const onboardingData = [
     {
         id: 1,
-        title: "Chào Mừng Bạn Đến Với App Chat",
+        title: "Chào mừng bạn đến với WETALK",
         icon: () => <FontAwesome name="comments-o" size={100} color="white" />,
         description: "Khám phá những tính năng tuyệt vời của ứng dụng chat mới nhất của chúng tôi.",
     },
     {
         id: 2,
-        title: "Nhắn Tin Ngay",
+        title: "Nhắn tin ngay",
         icon: () => <FontAwesome name="comments" size={100} color="white" />,
         description: "Kết nối tức thời với bạn bè và gia đình thông qua tin nhắn mượt mà.",
     },
     {
         id: 3,
-        title: "Trò Chuyện Thời Gian Thực",
+        title: "Trò chuyện thời gian thực",
         icon: () => <FontAwesome name="clock-o" size={100} color="white" />,
         description: "Tận hưởng cuộc trò chuyện thời gian thực với phản hồi nhanh chóng và thông báo kịp thời.",
     },
     {
         id: 4,
-        title: "Tham Gia Ngay!",
+        title: "Tham gia ngay!",
         icon: () => <FontAwesome name="rocket" size={100} color="white" />,
         description: "Bắt đầu kết nối với mọi người và tạo những cuộc trò chuyện thú vị ngay hôm nay.",
     }
@@ -121,7 +121,7 @@ const StartScreen = () => {
                     style={{ backgroundColor: colors.color2 }}
                 >
                     <Text className={"text-white text-lg font-semibold"}>
-                        {currentIndex === onboardingData.length - 1 ? "Bắt đầu ngay" : "Tiếp theo"}
+                        {currentIndex === onboardingData.length - 1 ? "Bắt đầu" : "Tiếp theo"}
                     </Text>
                 </TouchableOpacity>
             </View>
