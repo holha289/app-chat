@@ -21,6 +21,9 @@
       "@app/*": [
         "src/*"
       ],
+      "@app/assets/*": [
+        "assets/*"
+      ],
       "@app/screens/*": [
         "src/screens/*"
       ],
@@ -41,7 +44,7 @@
       ],
       "@app/store/*": [
         "src/store/*"
-      ],
+      ]
     }
   },
   "include": [
@@ -49,7 +52,8 @@
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "src/types/svg.d.ts"
   ],
   "exclude": [
     "node_modules"

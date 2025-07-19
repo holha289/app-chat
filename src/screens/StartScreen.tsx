@@ -1,0 +1,132 @@
+import { colors } from "@app/styles/main.style";
+import { Text, TouchableOpacity, View, ScrollView, Dimensions } from "react-native";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { useState, useRef } from "react";
+import { useNavigation } from "@react-navigation/native";
+
+const { width } = Dimensions.get('window');
+
+const onboardingData = [
+    {
+        id: 1,
+        title: "Chào Mừng Bạn Đến Với App Chat",
+        icon: () => <FontAwesome name="comments-o" size={100} color="white" />,
+        description: "Khám phá những tính năng tuyệt vời của ứng dụng chat mới nhất của chúng tôi.",
+    },
+    {
+        id: 2,
+        title: "Nhắn Tin Ngay",
+        icon: () => <FontAwesome name="comments" size={100} color="white" />,
+        description: "Kết nối tức thời với bạn bè và gia đình thông qua tin nhắn mượt mà.",
+    },
+    {
+        id: 3,
+        title: "Trò Chuyện Thời Gian Thực",
+        icon: () => <FontAwesome name="clock-o" size={100} color="white" />,
+        description: "Tận hưởng cuộc trò chuyện thời gian thực với phản hồi nhanh chóng và thông báo kịp thời.",
+    },
+    {
+        id: 4,
+        title: "Tham Gia Ngay!",
+        icon: () => <FontAwesome name="rocket" size={100} color="white" />,
+        description: "Bắt đầu kết nối với mọi người và tạo những cuộc trò chuyện thú vị ngay hôm nay.",
+    }
+];
+
+const StartScreen = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const Navigate = useNavigation();
+
+    const handleNext = () => {
+        if (currentIndex < onboardingData.length - 1) {
+            const nextIndex = currentIndex + 1;
+            setCurrentIndex(nextIndex);
+            
+            scrollViewRef.current?.scrollTo({ 
+                x: nextIndex * width, 
+                animated: true 
+            });
+        } else {
+            Navigate.navigate("Login");
+        }
+    };
+
+    const handleSkip = () => {
+        Navigate.navigate("Login");
+    };
+
+    const onScroll = (event: any) => {
+        const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+        setCurrentIndex(slideIndex);
+    };
+
+    return (
+        <View className={"flex-1 bg-white"}>
+            <View className={"absolute top-12 right-6 z-10"}>
+                <TouchableOpacity
+                    className={"px-4 py-2 rounded-full"}
+                    style={{ backgroundColor: colors.color2 }}
+                    onPress={handleSkip}
+                >
+                    <Text className={"text-white font-semibold"}>Bỏ qua</Text>
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                className={"flex-1"}
+                decelerationRate="fast"
+                snapToInterval={width}
+                snapToAlignment="center"
+            >
+                {onboardingData.map((item) => (
+                    <View key={item.id} style={{ width }} className={"flex-1 items-center justify-center px-8"}>
+                        <View className={"items-center mb-16"}>
+                            <View
+                                className={"w-48 h-48 rounded-full items-center justify-center mb-8 border-4"}
+                                style={{ backgroundColor: colors.color1, borderColor: colors.color1 }}
+                            >
+                                {item.icon && item.icon()}
+                            </View>
+                            <Text className={"text-3xl font-bold text-center mb-4"}>
+                                {item.title}
+                            </Text>
+                            <Text className={"text-base text-gray-700 text-center leading-6 px-4"}>
+                                {item.description}
+                            </Text>
+                        </View>
+                    </View>
+                ))}
+            </ScrollView>
+
+            <View className={"px-8 pb-12"}>
+                <View className={"flex-row justify-center items-center mb-8"}>
+                    {onboardingData.map((_, index) => (
+                        <View
+                            key={index}
+                            className={`w-3 h-3 rounded-full mx-1`}
+                            style={{ backgroundColor: index === currentIndex ? colors.color1 : 'gray' }}
+                        />
+                    ))}
+                </View>
+                <TouchableOpacity
+                    className={"p-4 rounded-full w-full items-center"}
+                    onPress={handleNext}
+                    style={{ backgroundColor: colors.color2 }}
+                >
+                    <Text className={"text-white text-lg font-semibold"}>
+                        {currentIndex === onboardingData.length - 1 ? "Bắt đầu ngay" : "Tiếp theo"}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
+
+export default StartScreen;

@@ -6,12 +6,16 @@ interface InputProps extends TextInputProps {
     label?: string;
     helperText?: string;
     floatingLabel?: boolean;
+    rounded?: number;
+    height?: number;
 }
 
 const Input = ({
     label = "",
     helperText = "",
     floatingLabel = false,
+    rounded = 0,
+    height = 46,
     ...props
 }: InputProps) => {
     const [isFocused, setIsFocused] = useState(false);
@@ -40,7 +44,7 @@ const Input = ({
                    </Text>
                )}
                <TextInput
-                   style={inputStyles.input}
+                   style={[inputStyles.input, { borderRadius: rounded, height: height }]}
                    placeholder={floatingLabel ? "" : props.placeholder}
                    onFocus={handleFocus}
                    onBlur={handleBlur}

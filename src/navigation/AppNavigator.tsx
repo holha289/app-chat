@@ -21,7 +21,7 @@ const AppNavigator = () => {
           const { component: Component, ...restProps } = screen;
           return (
             <Stack.Screen key={index} {...restProps}>
-              {(props) => {
+              {(props: React.JSX.IntrinsicAttributes) => {
                 if (typeof Component === 'function') {
                   // @ts-ignore - Handling function components that may have varying prop requirements
                   return <Component {...props} />;

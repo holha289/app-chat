@@ -1,9 +1,7 @@
-// Cập nhật file styles/input.style.js
 import { StyleSheet } from 'react-native';
 
 const inputStyles = StyleSheet.create({
     container: {
-        marginBottom: 16,
         width: '100%',
     },
     label: {
@@ -16,7 +14,6 @@ const inputStyles = StyleSheet.create({
         position: 'relative',
     },
     input: {
-        height: 46,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 4,
