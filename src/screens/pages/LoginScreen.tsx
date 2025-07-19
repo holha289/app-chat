@@ -1,9 +1,12 @@
-import { Text, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, TouchableOpacity, ScrollView } from "react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Input from "@app/components/Input";
-import { loginClassStyle, LoginStyle } from "@app/styles/login.style";
-import { classBtn, classFontSize, colors } from "@app/styles/main.style";
+import { loginClassStyle } from "@app/styles/login.style";
+import { classBtn } from "@app/styles/main.style";
+import authActions from "@app/features/auth/auth.action";
+import { selectAuthError, selectAuthState } from "@app/features";
+import { useSelector, useDispatch } from "react-redux";
 
 const LoginScreen = () => {
     const [form, setForm] = useState({
@@ -11,10 +14,15 @@ const LoginScreen = () => {
         password: "",
     });
     const navigation = useNavigation();
+    const dispatch = useDispatch();
+    const users = useSelector(selectAuthState);
+    const errorLogin = useSelector(selectAuthError);
 
-    const handleLogin = () => {
-        navigation.navigate("Home");
-    };
+    function handleLogin() {
+        dispatch(authActions.login(form));
+        // navigation.navigate("Home"); tạm thời đóng lại 
+        console.log("Logged in user:", users);
+    }
 
     const handleCreateAccount = () => {
         navigation.navigate("Register");
@@ -55,13 +63,18 @@ const LoginScreen = () => {
                             height={50}
                         />
                     </View>
+                    {errorLogin && (
+                        <Text className="text-red-500 text-sm mt-2">
+                            {errorLogin}
+                        </Text>
+                    )}
                     <TouchableOpacity className={loginClassStyle.forgotPassword}>
-                        <Text className={loginClassStyle.forgotPassword}>
+                        <Text className="font-bold text-base text-blue-600">
                            Quên mật khẩu?
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        className={`${classBtn.primary} mb-4`}
+                        className={[classBtn.primary, 'mb-4'].join(' ')}
                         onPress={handleLogin}
                     >
                         <Text className={classBtn.primaryText}>
