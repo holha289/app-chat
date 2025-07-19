@@ -7,6 +7,7 @@ import { classBtn } from "@app/styles/main.style";
 import authActions from "@app/features/auth/auth.action";
 import { selectAuthError, selectAuthState } from "@app/features";
 import { useSelector, useDispatch } from "react-redux";
+import clsx from "clsx";
 
 const LoginScreen = () => {
     const [form, setForm] = useState({
@@ -74,7 +75,7 @@ const LoginScreen = () => {
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        className={[classBtn.primary, 'mb-4'].join(' ')}
+                        className={clsx(classBtn.primary, 'mb-4')}
                         onPress={handleLogin}
                     >
                         <Text className={classBtn.primaryText}>

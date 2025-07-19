@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { registerClassStyle, RegisterStyle } from "@app/styles/register.style";
 import Input from "@app/components/Input";
 import { classBtn } from "@app/styles/main.style";
+import clsx from "clsx";
 
 const RegisterScreen = () => {
     const [form, setForm] = useState({
@@ -90,7 +91,7 @@ const RegisterScreen = () => {
                     />
                 </View>
                 <TouchableOpacity
-                    className={`${classBtn.primary} my-4`}
+                    className={clsx(classBtn.primary, 'my-4')}
                     onPress={handleSignUp}
                 >
                     <Text style={RegisterStyle.textSignUp}>
