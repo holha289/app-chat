@@ -28,7 +28,7 @@ const LoginScreen = () => {
                         Đăng nhập
                     </Text>
                     <Text className={loginClassStyle.subtitle}>
-                        Chào mừng bạn trở lại!
+                        Hãy đăng nhập để kết nối, trò chuyện và khám phá những điều thú vị trong ứng dụng chat của chúng tôi.
                     </Text>
                 </View>
                 <View className={loginClassStyle.inputContainer}>
@@ -56,25 +56,23 @@ const LoginScreen = () => {
                         />
                     </View>
                     <TouchableOpacity className={loginClassStyle.forgotPassword}>
-                        <Text className={`font-bold ${classFontSize["base"]}`}>
+                        <Text className={loginClassStyle.forgotPassword}>
                            Quên mật khẩu?
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        className={`rounded-xl items-center mb-6`}
-                        style={LoginStyle.btnLogin}
+                        className={`${classBtn.primary} mb-4`}
                         onPress={handleLogin}
                     >
-                        <Text className={`font-semibold text-white ${classFontSize["lg"]}`}>
+                        <Text className={classBtn.primaryText}>
                             Đăng nhập
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        className={`rounded-xl items-center mb-6`}
-                        style={LoginStyle.btnCreateAccount}
+                        className={classBtn.secondary}
                         onPress={handleCreateAccount}
                     >
-                        <Text className={`text-black ${classFontSize["lg"]} font-semibold`}>
+                        <Text className={classBtn.outlineText}>
                             Tạo tài khoản mới
                         </Text>
                     </TouchableOpacity>

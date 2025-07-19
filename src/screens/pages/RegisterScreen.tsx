@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { registerClassStyle, RegisterStyle } from "@app/styles/register.style";
 import Input from "@app/components/Input";
+import { classBtn } from "@app/styles/main.style";
 
 const RegisterScreen = () => {
     const [form, setForm] = useState({
@@ -89,8 +90,7 @@ const RegisterScreen = () => {
                     />
                 </View>
                 <TouchableOpacity
-                    className={`rounded-xl items-center my-6`}
-                    style={RegisterStyle.btnSignUp}
+                    className={`${classBtn.primary} my-4`}
                     onPress={handleSignUp}
                 >
                     <Text style={RegisterStyle.textSignUp}>
@@ -98,7 +98,7 @@ const RegisterScreen = () => {
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    className={`rounded-xl items-center`}
+                    className={classBtn.none}
                     onPress={handleAlreadyHaveAccount}
                 >
                     <Text style={RegisterStyle.textAlreadyHaveAccount}>
