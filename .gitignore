@@ -95,4 +95,8 @@ Thumbs.db
 *.tmp
 *.temp
 
-*lock*
+# Loại bỏ lock file
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
