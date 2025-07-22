@@ -8,8 +8,17 @@ import { initializeFirebase } from '@app/core/firebase';
 
 export default function App() {
   React.useEffect(() => {
-    // Khởi tạo Firebase
-    initializeFirebase();
+    // Khởi tạo Firebase và thông báo
+    const initApp = async () => {
+      try {
+        await initializeFirebase();
+        console.log('Firebase đã được khởi tạo thành công');
+      } catch (error) {
+        console.error('Lỗi khởi tạo Firebase:', error);
+      }
+    };
+    
+    initApp();
   }, []);
   
   return (

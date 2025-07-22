@@ -1,8 +1,52 @@
 import messaging from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform, Alert, ToastAndroid } from 'react-native';
 import firebase from '@react-native-firebase/app';
 import auth from '@react-native-firebase/auth';
+
+/**
+ * Thiết lập dịch vụ messaging Firebase
+ */
+export async function setupMessaging() {
+  try {
+    // Yêu cầu quyền thông báo
+    const hasPermission = await requestUserPermission();
+    if (!hasPermission) {
+      console.log('Không có quyền thông báo');
+      return false;
+    }
+
+    // Lấy FCM token
+    const token = await getFCMToken();
+    if (token) {
+      console.log('Đã thiết lập messaging thành công với token:', token);
+    }
+
+    // Xử lý thông báo khi app đang chạy foreground
+    messaging().onMessage(async remoteMessage => {
+      console.log('Thông báo nhận được trong foreground:', remoteMessage);
+    });
+
+    // Xử lý thông báo khi app được mở từ background state
+    messaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('App được mở từ background state bởi thông báo:', remoteMessage);
+    });
+
+    // Kiểm tra xem app có được mở từ quit state bởi một thông báo không
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          console.log('App được mở từ quit state bởi thông báo:', remoteMessage);
+        }
+      });
+
+    return true;
+  } catch (error) {
+    console.error('Lỗi khi thiết lập messaging:', error);
+    return false;
+  }
+}
 
 /**
  * Khởi tạo tất cả các dịch vụ Firebase cần thiết
@@ -15,13 +59,31 @@ export async function initializeFirebase() {
     console.log('Đã kết nối thành công với Firebase');
     
     // Khởi tạo dịch vụ thông báo
-    await getFCMToken();
+    await setupMessaging();
+    
+    // Thiết lập listener cho token refresh
+    setupTokenRefreshListener();
     
     return true;
   } catch (error) {
     console.error('Lỗi khi khởi tạo Firebase:', error);
     return false;
   }
+}
+
+/**
+ * Thiết lập listener cho token refresh
+ */
+function setupTokenRefreshListener() {
+  messaging().onTokenRefresh(async (token) => {
+    console.log('FCM Token đã được làm mới:', token);
+    try {
+      await AsyncStorage.setItem('fcmToken', token);
+      console.log('Token mới đã được lưu');
+    } catch (error) {
+      console.error('Lỗi khi lưu token mới:', error);
+    }
+  });
 }
 
 /**

@@ -19,24 +19,20 @@
       "entitlements": {
         "aps-environment": "production"
       },
-      "googleServicesFile": "./app_chat.json",
-      "bundleIdentifier": "app-chat-2b616"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier": "com.appchat.firebase",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "Cho phép ứng dụng gửi thông báo để cập nhật thông tin mới nhất."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "googleServicesFile": "./app_chat.json",
-      "package": "com.appchat.app",
-      "permissions": [
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "android.permission.INTERNET",
-        "android.permission.VIBRATE",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.WAKE_LOCK"
-      ]
+      "googleServicesFile": "./google-services.json",
+      "package": "com.appchat.firebase",
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -49,6 +45,11 @@
       [
         "expo-build-properties",
         {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
           "ios": {
             "useFrameworks": "static"
           }
