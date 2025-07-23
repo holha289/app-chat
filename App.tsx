@@ -44,26 +44,6 @@ export default function App() {
 
     initApp();
 
-    // ✅ Foreground message: dùng `onMessage()` từ modular API
-    const unsubscribe = onMessage(getMessaging(firebase.app()), async (remoteMessage) => {
-      console.log("🔥 Tin nhắn foreground:", remoteMessage);
-
-      const notification = remoteMessage.notification;
-
-      // Hiện thông báo popup
-      if (notification) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: notification.title || "📩 Tin nhắn mới",
-            body: notification.body || "",
-            sound: "default",
-          },
-          trigger: null, // Hiện ngay
-        });
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup
   }, []);
 
   return (

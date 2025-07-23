@@ -30,7 +30,7 @@ const LoginScreen = () => {
     };
 
     return (
-        <ScrollView className="flex-1">
+        <ScrollView className="flex-1 bg-white">
             <View className={loginClassStyle.container}>
                 <View className={loginClassStyle.header}>
                     <Text className={loginClassStyle.title}>
