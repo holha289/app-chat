@@ -9,11 +9,7 @@ import { initializeFirebase } from "@app/core/firebase";
 import { requestAllPermissions } from "@app/core/permissions";
 
 import * as Notifications from "expo-notifications";
-import messaging, {
-  firebase,
-  getMessaging,
-  onMessage,
-} from "@react-native-firebase/messaging";
+import messaging from "@react-native-firebase/messaging";
 
 // ⚠️ Config trước khi app khởi chạy (quan trọng)
 Notifications.setNotificationHandler({
@@ -30,7 +26,7 @@ export default function App() {
     const initApp = async () => {
       try {
         await initializeFirebase(); // ✅ Khởi tạo Firebase
-        await requestAllPermissions(); // ✅ Gọi quyền
+        // await requestAllPermissions(); // ✅ Gọi quyền
 
         console.log("✅ Firebase đã được khởi tạo thành công");
 
