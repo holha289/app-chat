@@ -7,7 +7,14 @@
     "android": "expo run:android",
     "android:firebase": "expo run:android --variant release",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "install:first": "rm -rf node_modules && npm install",
+    "android:clearcache": "cd android && ./gradlew clean && cd ..",
+    "ios:clearcache": "cd ios && pod deintegrate && pod install && cd ..",
+    "native:android": "npx react-native run-android",
+    "native:ios": "npx react-native run-ios",
+    "native:android:debug": "npx react-native run-android -verbose",
+    "native:ios:debug": "npx react-native run-ios -verbose"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
