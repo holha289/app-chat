@@ -66,6 +66,7 @@ npm install
 yarn install
 ```
 
+
 ## 🏃‍♂️ Chạy dự án
 
 ```bash
@@ -80,6 +81,37 @@ npm run ios
 
 # Chạy trên web
 npm run web
+
+
+# Prebuild native code (Android/iOS)
+# Nếu muốn sử dụng cache khi prebuild, thêm tuỳ chọn --cache:
+npx expo prebuild --platform android --cache
+npx expo prebuild --platform ios --cache
+# Nếu gặp lỗi cache khi prebuild, hãy xóa cache trước:
+npx expo start --clear
+./gradlew clean
+npx expo prebuild --platform android
+npx expo prebuild --platform ios
+
+# Xóa cache build iOS (nên chạy trong thư mục ios):
+xcodebuild clean
+npx expo prebuild --platform ios
+
+# Build APK cho Android (Expo EAS):
+npx eas build --platform android --profile preview
+# Build AAB cho Android (Expo EAS):
+npx eas build --platform android --profile production
+# Build iOS (Expo EAS):
+npx eas build --platform ios --profile preview
+# Kiểm tra thiết bị kết nối:
+adb devices
+# Mở project trên Expo Go (quét QR):
+npx expo start
+# Xóa cache Metro bundler:
+npx expo start --clear
+# Reset node_modules:
+rm -rf node_modules package-lock.json
+npm install
 ```
 
 ## 📁 Thêm màn hình mới
@@ -139,13 +171,41 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
+
 ## 📝 Quy tắc code
 
 - Sử dụng TypeScript cho tất cả files
-- Sử dụng NativeWind thay vì StyleSheet khi có thể
+- Ưu tiên NativeWind (Tailwind CSS) cho layout, spacing, flex, căn chỉnh thay vì StyleSheet. Chỉ dùng StyleSheet cho các style động phức tạp hoặc khi cần hiệu năng cao.
 - Đặt tên file theo PascalCase cho components
 - Sử dụng absolute imports với alias `@/`
 
+## 💡 Hướng dẫn sử dụng NativeWind cho bố cục
+
+Ví dụ căn nút xuống cuối trang:
+
+```tsx
+<View className="flex-1">
+  <View className="flex-1">
+    {/* Nội dung form */}
+  </View>
+  <View className="justify-end pb-8">
+    <Button title="Đăng ký" />
+  </View>
+</View>
+```
+
+Hoặc với ScrollView:
+
+```tsx
+<ScrollView className="flex-1">
+  <View className="flex-1 justify-between">
+    {/* Nội dung */}
+    <Button title="Đăng ký" />
+  </View>
+</ScrollView>
+```
+
+> **Lưu ý:** Nếu dùng StyleSheet cho layout, cần đảm bảo cha có `flex: 1` và con có `justifyContent: 'flex-end'` để nút nằm dưới cùng.
 
 ## 📄 License
 

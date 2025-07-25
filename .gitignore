@@ -32,6 +32,8 @@ Thumbs.db
 dist/
 build/
 web-build/
+android/build/
+ios/build/
 
 # Debug
 npm-debug.log*
@@ -100,3 +102,6 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+app_chat.json
+android/*
+ios/*
