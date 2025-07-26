@@ -1,38 +1,46 @@
-import { createReducer } from "@reduxjs/toolkit";
+import { createReducer, isAnyOf } from "@reduxjs/toolkit";
 import initialState from "./auth.state";
 import authActions from "./auth.action";
 
 
 const authReducer = createReducer(initialState, (builder) => {
-  builder
-    .addCase(authActions.login, (state, action) => {
-        const { phone, password } = action.payload;
-        if (phone === "1234567890" && password === "password") {
+    builder.addCase(authActions.login, (state, action) => {
+        state.status = "pending";
+        state.error = null;
+        return state;
+    });
+    builder.addCase(authActions.register, (state, action) => {
+        state.status = "pending";
+        state.error = null;
+        return state;
+    });
+    builder.addCase(authActions.logout, (state, action) => {
+        state.isAuthenticated = false;
+        state.user = null;
+        state.status = "idle";
+        state.error = null;
+        return state;
+    });
+    builder.addMatcher(
+        isAnyOf(authActions.registerSuccess, authActions.loginSuccess),
+        (state, action) => {
             state.isAuthenticated = true;
-            state.user = { 
-                id: "1",
-                name: "John Doe",
-                email: "john.doe@example.com",
-                phone: "1234567890",
-                avatar: "https://example.com/avatar.jpg",
-                gender: "male",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
+            state.user = action.payload.user;
             state.status = "success";
             state.error = null;
-        } else {
+            return state;
+        }
+    );
+    builder.addMatcher(
+        isAnyOf(authActions.registerFailed, authActions.loginFailed),
+        (state, action) => {
             state.isAuthenticated = false;
             state.user = null;
             state.status = "failed";
-            state.error = "Invalid phone or password";
+            state.error = action.payload;
+            return state;
         }
-        return state;
-    })
-    .addCase(authActions.logout, (state, action) => {
-      state.isAuthenticated = false;
-      state.user = null;
-    })
+    );
 });
 
 export { authReducer };

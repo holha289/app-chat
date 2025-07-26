@@ -5,8 +5,10 @@ import { Provider } from "react-redux";
 import { store } from "./src/store";
 import "./global.css";
 import { initializeFirebase } from "@app/core/firebase";
-import messaging from "@react-native-firebase/messaging";
 import { requestPermission } from "@app/core/permissions";
+import { registerAllListeners } from "@app/store";
+import { PersistGate } from "redux-persist/lib/integration/react";
+import persistStore from "redux-persist/lib/persistStore";
 
 export default function App() {
   useEffect(() => {
@@ -25,13 +27,15 @@ export default function App() {
     };
 
     initApp();
-
+    registerAllListeners();
   }, []);
 
   return (
     <Provider store={store}>
-      <AppNavigator />
-      <StatusBar style="auto" />
+      <PersistGate loading={null} persistor={persistStore(store)}>
+        <AppNavigator />
+        <StatusBar style="auto" />
+      </PersistGate>
     </Provider>
   );
 }

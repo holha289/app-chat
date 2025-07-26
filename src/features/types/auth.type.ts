@@ -22,3 +22,13 @@ export interface LoginPayload {
     phone: string;
     password: string;
 }
+
+export interface RegisterPayload {
+    fullname: string;
+    username: string;
+    phone: string;
+    password: string;
+    email?: string;
+    gender?: string;
+    avatar?: string;
+}
