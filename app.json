@@ -26,14 +26,13 @@
       }
     },
     "android": {
-      "useNextNotificationsApi": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.appchat.firebase",
-      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE" , "NOTIFICATIONS"]
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE" , "NOTIFICATIONS", "POST_NOTIFICATIONS"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

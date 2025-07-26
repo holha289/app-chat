@@ -84,14 +84,14 @@ npm run web
 
 
 # Prebuild native code (Android/iOS)
-# Nếu muốn sử dụng cache khi prebuild, thêm tuỳ chọn --cache:
-npx expo prebuild --platform android --cache
-npx expo prebuild --platform ios --cache
-# Nếu gặp lỗi cache khi prebuild, hãy xóa cache trước:
-npx expo start --clear
-./gradlew clean
 npx expo prebuild --platform android
 npx expo prebuild --platform ios
+
+# Dừng daemon và xóa build cũ
+cd android
+./gradlew --stop       # Dừng daemon
+./gradlew clean        # Xoá build cũ
+./gradlew assembleDebug # Build lai
 
 # Xóa cache build iOS (nên chạy trong thư mục ios):
 xcodebuild clean
@@ -139,7 +139,7 @@ export default NewScreen;
 ```
 
 ## 🎯 API Integration
-
+BASE URL https://appchat-production-b2b8.up.railway.app/api
 Sử dụng Axios service trong `src/services/api.service.ts`:
 
 ```typescript

@@ -6,7 +6,7 @@ class ApiService {
 
     private constructor() {
         this.axiosInstance = axios.create({
-            baseURL: 'https://api.example.com',
+            baseURL: 'https://appchat-production-b2b8.up.railway.app/api',
             timeout: 10000,
             headers: {'Content-Type': 'application/json'},
         });
@@ -61,23 +61,23 @@ class ApiService {
     }
 
     public async get<T>(url: string, params?: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.get(url, { params });
+        return await this.axiosInstance.get(url, { params }).then(response => response.data.metadata);
     }
 
     public async post<T>(url: string, data: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.post(url, data);
+        return await this.axiosInstance.post(url, data).then(response => response.data.metadata);
     }
 
     public async put<T>(url: string, data: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.put(url, data);
+        return await this.axiosInstance.put(url, data).then(response => response.data.metadata);
     }
 
     public async patch<T>(url: string, data: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.patch(url, data);
+        return await this.axiosInstance.patch(url, data).then(response => response.data.metadata);
     }
     
     public async delete<T>(url: string): Promise<T> {
-        return await this.axiosInstance.delete(url);
+        return await this.axiosInstance.delete(url).then(response => response.data.metadata);
     }
 }
 

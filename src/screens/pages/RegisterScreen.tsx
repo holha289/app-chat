@@ -105,17 +105,6 @@ const RegisterScreen = () => {
                         </View>
                         <View className={registerClassStyle.input}>
                             <Input
-                                placeholder="Email"
-                                placeholderTextColor='#9CA3AF'
-                                value={form.email}
-                                onChangeText={(text) => setForm({ ...form, email: text })}
-                                keyboardType="email-address"
-                                rounded={12}
-                                height={50}
-                            />
-                        </View>
-                        <View className={registerClassStyle.input}>
-                            <Input
                                 placeholder="Mật khẩu"
                                 placeholderTextColor='#9CA3AF'
                                 value={form.password}

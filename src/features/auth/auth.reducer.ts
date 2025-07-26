@@ -15,6 +15,7 @@ const authReducer = createReducer(initialState, (builder) => {
                 email: "john.doe@example.com",
                 phone: "1234567890",
                 avatar: "https://example.com/avatar.jpg",
+                gender: "male",
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
