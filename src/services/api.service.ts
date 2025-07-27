@@ -6,7 +6,7 @@ class ApiService {
 
     private constructor() {
         this.axiosInstance = axios.create({
-            baseURL: 'http://10.0.2.2:3000/api', // Thay đổi baseURL theo nhu cầu
+            baseURL: 'https://appchat-production-b2b8.up.railway.app/api', // Thay đổi baseURL theo nhu cầu
             timeout: 10000,
             headers: {'Content-Type': 'application/json'},
         });

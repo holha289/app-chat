@@ -28,7 +28,7 @@ const LoginScreen = () => {
 
     const handleCreateAccount = () => {
         navigation.navigate("Register");
-    };
+    }; 
 
     useEffect(() => {
         if (users.isAuthenticated) {
