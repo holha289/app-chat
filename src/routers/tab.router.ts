@@ -1,44 +1,34 @@
 import React from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '@app/screens/HomeScreen';
 import ProfileScreen from '@app/screens/ProfileScreen';
 import { TabNavigatorType } from '@app/types/navigator';
+import ContactScreen from '@app/screens/ContactScreen';
+import ChatListScreen from '@app/screens/messages/ChatListScreen';
 
 const TabRoutes: TabNavigatorType = {
   screens: [
     {
-      name: 'Home',
-      component: HomeScreen,
+      name: 'Chats',
+      component: ChatListScreen,
       options: {
-        title: 'Home',
+        title: 'Tin nhắn',
         tabBarIcon: ({ color, size }: { color: string; size: number }) => 
-          React.createElement(Ionicons, { name: 'home-outline', size: size, color: color }),
+          React.createElement(Ionicons, { name: 'chatbubble-outline', size: size, color: color }),
       },
     },
     {
-      name: 'Profile',
-      component: ProfileScreen,
+      name: 'ContactScreen',
+      component: ContactScreen,
       options: {
-        title: 'Profile',
+        title: 'Danh bạ',
         tabBarIcon: ({ color, size }: { color: string; size: number }) => 
-          React.createElement(Ionicons, { name: 'person-outline', size: size, color: color }),
+          React.createElement(Ionicons, { name: 'bookmark-outline', size: size, color: color }),
       },
     },
   ],
   navigatorOptions: {
-    screenOptions: {
-      headerShown: false,
-      tabBarActiveTintColor: '#007aff',
-      tabBarInactiveTintColor: '#ccc',
-      tabBarLabelStyle: {
-        fontSize: 12,
-      },
-      tabBarStyle: {
-        height: 60,
-        paddingBottom: 5,
-      },
-    },
-    initialRouteName: 'Home',
+    initialRouteName: 'Chats',
   },
 };
 

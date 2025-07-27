@@ -1,6 +1,6 @@
 import { colors } from "@app/styles/main.style";
 import { Text, TouchableOpacity, View, ScrollView, Dimensions } from "react-native";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { Ionicons } from '@expo/vector-icons';
 import { useState, useRef } from "react";
 import { useNavigation } from "@react-navigation/native";
 
@@ -10,25 +10,25 @@ const onboardingData = [
     {
         id: 1,
         title: "Chào mừng bạn đến với WETALK",
-        icon: () => <FontAwesome name="comments-o" size={100} color="white" />,
+        icon: () => <Ionicons name="chatbox-ellipses-outline" size={100} color="white" />,
         description: "Khám phá những tính năng tuyệt vời của ứng dụng chat mới nhất của chúng tôi.",
     },
     {
         id: 2,
         title: "Nhắn tin ngay",
-        icon: () => <FontAwesome name="comments" size={100} color="white" />,
+        icon: () => <Ionicons name="chatbubbles-outline" size={100} color="white" />,
         description: "Kết nối tức thời với bạn bè và gia đình thông qua tin nhắn mượt mà.",
     },
     {
         id: 3,
         title: "Trò chuyện thời gian thực",
-        icon: () => <FontAwesome name="clock-o" size={100} color="white" />,
+        icon: () => <Ionicons name="time-outline" size={100} color="white" />,
         description: "Tận hưởng cuộc trò chuyện thời gian thực với phản hồi nhanh chóng và thông báo kịp thời.",
     },
     {
         id: 4,
         title: "Tham gia ngay!",
-        icon: () => <FontAwesome name="rocket" size={100} color="white" />,
+        icon: () => <Ionicons name="rocket-outline" size={100} color="white" />,
         description: "Bắt đầu kết nối với mọi người và tạo những cuộc trò chuyện thú vị ngay hôm nay.",
     }
 ];
@@ -42,10 +42,10 @@ const StartScreen = () => {
         if (currentIndex < onboardingData.length - 1) {
             const nextIndex = currentIndex + 1;
             setCurrentIndex(nextIndex);
-            
-            scrollViewRef.current?.scrollTo({ 
-                x: nextIndex * width, 
-                animated: true 
+
+            scrollViewRef.current?.scrollTo({
+                x: nextIndex * width,
+                animated: true
             });
         } else {
             Navigate.navigate("Login");

@@ -47,7 +47,7 @@ const SplashScreen = () => {
 
         setTimeout(() => {
             if (users.isAuthenticated) {
-                navigation.navigate("Home");
+                navigation.navigate("Main");
             } else {
                 navigation.navigate("Start" as never);
             }

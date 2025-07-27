@@ -11,8 +11,8 @@
     "ios:native": "npx react-native run-ios",
     "native:start": "npx react-native start",
     "native:start:reset": "npx react-native start --reset-cache",
-    "build:5554":"npx react-native run-android --deviceId emulator-5554",
-    "build:5556":"npx react-native run-android --deviceId emulator-5556"
+    "build:5554": "npx react-native run-android --deviceId emulator-5554",
+    "build:5556": "npx react-native run-android --deviceId emulator-5556"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
@@ -42,7 +42,7 @@
     "react-native-gesture-handler": "~2.24.0",
     "react-native-permissions": "^5.4.2",
     "react-native-reanimated": "~3.17.4",
-    "react-native-safe-area-context": "^5.4.0",
+    "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "^15.11.2",
     "react-native-vector-icons": "^10.2.0",
