@@ -6,7 +6,17 @@ const initialState: AuthState = {
         refreshToken: null,
         fcmToken: null
     },
-    user: null,
+    user: {
+        id: 0,
+        slug: '',
+        fullname: '',
+        email: '',
+        phone: '',
+        avatar: '',
+        gender: '',
+        dateOfBirth: '',
+       
+    },
     isAuthenticated: false,
     status: "idle",
     message: null,

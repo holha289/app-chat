@@ -3,13 +3,13 @@ import { RootState, store } from "@app/store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import { useSelector } from "react-redux";
-
+import { BASE_URL } from "@env";
 class ApiService {
   private static instance: ApiService;
   private axiosInstance: AxiosInstance;
   private constructor() {
     this.axiosInstance = axios.create({
-      baseURL: "https://appchat-production-b2b8.up.railway.app/api", // Thay đổi baseURL theo nhu cầu
+      baseURL: `${BASE_URL}/api`, // Thay đổi baseURL theo nhu cầu
       timeout: 10000,
       headers: { "Content-Type": "application/json" },
     });

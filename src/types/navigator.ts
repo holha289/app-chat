@@ -3,7 +3,7 @@ import { StackNavigationOptions, StackNavigatorProps } from "@react-navigation/s
 
 export interface TabNavigatorScreenType {
     name: string;
-    component: () => React.JSX.Element;
+    component: React.ComponentType<any>;
     options?: BottomTabNavigationOptions;
 }
 
@@ -14,7 +14,7 @@ export interface TabNavigatorType {
 
 export interface StackNavigatorType {
     name: string;
-    component: () => React.JSX.Element | TabNavigatorType;
+    component: React.ComponentType<any> | TabNavigatorType;
     options?: StackNavigationOptions;
 }
 

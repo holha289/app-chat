@@ -8,7 +8,8 @@ import { initializeFirebase } from "@app/core/firebase";
 import { requestPermission } from "@app/core/permissions";
 import { registerAllListeners } from "@app/store";
 import { PersistGate } from "redux-persist/lib/integration/react";
-
+import { selectAuthAccessToken } from "@app/features";
+import { initSocket } from "@app/core/socketIo";
 export default function App() {
   useEffect(() => {
     const initApp = async () => {
@@ -27,6 +28,11 @@ export default function App() {
 
     initApp();
     registerAllListeners();
+   const token = selectAuthAccessToken(store.getState());
+    if (token) {
+      // Khởi tạo socket với token nếu đã đăng nhập
+      initSocket(token);
+    }
     // initSocket();
   }, []);
 

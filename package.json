@@ -10,7 +10,9 @@
     "android:native": "npx react-native run-android",
     "ios:native": "npx react-native run-ios",
     "native:start": "npx react-native start",
-    "native:start:reset": "npx react-native start --reset-cache"
+    "native:start:reset": "npx react-native start --reset-cache",
+    "build:5554":"npx react-native run-android --deviceId emulator-5554",
+    "build:5556":"npx react-native run-android --deviceId emulator-5556"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
@@ -36,6 +38,7 @@
     "prettier-plugin-tailwindcss": "^0.5.11",
     "react": "19.0.0",
     "react-native": "^0.79.5",
+    "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-permissions": "^5.4.2",
     "react-native-reanimated": "~3.17.4",

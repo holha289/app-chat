@@ -7,14 +7,15 @@ export interface AuthState extends StateCore {
         fcmToken: string | null;
     };
     user: {
-        id: string;
-        name: string;
+        id: number;
+        fullname: string;
         email: string;
         phone: string;
         avatar: string;
         gender: string;
-        createdAt: string;
-        updatedAt: string;
+        slug: string;
+        dateOfBirth: string;
+       
     } | null;
     isAuthenticated: boolean;
 }

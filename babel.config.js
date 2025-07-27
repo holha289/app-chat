@@ -1,9 +1,9 @@
 module.exports = {
-    presets: ['babel-preset-expo', 'nativewind/babel'],
-    plugins: [
+  presets: ['babel-preset-expo', 'nativewind/babel'],
+  plugins: [
     [
       'module-resolver',
-      { // Cần thiết lập này để sử dụng alias khi sử dụng metro bundler
+      {
         root: ['./'],
         alias: {
           '@app': './src',
@@ -18,6 +18,17 @@ module.exports = {
           '@app/core': './src/core',
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+      },
+    ],
+    [
+      'module:react-native-dotenv',
+      {
+        moduleName: '@env',
+        path: '.env',
+        blocklist: null,
+        allowlist: null,
+        safe: false,
+        allowUndefined: true,
       },
     ],
   ],
