@@ -9,6 +9,7 @@ import InputOtp from "@app/components/InputOtp";
 import InputGroup from "@app/components/InputGroup";
 import { PhoneAuthProvider } from "@react-native-firebase/auth";
 import { getAuth } from "@app/core/firebase";
+import { formatPhoneNumber, isValidPhoneNumber } from "@app/core/util";
 
 const RegisterScreen = () => {
     const [form, setForm] = useState({
@@ -43,6 +44,9 @@ const RegisterScreen = () => {
         }
         if (step === 1) {
             handleOtpChange();
+        } else if (step === 2) {
+            confirmCode();
+            return
         }
         setStep(step + 1);
     };
@@ -60,20 +64,35 @@ const RegisterScreen = () => {
             alert("Vui lòng nhập số điện thoại");
             return;
         }
-        // Kiểm tra định dạng số điện thoại
-        const phoneRegex = /^\+?[0-9]{10,15}$/; // Điều chỉnh regex theo định dạng số điện thoại bạn muốn
-        if (!phoneRegex.test(form.phone)) {
+        if (!isValidPhoneNumber(form.phone)) {
             alert("Số điện thoại không hợp lệ");
             return;
         }
-        console.log("Gửi mã OTP đến số điện thoại:", form.phone);
-        console.log("Auth:", getAuth());
-       const phoneProvider = new PhoneAuthProvider(getAuth());
-       const verificationId = await phoneProvider.verifyPhoneNumber(
-            form.phone,
-            recaptchaVerifier.current
-       );
-       setVerificationId(verificationId);
+        
+        try {
+            const confirmation = await getAuth().signInWithPhoneNumber(formatPhoneNumber(form.phone));
+            setVerificationId(confirmation.verificationId ?? '');
+            // Bạn cũng có thể lưu `confirmation` vào state nếu cần `confirm(code)` sau này
+        } catch (error) {
+            console.error("Lỗi gửi OTP:", error);
+            alert("Không thể gửi mã OTP, vui lòng thử lại sau.");
+        }
+    }
+
+    async function confirmCode() {
+        if (!verificationId || !form.otp) {
+            alert("Vui lòng nhập mã OTP");
+            return;
+        }
+        try {
+            const credential = PhoneAuthProvider.credential(verificationId, form.otp);
+            await getAuth().signInWithCredential(credential);
+            console.log("Xác thực thành công");
+            setStep(3); // Chuyển sang bước 3
+        } catch (error) {
+            console.error("Lỗi xác thực mã OTP:", error);
+            alert("Mã OTP không hợp lệ, vui lòng thử lại.");
+        }
     }
 
     return (
@@ -113,6 +132,7 @@ const RegisterScreen = () => {
                         <InputOtp
                             value={form.otp}
                             onChange={(otp) => setForm({ ...form, otp })}
+                            length={6}
                         />
                     </View>
                 )}
@@ -154,33 +174,33 @@ const RegisterScreen = () => {
                 )}
                 <View>
                     <TouchableOpacity
-                            className={clsx(classBtn.primary, 'my-4')}
-                            onPress={handleNextStep}
+                        className={clsx(classBtn.primary, 'my-4')}
+                        onPress={handleNextStep}
+                    >
+                        <Text style={RegisterStyle.textSignUp}>
+                            {step === 1 ? "Tiếp tục" : step === 2 ? "Xác nhận OTP" : "Hoàn tất đăng ký"}
+                        </Text>
+                    </TouchableOpacity>
+                    {step === 1 && (
+                        <TouchableOpacity
+                            className={classBtn.none}
+                            onPress={handleAlreadyHaveAccount}
                         >
-                            <Text style={RegisterStyle.textSignUp}>
-                                {step === 1 ? "Tiếp tục" : step === 2 ? "Xác nhận OTP" : "Hoàn tất đăng ký"}
+                            <Text style={RegisterStyle.textAlreadyHaveAccount}>
+                                Đã có tài khoản? Đăng nhập ngay
                             </Text>
                         </TouchableOpacity>
-                        { step === 1 && (
-                            <TouchableOpacity
-                                className={classBtn.none}
-                                onPress={handleAlreadyHaveAccount}
-                            >
-                                <Text style={RegisterStyle.textAlreadyHaveAccount}>
-                                    Đã có tài khoản? Đăng nhập ngay
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                        { step === 2 && (
-                            <TouchableOpacity
-                                className={classBtn.outline}
-                                onPress={handleOtpChange}
-                            >
-                                <Text style={RegisterStyle.textAlreadyHaveAccount}>
-                                    Gửi lại mã OTP
-                                </Text>
-                            </TouchableOpacity>
-                        )}
+                    )}
+                    {step === 2 && (
+                        <TouchableOpacity
+                            className={classBtn.outline}
+                            onPress={handleOtpChange}
+                        >
+                            <Text style={RegisterStyle.textAlreadyHaveAccount}>
+                                Gửi lại mã OTP
+                            </Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
         </ScrollView>

@@ -1,6 +1,4 @@
-import { selectAuthAccessToken } from "@app/features";
 import { RootState, store } from "@app/store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import { useSelector } from "react-redux";
 import { BASE_URL } from "@env";
@@ -19,9 +17,8 @@ class ApiService {
       async (config) => {
         //  TODO: Thêm logic để lấy token
         // const token = localStorage.getItem('authToken'); // Hoặc lấy từ store, context, ...
-        
         const tokens = this.getAccessToken();
-        console.log(tokens);
+        console.log(tokens)
         if (tokens) {
           config.headers["Authorization"] = `Bearer ${tokens}`;
         }

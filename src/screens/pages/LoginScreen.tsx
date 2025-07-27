@@ -30,12 +30,6 @@ const LoginScreen = () => {
         navigation.navigate("Register");
     }; 
 
-    useEffect(() => {
-        if (users.isAuthenticated) {
-            navigation.navigate("Home");
-        }
-    }, [users.isAuthenticated, navigation]);
-
     return (
         <ScrollView className="flex-1 bg-white">
             <LoadingOverlay visible={isLoading} />

@@ -9,7 +9,7 @@ import StartScreen from "@app/screens/StartScreen";
 
 const routers: RouterType = {
     navigatorOptions: {
-        initialRouteName: 'Login',
+        initialRouteName: 'Splash',
     } as StackNavigatorProps,
     screens: [
         {
