@@ -1,7 +1,8 @@
-import { selectAuthAccessToken } from '@app/features';
+import { selectAuthAccessToken } from "@app/features";
 import { RootState, store } from "@app/store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 
 class ApiService {
   private static instance: ApiService;
@@ -15,11 +16,12 @@ class ApiService {
 
     // Thêm interceptor để xử lý request chung
     this.axiosInstance.interceptors.request.use(
-      (config) => {
+      async (config) => {
         //  TODO: Thêm logic để lấy token
         // const token = localStorage.getItem('authToken'); // Hoặc lấy từ store, context, ...
-        const tokens = useSelector(selectAuthAccessToken);
-        console.log(tokens)
+        
+        const tokens = this.getAccessToken();
+        console.log(tokens);
         if (tokens) {
           config.headers["Authorization"] = `Bearer ${tokens}`;
         }
@@ -56,7 +58,7 @@ class ApiService {
     }
     return ApiService.instance;
   }
-   private getAccessToken(): string | null {
+  private getAccessToken(): string | null {
     const state: RootState = store.getState();
     return state.auth.tokens?.accessToken || null;
   }

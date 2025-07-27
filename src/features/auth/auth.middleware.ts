@@ -74,7 +74,7 @@ export const setFcmTokenListener = () => {
     effect: async (action, listenerApi) => {
       const fcmToken = action.payload;
       try {
-        await apiService.post<ApiResponse<void>>("/auth/set-fcm-token", { token: fcmToken });
+        await apiService.patch<ApiResponse<void>>("/auth/set-fcm-token", { token: fcmToken });
         console.log("FCM token set successfully:", fcmToken);
       } catch (error) {
         console.error("Failed to set FCM token:", error);
