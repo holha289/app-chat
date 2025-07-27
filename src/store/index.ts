@@ -38,3 +38,6 @@ export default listenerMiddleware;
 export const registerAllListeners = () => {
   AuthListenerMiddleware(); // Gọi ở đây, sau khi store đã tạo
 };
+
+export const persistor = persistStore(store);
+persistor.purge(); // Xoá dữ liệu đã lưu trong AsyncStorage khi ứng dụng khởi động

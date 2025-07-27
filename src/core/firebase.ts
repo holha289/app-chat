@@ -4,6 +4,7 @@ import { Platform, Alert, ToastAndroid } from "react-native";
 import firebase from "@react-native-firebase/app";
 import auth from "@react-native-firebase/auth";
 import notifee, { AndroidImportance } from '@notifee/react-native';
+import { getAuth as getFirebaseAuth } from "@react-native-firebase/auth";
 
 /**
  * Thiết lập dịch vụ messaging Firebase
@@ -119,5 +120,9 @@ const deleteFCMToken = async () => { // Xoá FCM token khỏi Firebase khi ngư�
   }
 };
 
+const getAuth = () => {
+   return getFirebaseAuth();
+};
+
 // Export các dịch vụ và hàm tiện ích
-export { firebase, auth, deleteFCMToken };
+export { firebase, auth, deleteFCMToken, getAuth };

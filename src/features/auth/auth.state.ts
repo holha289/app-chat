@@ -2,12 +2,14 @@ import { AuthState } from "../types/auth.type";
 
 const initialState: AuthState = {
     tokens: {
-        access: null,
-        refresh: null
+        accessToken: null,
+        refreshToken: null,
+        fcmToken: null
     },
     user: null,
     isAuthenticated: false,
-    status: "pending",
+    status: "idle",
+    message: null,
     error: null
 };
 

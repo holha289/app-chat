@@ -6,7 +6,7 @@ class ApiService {
 
     private constructor() {
         this.axiosInstance = axios.create({
-            baseURL: 'https://appchat-production-b2b8.up.railway.app/api',
+            baseURL: 'http://10.0.2.2:3000/api', // Thay đổi baseURL theo nhu cầu
             timeout: 10000,
             headers: {'Content-Type': 'application/json'},
         });
@@ -61,23 +61,23 @@ class ApiService {
     }
 
     public async get<T>(url: string, params?: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.get(url, { params }).then(response => response.data.metadata);
+        return await this.axiosInstance.get(url, { params });
     }
 
     public async post<T>(url: string, data: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.post(url, data).then(response => response.data.metadata);
+        return await this.axiosInstance.post(url, data);
     }
 
     public async put<T>(url: string, data: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.put(url, data).then(response => response.data.metadata);
+        return await this.axiosInstance.put(url, data);
     }
 
     public async patch<T>(url: string, data: Record<string, any>): Promise<T> {
-        return await this.axiosInstance.patch(url, data).then(response => response.data.metadata);
+        return await this.axiosInstance.patch(url, data);
     }
     
     public async delete<T>(url: string): Promise<T> {
-        return await this.axiosInstance.delete(url).then(response => response.data.metadata);
+        return await this.axiosInstance.delete(url);
     }
 }
 

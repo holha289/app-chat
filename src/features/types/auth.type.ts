@@ -2,8 +2,9 @@ import { StateCore } from "@app/features/types"
 
 export interface AuthState extends StateCore {
     tokens: {
-        access: string | null;
-        refresh: string | null;
+        accessToken: string | null;
+        refreshToken: string | null;
+        fcmToken: string | null;
     };
     user: {
         id: string;
@@ -32,3 +33,6 @@ export interface RegisterPayload {
     gender?: string;
     avatar?: string;
 }
+
+export type tokensType = AuthState['tokens'];
+export type userType = AuthState['user'];

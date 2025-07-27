@@ -8,7 +8,11 @@ const selectUser = (state: RootState) => selectAuthState(state).user;
 
 const selectAuthStatus = (state: RootState) => selectAuthState(state).status;
 
-const selectAuthError = (state: RootState) => selectAuthState(state).error;
+const selectAuthMessage = (state: RootState) => selectAuthState(state).message || null;
+const selectAuthError = (state: RootState) => selectAuthState(state).error || null;
+
+const selectAuthLoading = (state: RootState) => selectAuthState(state).status === "pending";
+const selectAuthLoaded = (state: RootState) => selectAuthState(state).status === "success" || selectAuthState(state).status === "failed";
 
 
 export {
@@ -16,5 +20,8 @@ export {
     selectIsAuthenticated,
     selectUser,
     selectAuthStatus,
+    selectAuthMessage,
+    selectAuthLoading,
+    selectAuthLoaded,
     selectAuthError
 };

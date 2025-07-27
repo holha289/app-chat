@@ -1,13 +1,14 @@
-import { Text, View, TouchableOpacity, ScrollView } from "react-native";
-import { useState } from "react";
+import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { use, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Input from "@app/components/Input";
 import { loginClassStyle } from "@app/styles/login.style";
 import { classBtn } from "@app/styles/main.style";
 import authActions from "@app/features/auth/auth.action";
-import { selectAuthError, selectAuthState } from "@app/features";
+import { selectAuthMessage, selectAuthLoading, selectAuthState, selectAuthError } from "@app/features";
 import { useSelector, useDispatch } from "react-redux";
 import clsx from "clsx";
+import LoadingOverlay from "@app/components/LoadingOverlay";
 
 const LoginScreen = () => {
     const [form, setForm] = useState({
@@ -17,20 +18,27 @@ const LoginScreen = () => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const users = useSelector(selectAuthState);
+    const messageLogin = useSelector(selectAuthMessage);
     const errorLogin = useSelector(selectAuthError);
+    const isLoading: boolean = useSelector(selectAuthLoading);
 
     function handleLogin() {
         dispatch(authActions.login(form));
-        // navigation.navigate("Home"); tạm thời đóng lại 
-        console.log("Logged in user:", users);
     }
 
     const handleCreateAccount = () => {
         navigation.navigate("Register");
     };
 
+    useEffect(() => {
+        if (users.isAuthenticated) {
+            navigation.navigate("Home");
+        }
+    }, [users.isAuthenticated, navigation]);
+
     return (
         <ScrollView className="flex-1 bg-white">
+            <LoadingOverlay visible={isLoading} />
             <View className={loginClassStyle.container}>
                 <View className={loginClassStyle.header}>
                     <Text className={loginClassStyle.title}>

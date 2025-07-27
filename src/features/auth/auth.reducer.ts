@@ -5,20 +5,26 @@ import authActions from "./auth.action";
 
 const authReducer = createReducer(initialState, (builder) => {
     builder.addCase(authActions.login, (state, action) => {
+        state.isAuthenticated = false;
+        state.user = null;
         state.status = "pending";
-        state.error = null;
+        state.message = null;
         return state;
     });
     builder.addCase(authActions.register, (state, action) => {
         state.status = "pending";
-        state.error = null;
+        state.message = null;
         return state;
     });
     builder.addCase(authActions.logout, (state, action) => {
         state.isAuthenticated = false;
         state.user = null;
         state.status = "idle";
-        state.error = null;
+        state.message = null;
+        return state;
+    });
+    builder.addCase(authActions.setFcmToken, (state, action) => {
+        state.tokens.fcmToken = action.payload;
         return state;
     });
     builder.addMatcher(
@@ -26,8 +32,8 @@ const authReducer = createReducer(initialState, (builder) => {
         (state, action) => {
             state.isAuthenticated = true;
             state.user = action.payload.user;
+            state.tokens = action.payload.tokens;
             state.status = "success";
-            state.error = null;
             return state;
         }
     );

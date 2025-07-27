@@ -1,5 +1,5 @@
 import { Text, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { registerClassStyle, RegisterStyle } from "@app/styles/register.style";
 import Input from "@app/components/Input";
@@ -7,6 +7,8 @@ import { classBtn } from "@app/styles/main.style";
 import clsx from "clsx";
 import InputOtp from "@app/components/InputOtp";
 import InputGroup from "@app/components/InputGroup";
+import { PhoneAuthProvider } from "@react-native-firebase/auth";
+import { getAuth } from "@app/core/firebase";
 
 const RegisterScreen = () => {
     const [form, setForm] = useState({
@@ -19,6 +21,8 @@ const RegisterScreen = () => {
     });
     const [step, setStep] = useState(1);
     const navigation = useNavigation();
+    const recaptchaVerifier = useRef(null);
+    const [verificationId, setVerificationId] = useState('');
 
     const handleNextStep = () => {
         if (step === 2 && !form.otp) {
@@ -37,6 +41,9 @@ const RegisterScreen = () => {
             navigation.navigate("Home");
             return;
         }
+        if (step === 1) {
+            handleOtpChange();
+        }
         setStep(step + 1);
     };
 
@@ -48,7 +55,25 @@ const RegisterScreen = () => {
         navigation.goBack();
     };
 
-    const handleOtpChange = () => {
+    const handleOtpChange = async () => {
+        if (!form.phone) {
+            alert("Vui lòng nhập số điện thoại");
+            return;
+        }
+        // Kiểm tra định dạng số điện thoại
+        const phoneRegex = /^\+?[0-9]{10,15}$/; // Điều chỉnh regex theo định dạng số điện thoại bạn muốn
+        if (!phoneRegex.test(form.phone)) {
+            alert("Số điện thoại không hợp lệ");
+            return;
+        }
+        console.log("Gửi mã OTP đến số điện thoại:", form.phone);
+        console.log("Auth:", getAuth());
+       const phoneProvider = new PhoneAuthProvider(getAuth());
+       const verificationId = await phoneProvider.verifyPhoneNumber(
+            form.phone,
+            recaptchaVerifier.current
+       );
+       setVerificationId(verificationId);
     }
 
     return (
