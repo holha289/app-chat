@@ -16,8 +16,7 @@ class ApiService {
       async (config) => {
         //  TODO: Thêm logic để lấy token
         // const token = localStorage.getItem('authToken'); // Hoặc lấy từ store, context, ...
-        const state: RootState = store.getState();
-        const tokens = state.auth.tokens?.accessToken;
+        const tokens = this.getAccessToken();
         console.log(tokens)
         if (tokens) {
           config.headers["Authorization"] = `Bearer ${tokens}`;
