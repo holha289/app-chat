@@ -1,13 +1,13 @@
 import { RootState, store } from "@app/store";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import { useSelector } from "react-redux";
-import { BASE_URL } from "@env";
+import { API_URL } from "@env";
 class ApiService {
   private static instance: ApiService;
   private axiosInstance: AxiosInstance;
   private constructor() {
     this.axiosInstance = axios.create({
-      baseURL: `${BASE_URL}/api`, // Thay đổi baseURL theo nhu cầu
+      baseURL: `${API_URL}/api`, // Thay đổi baseURL theo nhu cầu
       timeout: 10000,
       headers: { "Content-Type": "application/json" },
     });
