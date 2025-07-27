@@ -3,6 +3,8 @@ import { Text, View, Animated, Easing } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useRef, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { selectAuthState } from "@app/features/auth/auth.selectors";
 
 const SplashScreen = () => {
     const navigation = useNavigation();
@@ -10,6 +12,7 @@ const SplashScreen = () => {
     const logoOpacity = useRef(new Animated.Value(0)).current;
     const textOpacity = useRef(new Animated.Value(0)).current;
     const pulse = useRef(new Animated.Value(0)).current;
+     const users = useSelector(selectAuthState);
 
     useEffect(() => {
         Animated.loop(
@@ -43,9 +46,13 @@ const SplashScreen = () => {
         ]).start();
 
         setTimeout(() => {
-            navigation.navigate("Start" as never);
+            if (users.isAuthenticated) {
+                navigation.navigate("Home");
+            } else {
+                navigation.navigate("Start" as never);
+            }
         }, 2500);
-    }, []);
+    }, [users.isAuthenticated]);
 
     return (
         <View 

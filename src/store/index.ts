@@ -40,4 +40,4 @@ export const registerAllListeners = () => {
 };
 
 export const persistor = persistStore(store);
-persistor.purge(); // Xoá dữ liệu đã lưu trong AsyncStorage khi ứng dụng khởi động
+// persistor.purge(); // Xoá dữ liệu đã lưu trong AsyncStorage khi ứng dụng khởi động
