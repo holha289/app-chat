@@ -13,7 +13,7 @@ const selectAuthError = (state: RootState) => selectAuthState(state).error || nu
 
 const selectAuthLoading = (state: RootState) => selectAuthState(state).status === "pending";
 const selectAuthLoaded = (state: RootState) => selectAuthState(state).status === "success" || selectAuthState(state).status === "failed";
-
+const selectAuthAccessToken = (state: RootState) => selectAuthState(state).tokens?.accessToken || null;
 
 export {
     selectAuthState,
@@ -23,5 +23,6 @@ export {
     selectAuthMessage,
     selectAuthLoading,
     selectAuthLoaded,
-    selectAuthError
+    selectAuthError,
+    selectAuthAccessToken
 };

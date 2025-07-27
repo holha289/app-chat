@@ -27,6 +27,7 @@ export default function App() {
 
     initApp();
     registerAllListeners();
+    // initSocket();
   }, []);
 
   return (

@@ -12,6 +12,7 @@ export const AuthListenerMiddleware = () => {
   LoginListener();
   registerAuthListener();
   logoutAuthListener();
+  setFcmTokenListener();
 };
 
 
@@ -22,7 +23,6 @@ const LoginListener = () => {
       try {
         const payload = action.payload as LoginPayload;
         const fcmToken = await getFCMToken();
-        console.log("fcmToken", fcmToken);
         const response = await apiService.post<ApiResponse<AuthState>>("/auth/login", {
           username: payload.phone,
           password: payload.password
@@ -34,7 +34,9 @@ const LoginListener = () => {
           } as AuthState['tokens'],
           user: response.metadata.user as AuthState['user']
         }));
+        
         if (fcmToken) {
+          console.log("fcmToken", fcmToken);
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
         }
       } catch (error) {
