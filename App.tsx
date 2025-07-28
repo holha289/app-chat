@@ -16,14 +16,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 export default function App() {
   useEffect(() => {
-    console.log(API_URL);
-    registerAllListeners();
-    const token = selectAuthAccessToken(store.getState());
-    if (token) {
-      // Khởi tạo socket với token nếu đã đăng nhập
-      initSocket(token);
-    }
-    console.log(API_URL);
+ 
     registerAllListeners();
     const token = selectAuthAccessToken(store.getState());
     if (token) {
