@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "expo:prebuild": "expo prebuild --no-install && cd android && ./gradlew clean && cd ..",
-    "android:native": "npx react-native run-android",
-    "ios:native": "npx react-native run-ios",
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "native:android": "npx react-native run-android",
+    "native:ios": "npx react-native run-ios",
     "native:start": "npx react-native start",
     "native:start:reset": "npx react-native start --reset-cache",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "build:5554": "npx react-native run-android --deviceId emulator-5554",
+    "build:5556": "npx react-native run-android --deviceId emulator-5556",
+    "expo:prebuild:clear": "npx expo prebuild && cd android && ./gradlew clean && cd .."
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
