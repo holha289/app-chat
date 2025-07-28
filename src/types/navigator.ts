@@ -5,6 +5,7 @@ export interface TabNavigatorScreenType {
     name: string;
     component: React.ComponentType<any>;
     options?: BottomTabNavigationOptions;
+    withScroll?: boolean; // ✅ Thêm field này để control scroll tự động
 }
 
 export interface TabNavigatorType {

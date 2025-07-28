@@ -11,9 +11,10 @@ const TabRoutes: TabNavigatorType = {
     {
       name: 'Chats',
       component: ChatListScreen,
+      withScroll:true,
       options: {
         title: 'Tin nhắn',
-        tabBarIcon: ({ color, size }: { color: string; size: number }) => 
+        tabBarIcon: ({ color, size }: { color: string; size: number }) =>
           React.createElement(Ionicons, { name: 'chatbubble-outline', size: size, color: color }),
       },
     },
@@ -22,7 +23,7 @@ const TabRoutes: TabNavigatorType = {
       component: ContactScreen,
       options: {
         title: 'Danh bạ',
-        tabBarIcon: ({ color, size }: { color: string; size: number }) => 
+        tabBarIcon: ({ color, size }: { color: string; size: number }) =>
           React.createElement(Ionicons, { name: 'bookmark-outline', size: size, color: color }),
       },
     },

@@ -215,6 +215,7 @@ Dự án này được phân phối dưới giấy phép MIT. Xem `LICENSE` đ�
 
 - **Hải Long** - *Initial work* - [GitHub](https://github.com/holha289)
 
+
 ## 🙏 Acknowledgments
 
 - [Expo](https://expo.dev/)

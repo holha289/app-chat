@@ -40,12 +40,17 @@ const ContactScreen = () => {
 
   return (
     <View className="flex-1 bg-gray-100 pt-14 px-4">
-      <TouchableOpacity onPress={() => navigation.navigate("Search")}>
-        <View className="mb-4 flex-row items-center bg-white rounded-full px-4 py-2 shadow">
-          <Ionicons name="search" size={20} color="gray" />
-          <Text className="flex-1 ml-2 text-base py-2">Tìm kiếm bạn bè</Text>
-        </View>
-      </TouchableOpacity>
+      <View className="mb-4  flex-row w-100 justify-around">
+        <TouchableOpacity onPress={() => navigation.navigate("Search")}>
+          <View className=" w-80 flex-row items-center bg-white rounded-full  shadow">
+            <Ionicons name="search" size={20} color="gray" />
+            <Text className="flex-1 ml-2 text-base py-2">Tìm kiếm bạn bè</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity className="h-10 w-10 flex items-center justify-center">
+          <Ionicons name="add-outline" size={20} color="gray" />
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         data={contacts}

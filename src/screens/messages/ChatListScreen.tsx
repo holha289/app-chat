@@ -1,6 +1,9 @@
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { Avatar } from "@app/components";
+import { selectUser } from "@app/features";
+import { store } from "@app/store";
 
 const conversations = [
   {
@@ -31,7 +34,8 @@ const conversations = [
 
 export default function ChatListScreen() {
   const navigation = useNavigation();
-
+  const user = selectUser(store.getState());
+  console.log(user?.avatar)
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
       className="flex-row items-center bg-white p-4 rounded-2xl mb-3 shadow-sm"
@@ -61,9 +65,16 @@ export default function ChatListScreen() {
 
   return (
     <View className="flex-1 bg-gray-50 pt-16 px-4">
-      <View className="flex-row justify-between items-center mb-4">
+      <View className="flex-row justify-between items-center  mb-4">
         <Text className="text-3xl font-extrabold text-blue-600">WChat</Text>
-        <Ionicons name="create-outline" size={24} color="#3b82f6" />
+        <View className="flex-row items-center space-x-2">
+          <Ionicons name="create-outline" size={24} color="#3b82f6" />
+          <Avatar
+            uri={user?.avatar}
+            name={user?.fullname}
+            size="small"
+          />
+        </View>
       </View>
       <TouchableOpacity onPress={() => navigation.navigate("Search")}>
         <View className="mb-4 flex-row items-center bg-white rounded-full px-4 py-2 shadow">

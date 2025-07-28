@@ -10,7 +10,7 @@ interface TabNavigatorProps {
 
 const TabNavigator = ({ screens, navigatorOptions }: TabNavigatorProps) => {
     const Tab = createBottomTabNavigator();
-    
+
     // Merge với default options để tối ưu cho ứng dụng chat
     const defaultOptions = {
         screenOptions: {
@@ -41,11 +41,11 @@ const TabNavigator = ({ screens, navigatorOptions }: TabNavigatorProps) => {
         },
         ...navigatorOptions,
     };
-    
+
     return (
         <Tab.Navigator {...defaultOptions}>
             {screens.map((route, index) => (
-                <Tab.Screen 
+                <Tab.Screen
                     key={`${route.name}-${index}`}
                     name={route.name}
                     component={route.component}

@@ -1,6 +1,8 @@
 import { selectUser } from "@app/features";
 import { store } from "@app/store";
+import { useNavigation,useRoute  } from "@react-navigation/native";
 import React from "react";
+
 import {
   View,
   Text,
@@ -10,6 +12,8 @@ import {
 } from "react-native";
 
 const ProfileScreen = () => {
+  const navigation = useNavigation();
+    const route = useRoute();
   const user = selectUser(store.getState());
   return (
     <SafeAreaView className="flex-1 bg-white items-center pt-10">

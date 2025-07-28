@@ -9,12 +9,11 @@ import { registerAllListeners } from "@app/store";
 import { PersistGate } from "redux-persist/lib/integration/react";
 import { selectAuthAccessToken } from "@app/features";
 import { getSocket, initSocket } from "@app/core/socketIo";
-import {
-  requestLocationPermission,
-  requestPermission,
-} from "@app/core/permissions";
+import { requestPermission } from "@app/core/permissions";
 import { API_URL } from "@env";
-import { getCurrentLocation } from "@app/core/local";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NavigationContainer } from "@react-navigation/native";
 export default function App() {
   useEffect(() => {
     console.log(API_URL);
@@ -26,7 +25,7 @@ export default function App() {
     }
     const initApp = async () => {
       try {
-        await requestLocationPermission();
+        // await requestLocationPermission();
         await initializeFirebase(async () => {
           const permission = await requestPermission();
           if (permission) {
@@ -36,18 +35,6 @@ export default function App() {
 
           return false;
         });
-      
-        // lấy vị trí  gửi về server
-        // const location = await getCurrentLocation();
-        // if (!location) return;
-        // const socket = getSocket();
-        // if (socket) {
-        //   socket.emit("user:location", {
-        //     // userId: "user-123", // hoặc auth token
-        //     latitude: location.latitude,
-        //     longitude: location.longitude,
-        //   });
-        // }
       } catch (error) {
         console.error("❌ Lỗi khởi tạo Firebase:", error);
       }
@@ -59,10 +46,20 @@ export default function App() {
   }, []);
 
   return (
+    // <Provider store={store}>
+    //   <PersistGate loading={null} persistor={persistor}>
+    //     <AppNavigator />
+    //     <StatusBar style="auto" />
+    //   </PersistGate>
+    // </Provider>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <AppNavigator />
-        <StatusBar style="auto" />
+        <GestureHandlerRootView className="flex-1">
+          <SafeAreaProvider>
+            <AppNavigator />
+            <StatusBar style="auto" />
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
       </PersistGate>
     </Provider>
   );
