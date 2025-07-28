@@ -56,18 +56,4 @@ Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "node_modules"
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue ".expo"
 Remove-Item -Force -ErrorAction SilentlyContinue "package-lock.json"
 Remove-Item -Force -ErrorAction SilentlyContinue "yarn.lock"
-
-# 4. Cài lại package
-Write-Host "📦 Cài lại npm packages..."
-npm install
-
-# 5. Reset Metro bundler cache
-Write-Host "🧠 Reset cache Metro bundler..."
-npx react-native start --reset-cache
-
-
-# 6. Build lại app
-Write-Host "📲 Build lại app Android..."
-npx react-native run-android
-
 Write-Host "✅ Reset hoàn tất!" -ForegroundColor Green
