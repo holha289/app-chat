@@ -23,6 +23,13 @@ export default function App() {
       // Khởi tạo socket với token nếu đã đăng nhập
       initSocket(token);
     }
+    console.log(API_URL);
+    registerAllListeners();
+    const token = selectAuthAccessToken(store.getState());
+    if (token) {
+      // Khởi tạo socket với token nếu đã đăng nhập
+      initSocket(token);
+    }
     const initApp = async () => {
       try {
         // await requestLocationPermission();
@@ -41,6 +48,7 @@ export default function App() {
     };
 
     initApp();
+
 
     // initSocket();
   }, []);
