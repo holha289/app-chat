@@ -9,22 +9,33 @@ export const getCurrentLocation = async (): Promise<{
   longitude: number;
 } | null> => {
   const hasPermission = await hasLocationPermission();
-  if (!hasPermission) return null;
+  if (!hasPermission) {
+    console.warn("🚫 Không có quyền truy cập vị trí.");
+    return null;
+  }
 
   return new Promise((resolve, reject) => {
+    if (!Geolocation || typeof Geolocation.getCurrentPosition !== 'function') {
+      console.error("🚨 Geolocation chưa được khởi tạo đúng.");
+      reject(null);
+      return;
+    }
+
     Geolocation.getCurrentPosition(
       position => {
         const { latitude, longitude } = position.coords;
         resolve({ latitude, longitude });
       },
       error => {
-        console.error('Lỗi lấy vị trí:', error);
+        console.error('❌ Lỗi lấy vị trí:', error);
         reject(null);
       },
       {
         enableHighAccuracy: true,
         timeout: 15000,
         maximumAge: 10000,
+        forceRequestLocation: true,
+        showLocationDialog: true,
       }
     );
   });

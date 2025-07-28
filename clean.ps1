@@ -62,8 +62,8 @@ Write-Host "📦 Cài lại npm packages..."
 npm install
 
 # 5. Reset Metro bundler cache
-Write-Host "🧠 Reset cache Metro bundler..."
-npx react-native start --reset-cache
+# Write-Host "🧠 Reset cache Metro bundler..."
+# npx react-native start --reset-cache
 
 
 # 6. Build lại app

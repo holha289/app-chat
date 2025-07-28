@@ -7,6 +7,7 @@ let socket: Socket | null = null;
 
 export const initSocket = (token: string): Socket => {
   if (!socket) {
+    console.log(API_URL, "API_URL");
     socket = io(API_URL, {
       transports: ["websocket"],
       extraHeaders: {

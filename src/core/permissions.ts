@@ -1,5 +1,6 @@
 import notifee, { AuthorizationStatus } from '@notifee/react-native';
-
+import { PermissionsAndroid, Platform } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
 const requestPermission = async () => {
   let status = false
   const settings = await notifee.requestPermission();
@@ -25,4 +26,32 @@ const requestPermission = async () => {
   return status;
 }
 
-export { requestPermission };
+
+
+const requestLocationPermission = async () => {
+  if (Platform.OS === 'ios') {
+    Geolocation.requestAuthorization('whenInUse');
+  } else {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Cấp quyền vị trí',
+          message: 'Ứng dụng cần quyền truy cập vị trí để hoạt động.',
+          buttonNeutral: 'Hỏi sau',
+          buttonNegative: 'Từ chối',
+          buttonPositive: 'Đồng ý',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Đã được cấp quyền vị trí');
+      } else {
+        console.log('Bị từ chối quyền vị trí');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+};
+
+export { requestPermission,requestLocationPermission };
