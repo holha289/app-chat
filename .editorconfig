@@ -1,0 +1,25 @@
+# EditorConfig is awesome: https://editorconfig.org
+root = true
+
+# Mặc định cho tất cả các file
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Markdown: không xoá whitespace ở cuối dòng (quan trọng với danh sách, bảng)
+[*.md]
+trim_trailing_whitespace = false
+
+# JSON và các file cấu hình: luôn indent 2 spaces
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSX, TSX, JS, TS: 2 spaces
+[*.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
