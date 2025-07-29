@@ -1,211 +1,145 @@
 # App Chat - React Native Expo Project
 
-Ứng dụng chat được xây dựng bằng React Native và Expo với NativeWind (Tailwind CSS).
+Ứng dụng chat đa nền tảng xây dựng với React Native, Expo, Redux Toolkit, Firebase, Socket.io và NativeWind (Tailwind CSS cho React Native).
 
-## 🚀 Tính năng
 
-- ✅ React Native với Expo
-- ✅ NativeWind (Tailwind CSS cho React Native)
-- ✅ TypeScript
-- ✅ React Navigation
-- ✅ Axios cho API calls
-- ✅ Vector Icons
-- ✅ Reanimated
+## 🚀 Tính năng chính
 
-## 📱 Cấu trúc dự án
+- Đăng ký, đăng nhập, xác thực người dùng (Firebase Auth)
+- Chat thời gian thực (Socket.io)
+- Nhận thông báo đẩy (Firebase Cloud Messaging)
+- Lưu trạng thái đăng nhập (redux-persist)
+- Quản lý state với Redux Toolkit
+- Giao diện hiện đại với NativeWind (Tailwind CSS)
+- Điều hướng đa màn hình (React Navigation)
+- Tối ưu hiệu năng với Reanimated, SafeArea, GestureHandler
+
+
+## 📁 Cấu trúc dự án
 
 ```
 app-chat/
 ├── src/
-│   ├── components/          # Các component tái sử dụng
-│   │   └── Input.tsx
-│   ├── hooks/              # Custom hooks
-│   │   └── use-hook.ts
-│   ├── navigation/         # Cấu hình navigation
-│   │   ├── AppNavigator.tsx
-│   │   └── TabNavigator.tsx
-│   ├── routers/           # Router configuration
-│   │   └── index.router.ts
-│   ├── screens/           # Các màn hình
-│   │   └── HomeScreen.tsx
-│   ├── services/          # API services
-│   │   └── api.service.ts
-│   ├── styles/            # Style files
-│   │   ├── home.style.ts
-│   │   └── input.style.ts
-│   └── types/             # TypeScript types
-│       └── navigator.ts
-├── assets/                # Hình ảnh, icons
-├── App.tsx               # Entry point
-├── global.css            # Global styles
-├── package.json
-└── README.md
+│   ├── components/   # Các UI component tái sử dụng (Input, Avatar, ...)
+│   ├── core/         # Firebase, socket, permissions, ...
+│   ├── features/     # Redux slices: auth, counter, contact, ...
+│   ├── hooks/        # Custom hooks
+│   ├── navigation/   # AppNavigator, TabNavigator, RootNavigation
+│   ├── routers/      # Định nghĩa route cho navigation
+│   ├── screens/      # Các màn hình chính, pages, messages
+│   ├── services/     # API service, notification service
+│   ├── store/        # Redux store, middleware, persist config
+│   ├── styles/       # Style file cho từng màn hình/component
+│   ├── types/        # Định nghĩa type, interface chung
+│   └── utils/        # Tiện ích, helper (handleNotify, ...)
+├── assets/           # Hình ảnh, icon, svg
+├── App.tsx           # Entry point
+├── global.css        # Global style
+├── package.json      # Thông tin package, scripts
+├── tailwind.config.js# Cấu hình Tailwind
+└── ...
 ```
 
-## 🛠️ Cài đặt
+yarn install
+
+## 🛠️ Cài đặt & Build native
 
 ### Yêu cầu hệ thống
-
-- Node.js (v16 trở lên)
+- Node.js >= 16
 - npm hoặc yarn
-- Expo CLI
-- Android Studio (cho Android)
-- Xcode (cho iOS - chỉ trên macOS)
+- Android Studio (Android), Xcode (iOS/macOS)
+- Expo CLI (chỉ để prebuild, không dùng expo start)
 
 ### Cài đặt dependencies
-
 ```bash
-# Clone project
 git clone <repository-url>
 cd app-chat
-
-# Cài đặt dependencies
 npm install
-
-# Hoặc sử dụng yarn
+# hoặc
 yarn install
 ```
 
-
-## 🏃‍♂️ Chạy dự án
-
+### Build & chạy native (không dùng expo start/web)
 ```bash
-# Khởi động development server
-npm start
-
-# Chạy trên Android
-npm run android
-
-# Chạy trên iOS
-npm run ios
-
-# Chạy trên web
-npm run web
-
-
-# Prebuild native code (Android/iOS)
+# Prebuild native code (Android)
 npx expo prebuild --platform android
-npx expo prebuild --platform ios
 
-# Dừng daemon và xóa build cũ
+# Build và cài app Android
 cd android
-./gradlew --stop       # Dừng daemon
-./gradlew clean        # Xoá build cũ
-./gradlew assembleDebug # Build lai
+./gradlew --stop         # Dừng daemon nếu có
+./gradlew clean          # Xoá build cũ
+./gradlew assembleDebug  # Build debug APK
+./gradlew installDebug   # Cài app lên thiết bị/emulator
 
-# Xóa cache build iOS (nên chạy trong thư mục ios):
-xcodebuild clean
-npx expo prebuild --platform ios
+# (Tuỳ chọn) Mở app trên thiết bị/emulator Android
+adb shell am start -n <package_name>/<activity_name>
 
-# Build APK cho Android (Expo EAS):
-npx eas build --platform android --profile preview
-# Build AAB cho Android (Expo EAS):
-npx eas build --platform android --profile production
-# Build iOS (Expo EAS):
-npx eas build --platform ios --profile preview
-# Kiểm tra thiết bị kết nối:
-adb devices
-# Mở project trên Expo Go (quét QR):
-npx expo start
-# Xóa cache Metro bundler:
+# Xóa cache Metro bundler (nếu cần reload JS)
 npx expo start --clear
-# Reset node_modules:
+# Reset node_modules (nếu gặp lỗi lạ)
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-## 📁 Thêm màn hình mới
-
-1. Tạo component mới trong `src/screens/`
-2. Thêm route vào `src/navigation/AppNavigator.tsx`
-3. Định nghĩa type cho navigation trong `src/types/navigator.ts`
-
-Ví dụ:
-
-```tsx
-// src/screens/NewScreen.tsx
-import React from 'react';
-import { View, Text } from 'react-native';
-
-const NewScreen = () => {
-  return (
-    <View className="flex-1 items-center justify-center">
-      <Text className="text-xl font-bold">New Screen</Text>
-    </View>
-  );
-};
-
-export default NewScreen;
+### Build iOS (chỉ trên macOS, nếu cần)
+```bash
+npx expo prebuild --platform ios
+cd ios
+xcodebuild clean
+# Mở Xcode để build/run thủ công hoặc dùng lệnh xcodebuild
 ```
 
-## 🎯 API Integration
-BASE URL https://appchat-production-b2b8.up.railway.app/api
-Sử dụng Axios service trong `src/services/api.service.ts`:
 
+### Thêm màn hình mới
+1. Tạo file mới trong `src/screens/` (ví dụ: `NewScreen.tsx`)
+2. Thêm route vào `src/routers/index.router.ts`
+3. Nếu là tab, thêm vào `tab.router.ts`
+4. Định nghĩa type cho navigation nếu cần ở `src/types/navigator.ts`
+
+### Thêm feature mới (Redux slice)
+1. Tạo thư mục mới trong `src/features/` (ví dụ: `chat/`)
+2. Tạo các file: `chat.reducer.ts`, `chat.action.ts`, ...
+3. Thêm reducer vào `src/store/index.ts`
+
+
+### Sử dụng API service
 ```typescript
 import { apiService } from '@/services/api.service';
-
-// GET request
+// GET
 const data = await apiService.get('/users');
-
-// POST request
+// POST
 const result = await apiService.post('/users', { name: 'John' });
 ```
 
+
+### Sử dụng notification
+Notification được xử lý qua Firebase Cloud Messaging và notifee. Xem `src/core/firebase.ts` và `src/services/notification.service.ts`.
+
+### Sử dụng socket
+Socket.io client được khởi tạo ở `src/core/socketIo.ts` và tích hợp vào App qua middleware.
+
+
 ## 🔍 Troubleshooting
 
-### Lỗi thường gặp:
-
-1. **Metro bundler cache**: `npx expo start --clear`
-2. **Node modules**: Xóa `node_modules` và chạy lại `npm install`
-3. **NativeWind không hoạt động**: Kiểm tra cấu hình trong `tailwind.config.js` và `babel.config.js`
-
-### Debug:
-
-```bash
-# Xóa cache
-npx expo start --clear
-
-# Reset project
-rm -rf node_modules package-lock.json
-npm install
-```
+1. **Không build được Android/iOS:**
+   - Chạy `npx expo prebuild --platform android` hoặc `ios` để sync native code
+   - Xóa cache: `npx expo start --clear`
+   - Xóa node_modules: `rm -rf node_modules package-lock.json && npm install`
+2. **Không nhận được notification:**
+   - Kiểm tra quyền notification, GoogleService-Info.plist, google-services.json
+   - Kiểm tra cấu hình Firebase
+3. **NativeWind không hoạt động:**
+   - Kiểm tra `tailwind.config.js`, `babel.config.js`, import `global.css`
 
 
 ## 📝 Quy tắc code
 
-- Sử dụng TypeScript cho tất cả files
-- Ưu tiên NativeWind (Tailwind CSS) cho layout, spacing, flex, căn chỉnh thay vì StyleSheet. Chỉ dùng StyleSheet cho các style động phức tạp hoặc khi cần hiệu năng cao.
-- Đặt tên file theo PascalCase cho components
+- Sử dụng TypeScript cho toàn bộ codebase
+- Ưu tiên NativeWind (Tailwind CSS) cho layout, spacing, flex, căn chỉnh
+- Đặt tên file theo PascalCase cho component, camelCase cho biến/hàm
 - Sử dụng absolute imports với alias `@/`
+- Tách biệt rõ các layer: UI, logic, API, store
 
-## 💡 Hướng dẫn sử dụng NativeWind cho bố cục
-
-Ví dụ căn nút xuống cuối trang:
-
-```tsx
-<View className="flex-1">
-  <View className="flex-1">
-    {/* Nội dung form */}
-  </View>
-  <View className="justify-end pb-8">
-    <Button title="Đăng ký" />
-  </View>
-</View>
-```
-
-Hoặc với ScrollView:
-
-```tsx
-<ScrollView className="flex-1">
-  <View className="flex-1 justify-between">
-    {/* Nội dung */}
-    <Button title="Đăng ký" />
-  </View>
-</ScrollView>
-```
-
-> **Lưu ý:** Nếu dùng StyleSheet cho layout, cần đảm bảo cha có `flex: 1` và con có `justifyContent: 'flex-end'` để nút nằm dưới cùng.
 
 ## 📄 License
 
@@ -213,16 +147,8 @@ Dự án này được phân phối dưới giấy phép MIT. Xem `LICENSE` đ�
 
 ## 👥 Tác giả
 
-- **Hải Long** - *Initial work* - [GitHub](https://github.com/holha289)
-
-
-## 🙏 Acknowledgments
-
-- [Expo](https://expo.dev/)
-- [NativeWind](https://nativewind.dev/)
-- [React Navigation](https://reactnavigation.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
+- **Hải Long** - *Main* - [GitHub](https://github.com/holha289)
+- **Thiên Tri** - *...* - [GitHub](https://github.com/holha289)
 
 ---
-
 **Lưu ý**: Đây là dự án học tập về lập trình đa nền tảng với React Native và Expo.
