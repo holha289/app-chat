@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabNavigatorScreenType } from '../types/navigator';
 import React from 'react';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface TabNavigatorProps {
     screens: TabNavigatorScreenType[];
@@ -10,6 +11,7 @@ interface TabNavigatorProps {
 
 const TabNavigator = ({ screens, navigatorOptions }: TabNavigatorProps) => {
     const Tab = createBottomTabNavigator();
+    const insets = useSafeAreaInsets();
 
     // Merge với default options để tối ưu cho ứng dụng chat
     const defaultOptions = {
@@ -19,12 +21,11 @@ const TabNavigator = ({ screens, navigatorOptions }: TabNavigatorProps) => {
             tabBarInactiveTintColor: '#8e8e93',
             tabBarLabelStyle: {
                 fontSize: 11,
-                fontWeight: '500' as const,
-                marginTop: Platform.OS === 'ios' ? 0 : -5,
+                fontWeight: '500' as const
             },
             tabBarStyle: {
-                height: Platform.OS === 'ios' ? 85 : 65,
-                paddingBottom: Platform.OS === 'ios' ? 25 : 8,
+                height: 60 + insets.bottom,
+                paddingBottom: insets.bottom,
                 paddingTop: 8,
                 backgroundColor: '#ffffff',
                 borderTopWidth: 1,
@@ -41,7 +42,7 @@ const TabNavigator = ({ screens, navigatorOptions }: TabNavigatorProps) => {
         },
         ...navigatorOptions,
     };
-    
+
     return (
         <Tab.Navigator {...defaultOptions}>
             {screens.map((route, index) => (

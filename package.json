@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    
     "native:android": "npx react-native run-android",
     "native:ios": "npx react-native run-ios",
     "native:start": "npx react-native start",
-    "native:start:reset": "npx react-native start --reset-cache",    
-    "expo:prebuild:clear": "npx expo prebuild && cd android && ./gradlew clean && cd .."
+    "native:start:reset": "npx react-native start --reset-cache",
+    "expo:prebuild:clear": "npx expo prebuild && cd android && ./gradlew clean && cd ..",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
@@ -38,7 +39,6 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-permissions": "^5.4.2",
     "react-native-permissions": "^5.4.2",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.5.2",
