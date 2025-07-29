@@ -2,7 +2,6 @@ import { API_URL } from "@env";
 import { io, Socket } from "socket.io-client";
 
 // Đổi thành domain backend của bạn
-
 let socket: Socket | null = null;
 
 export const initSocket = (token: string): Socket => {
