@@ -12,10 +12,11 @@ import TabNavigator from "@app/navigation/TabNavigator";
 import TabRoutes from "./tab.router";
 import SearchScreen from "@app/screens/SearchScreen";
 import ChatRoomScreen from "@app/screens/messages/ChatRoomScreen";
+import InfoScreen from "@app/screens/InfoScreen";
 
 const routers: RouterType = {
   navigatorOptions: {
-    initialRouteName: "Splash",
+    initialRouteName: "InfoScreen",
   },
   screens: [
     {
@@ -39,21 +40,27 @@ const routers: RouterType = {
       options: { headerShown: false },
     },
     {
-        name:"Search",
-        component: SearchScreen,
-        options: { headerShown: false },
+      name: "Search",
+      component: SearchScreen,
+      options: { headerShown: false },
     },
     {
-        name:"ChatRoom",
-        component: ChatRoomScreen,
-        options: { headerShown: false },
+      name: "ChatRoom",
+      component: ChatRoomScreen,
+      options: { headerShown: false },
     },
+    {
+      name: "InfoScreen",
+      component: InfoScreen,
+      options: { headerShown: false },
+    },
+
     {
       name: "Main",
-      component: () => 
+      component: () =>
         React.createElement(TabNavigator, {
           screens: TabRoutes.screens,
-          navigatorOptions: TabRoutes.navigatorOptions
+          navigatorOptions: TabRoutes.navigatorOptions,
         }),
       options: { headerShown: false },
     },

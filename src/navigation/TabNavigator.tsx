@@ -41,7 +41,7 @@ const TabNavigator = ({ screens, navigatorOptions }: TabNavigatorProps) => {
         },
         ...navigatorOptions,
     };
-
+    
     return (
         <Tab.Navigator {...defaultOptions}>
             {screens.map((route, index) => (

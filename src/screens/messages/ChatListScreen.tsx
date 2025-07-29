@@ -69,11 +69,11 @@ export default function ChatListScreen() {
         <Text className="text-3xl font-extrabold text-blue-600">WChat</Text>
         <View className="flex-row items-center space-x-2">
           <Ionicons name="create-outline" size={24} color="#3b82f6" />
-          <Avatar
+          {/* <Avatar
             uri={user?.avatar}
             name={user?.fullname}
             size="small"
-          />
+          /> */}
         </View>
       </View>
       <TouchableOpacity onPress={() => navigation.navigate("Search")}>

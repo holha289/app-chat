@@ -1,10 +1,13 @@
-import messaging, { FirebaseMessagingTypes } from "@react-native-firebase/messaging";
+import messaging, {
+  FirebaseMessagingTypes,
+} from "@react-native-firebase/messaging";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform, Alert, ToastAndroid } from "react-native";
 import firebase from "@react-native-firebase/app";
 import auth from "@react-native-firebase/auth";
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, { AndroidImportance } from "@notifee/react-native";
 import { getAuth as getFirebaseAuth } from "@react-native-firebase/auth";
+import { handleNavigateFromNotification } from "@app/utils/handleNotify";
 
 /**
  * Thiết lập dịch vụ messaging Firebase
@@ -19,11 +22,31 @@ export async function setupMessaging() {
     }
     console.log("Đã thiết lập messaging thành công với token:", token);
     // Xử lý thông báo khi app đang chạy foreground
-    messaging().onMessage(async (remoteMessage) => await onMessageReceived(remoteMessage, 'foreground'));
+    messaging().onMessage(
+      async (remoteMessage) =>
+        await onMessageReceived(remoteMessage, "foreground"),
+    );
     // Xử lý thông báo khi app được mở từ background state
-    messaging().onNotificationOpenedApp(async (remoteMessage) => await onMessageReceived(remoteMessage, 'background'));
-    messaging().setBackgroundMessageHandler(async (remoteMessage) => await onMessageReceived(remoteMessage, 'background'));
-
+    messaging().onNotificationOpenedApp(async (remoteMessage) => {
+      await onMessageReceived(remoteMessage, "background");
+      // Extract payload from remoteMessage.data
+      const payload = remoteMessage?.data ? { ...remoteMessage.data } : {};
+      handleNavigateFromNotification(payload);
+    });
+    messaging().setBackgroundMessageHandler(
+      async (remoteMessage) =>
+        await onMessageReceived(remoteMessage, "background"),
+    );
+    // Nếu app từ trạng thái killed mở lên bằng notification
+    messaging()
+      .getInitialNotification()
+      .then((remoteMessage) => {
+        if (remoteMessage) {
+          // Chuyển đổi remoteMessage sang NavigatePayload nếu cần thiết
+          const payload = remoteMessage?.data ? { ...remoteMessage.data } : {};
+          handleNavigateFromNotification(payload);
+        }
+      });
     return true;
   } catch (error) {
     console.error("Lỗi khi thiết lập messaging:", error);
@@ -35,7 +58,9 @@ export async function setupMessaging() {
  * Khởi tạo tất cả các dịch vụ Firebase cần thiết
  * Gọi hàm này trong thành phần cao nhất của ứng dụng (App.tsx)
  */
-export async function initializeFirebase(callback: () => Promise<boolean> = async () => true) {
+export async function initializeFirebase(
+  callback: () => Promise<boolean> = async () => true,
+) {
   try {
     // Kiểm tra kết nối với Firebase
     await firebase.app().options;
@@ -93,26 +118,30 @@ export async function getFCMToken() {
   }
 }
 
-const onMessageReceived = async (remoteMessage: FirebaseMessagingTypes.RemoteMessage, state: 'foreground' | 'background') => {
+const onMessageReceived = async (
+  remoteMessage: FirebaseMessagingTypes.RemoteMessage,
+  state: "foreground" | "background",
+) => {
   console.log(`Thông báo nhận được trong trạng thái ${state}:`, remoteMessage);
   await notifee.displayNotification({
-    title: remoteMessage.notification?.title ?? 'Thông báo mới',
-    body: remoteMessage.notification?.body ?? 'Bạn có tin nhắn mới',
+    title: remoteMessage.notification?.title ?? "Thông báo mới",
+    body: remoteMessage.notification?.body ?? "Bạn có tin nhắn mới",
     android: {
-      channelId: 'default',
+      channelId: "default",
       importance: AndroidImportance.HIGH,
-      smallIcon: 'ic_launcher', // tên icon từ res/drawable
+      smallIcon: "ic_launcher", // tên icon từ res/drawable
     },
   });
 };
 
-const deleteFCMToken = async () => { // Xoá FCM token khỏi Firebase khi người dùng đăng xuất
-  try { 
+const deleteFCMToken = async () => {
+  // Xoá FCM token khỏi Firebase khi người dùng đăng xuất
+  try {
     // Xoá token khỏi bộ nhớ
     await AsyncStorage.removeItem("fcmToken");
-     await messaging().deleteToken();
+    await messaging().deleteToken();
   } catch (error) {
-    if (Platform.OS === 'android') {
+    if (Platform.OS === "android") {
       ToastAndroid.show("Lỗi khi xoá FCM token", ToastAndroid.SHORT);
     } else {
       Alert.alert("Lỗi", "Không thể xoá FCM token");
@@ -121,7 +150,7 @@ const deleteFCMToken = async () => { // Xoá FCM token khỏi Firebase khi ngư�
 };
 
 const getAuth = () => {
-   return getFirebaseAuth();
+  return getFirebaseAuth();
 };
 
 // Export các dịch vụ và hàm tiện ích

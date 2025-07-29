@@ -27,6 +27,15 @@ const TabRoutes: TabNavigatorType = {
           React.createElement(Ionicons, { name: 'bookmark-outline', size: size, color: color }),
       },
     },
+    {
+      name:"Profile",
+      component:ProfileScreen,
+       options: {
+        title: 'Hồ sơ',
+        tabBarIcon: ({ color, size }: { color: string; size: number }) =>
+          React.createElement(Ionicons, { name: 'person-outline', size: size, color: color }),
+      },
+    }
   ],
   navigatorOptions: {
     initialRouteName: 'Chats',

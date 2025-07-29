@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@app/styles/main.style";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation,useRoute } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
@@ -22,6 +22,7 @@ const contacts = [
 ];
 
 const ContactScreen = () => {
+  const params=useRoute().params
   const navigation = useNavigation();
   const renderItem = ({ item }: any) => (
     <View className="flex-row items-center px-4 py-3 bg-white mb-2 rounded-xl shadow">

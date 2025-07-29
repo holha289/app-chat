@@ -5,12 +5,13 @@ import routers from "../routers/index.router";
 import TabNavigator from "./TabNavigator";
 import { TabNavigatorType } from "../types/navigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { navigationRef } from "./RootNavigation";
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
         <Stack.Navigator
           {...(routers.navigatorOptions as React.ComponentProps<
             typeof Stack.Navigator
@@ -20,7 +21,12 @@ const AppNavigator = () => {
             if (screen.name === "TabNavigator") {
               const tabNavigator =
                 screen.component as unknown as TabNavigatorType;
-              return <TabNavigator {...tabNavigator} key={index} />;
+              // return <TabNavigator {...tabNavigator} key={index} />;
+              return (
+                <Stack.Screen name="Main" key={index}>
+                  {() => <TabNavigator {...tabNavigator} />}
+                </Stack.Screen>
+              );
             }
             const { component: Component, ...restProps } = screen;
             return (
