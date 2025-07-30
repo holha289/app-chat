@@ -6,6 +6,8 @@ const AUTH_ACTIONS_TYPE = {
     LOGIN_FAILED: 'AUTH_LOGIN_FAILED',
     LOGOUT: 'AUTH_LOGOUT',
     REGISTER: 'AUTH_REGISTER',
+    REGISTER_SUCCESS: 'AUTH_REGISTER_SUCCESS',
+    REGISTER_FAILED: 'AUTH_REGISTER_FAILED',
     SET_FCM_TOKEN: 'AUTH_SET_FCM_TOKEN',
     CLEAR_FCM_TOKEN: 'AUTH_CLEAR_FCM_TOKEN',
 };
@@ -16,10 +18,10 @@ const authActions = {
     loginFailed: createAction<string>(AUTH_ACTIONS_TYPE.LOGIN_FAILED),
     logout: createAction(AUTH_ACTIONS_TYPE.LOGOUT),
     register: createAction<RegisterPayload>(AUTH_ACTIONS_TYPE.REGISTER),
-    registerSuccess: createAction<{ tokens: tokensType, user: userType }>('AUTH_REGISTER_SUCCESS'),
-    registerFailed: createAction<string>('AUTH_REGISTER_FAILED'),
-    setFcmToken: createAction<string>('AUTH_SET_FCM_TOKEN'),
-    clearFcmToken: createAction('AUTH_CLEAR_FCM_TOKEN'),
+    registerSuccess: createAction<{ tokens: tokensType, user: userType }>(AUTH_ACTIONS_TYPE.REGISTER_SUCCESS),
+    registerFailed: createAction<string>(AUTH_ACTIONS_TYPE.REGISTER_FAILED),
+    setFcmToken: createAction<string>(AUTH_ACTIONS_TYPE.SET_FCM_TOKEN),
+    clearFcmToken: createAction(AUTH_ACTIONS_TYPE.CLEAR_FCM_TOKEN),
 };
 
 export default authActions;

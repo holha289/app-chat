@@ -14,15 +14,11 @@ import { API_URL } from "@env";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
+import { useSockerIo } from "@app/hooks/use-socketio";
 export default function App() {
   useEffect(() => {
- 
+
     registerAllListeners();
-    const token = selectAuthAccessToken(store.getState());
-    if (token) {
-      // Khởi tạo socket với token nếu đã đăng nhập
-      initSocket(token);
-    }
     const initApp = async () => {
       try {
         // await requestLocationPermission();
@@ -37,6 +33,13 @@ export default function App() {
         });
       } catch (error) {
         console.error("❌ Lỗi khởi tạo Firebase:", error);
+      }
+
+      try {
+        const { socket, connectSocket, disconnect } = useSockerIo();
+        !socket && connectSocket();
+      } catch (error) {
+        console.error("❌ Lỗi khởi tạo Socket:", error);
       }
     };
 

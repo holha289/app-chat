@@ -27,16 +27,14 @@ const LoginListener = () => {
           username: payload.phone,
           password: payload.password
         });
-        listenerApi.dispatch(authActions.loginSuccess({ 
+        listenerApi.dispatch(authActions.loginSuccess({
           tokens: {
             ...response.metadata.tokens,
             fcmToken: fcmToken || null
           } as AuthState['tokens'],
           user: response.metadata.user as AuthState['user']
         }));
-        
         if (fcmToken) {
-          console.log("fcmToken", fcmToken);
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
         }
       } catch (error) {
@@ -54,11 +52,15 @@ export const registerAuthListener = () => {
     effect: async (action, listenerApi) => {
       try {
         const payload = action.payload;
+        const fcmToken = await getFCMToken();
         const response = await apiService.post<ApiResponse<AuthState>>("/auth/register", payload);
-        listenerApi.dispatch(authActions.registerSuccess({ 
+        listenerApi.dispatch(authActions.registerSuccess({
           tokens: response.metadata.tokens as AuthState['tokens'],
-          user: response.metadata.user as AuthState['user']
+          user: response.metadata.user as AuthState['user'],
         }));
+        if (fcmToken) {
+          listenerApi.dispatch(authActions.setFcmToken(fcmToken));
+        }
       } catch (error) {
         console.error("Registration failed:", error);
         const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
