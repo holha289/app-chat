@@ -9,7 +9,8 @@
     "native:start:reset": "npx react-native start --reset-cache",
     "expo:prebuild:clear": "npx expo prebuild && cd android && ./gradlew clean && cd ..",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "native:asset": "npx react-native-asset"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
