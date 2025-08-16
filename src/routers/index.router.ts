@@ -16,7 +16,7 @@ import InfoScreen from "@app/screens/InfoScreen";
 
 const routers: RouterType = {
   navigatorOptions: {
-    initialRouteName: "InfoScreen",
+    initialRouteName: "Splash",
   },
   screens: [
     {
