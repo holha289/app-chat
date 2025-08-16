@@ -17,8 +17,7 @@ const LoginScreen = () => {
     });
     const navigation = useNavigation();
     const dispatch = useDispatch();
-    const users = useSelector(selectAuthState);
-    const messageLogin = useSelector(selectAuthMessage);
+    const user = useSelector(selectAuthState);
     const errorLogin = useSelector(selectAuthError);
     const isLoading: boolean = useSelector(selectAuthLoading);
 
@@ -28,7 +27,13 @@ const LoginScreen = () => {
 
     const handleCreateAccount = () => {
         navigation.navigate("Register");
-    }; 
+    };
+
+    useEffect(() => {
+        if (user.isAuthenticated) {
+            navigation.navigate("Main");
+        }
+    }, [user.isAuthenticated, navigation]);
 
     return (
         <ScrollView className="flex-1 bg-white">

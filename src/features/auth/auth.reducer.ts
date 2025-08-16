@@ -2,7 +2,6 @@ import { createReducer, isAnyOf } from "@reduxjs/toolkit";
 import initialState from "./auth.state";
 import authActions from "./auth.action";
 
-
 const authReducer = createReducer(initialState, (builder) => {
     builder.addCase(authActions.login, (state, action) => {
         state.isAuthenticated = false;
@@ -16,6 +15,11 @@ const authReducer = createReducer(initialState, (builder) => {
         state.message = null;
         return state;
     });
+    builder.addCase(authActions.updateProfile, (state, action) => {
+        state.status = "pending";
+        state.message = null;
+        return state;
+    });
     builder.addCase(authActions.logout, (state, action) => {
         state.isAuthenticated = false;
         state.user = null;
@@ -25,6 +29,16 @@ const authReducer = createReducer(initialState, (builder) => {
     });
     builder.addCase(authActions.setFcmToken, (state, action) => {
         state.tokens.fcmToken = action.payload;
+        return state;
+    });
+     builder.addCase(authActions.updateProfileSuccess, (state, action) => {
+        state.user = action.payload.user;
+        state.status = "success";
+        return state;
+    });
+    builder.addCase(authActions.updateProfileFailed, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
         return state;
     });
     builder.addMatcher(

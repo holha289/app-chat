@@ -12,7 +12,7 @@ const SplashScreen = () => {
     const logoOpacity = useRef(new Animated.Value(0)).current;
     const textOpacity = useRef(new Animated.Value(0)).current;
     const pulse = useRef(new Animated.Value(0)).current;
-     const users = useSelector(selectAuthState);
+    const users = useSelector(selectAuthState);
 
     useEffect(() => {
         Animated.loop(
@@ -45,13 +45,13 @@ const SplashScreen = () => {
             }),
         ]).start();
 
-        setTimeout(() => {
-            if (users.isAuthenticated) {
-                navigation.navigate("Main");
-            } else {
-                navigation.navigate("Start" as never);
-            }
-        }, 2500);
+        if (users.isAuthenticated) {
+            navigation.navigate("Main");
+        } else {
+           setTimeout(()=>{
+             navigation.navigate("Start" as never);
+           }, 2000)
+        }
     }, [users.isAuthenticated]);
 
     return (

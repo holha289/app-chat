@@ -1,4 +1,4 @@
-import { getFCMToken } from "@app/core/firebase";
+import { deleteFCMToken, getFCMToken } from "@app/core/firebase";
 import { AuthState, LoginPayload } from "../types/auth.type";
 import authActions from "./auth.action";
 import apiService from "@app/services/api.service";
@@ -13,6 +13,7 @@ export const AuthListenerMiddleware = () => {
   registerAuthListener();
   logoutAuthListener();
   setFcmTokenListener();
+  updateProfileListener();
 };
 
 
@@ -88,11 +89,33 @@ export const setFcmTokenListener = () => {
 export const logoutAuthListener = () => {
   startAppListening({
     actionCreator: authActions.logout,
-    effect: (action, listenerApi) => {
-      listenerApi.dispatch(authActions.logout());
+    effect: async (action, listenerApi) => {
+      await deleteFCMToken();
+      // listenerApi.dispatch(authActions.logout());
     },
   });
 };
 
 
+
+export const updateProfileListener = () => {
+  startAppListening({
+    actionCreator: authActions.updateProfile,
+    effect: async (action, listenerApi) => {
+      console.log("Update profile action received:", action.payload);
+      try {
+        const payload = action.payload;
+        const response = await apiService.patch<ApiResponse<AuthState['user']>>("/profile/update", payload);
+        listenerApi.dispatch(authActions.updateProfileSuccess({
+          user: response.metadata as AuthState['user'],
+        }));
+        payload.callback();
+      } catch (error) {
+        console.error("Update profile failed:", error);
+        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
+        listenerApi.dispatch(authActions.updateProfileFailed(errorMessage));
+      }
+    }
+  })
+}
 

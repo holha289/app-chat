@@ -38,7 +38,7 @@ const TabRoutes: TabNavigatorType = {
     }
   ],
   navigatorOptions: {
-    initialRouteName: 'Chats',
+    initialRouteName: 'Profile',
   },
 };
 

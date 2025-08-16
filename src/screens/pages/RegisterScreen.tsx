@@ -1,5 +1,5 @@
 import { Text, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { registerClassStyle, RegisterStyle } from "@app/styles/register.style";
 import Input from "@app/components/Input";
@@ -10,6 +10,8 @@ import InputGroup from "@app/components/InputGroup";
 import { PhoneAuthProvider } from "@react-native-firebase/auth";
 import { getAuth } from "@app/core/firebase";
 import { formatPhoneNumber, isValidPhoneNumber } from "@app/core/util";
+import { useSelector } from "react-redux";
+import { selectAuthState } from "@app/features/auth/auth.selectors";
 
 const RegisterScreen = () => {
     const [form, setForm] = useState({
@@ -24,6 +26,7 @@ const RegisterScreen = () => {
     const navigation = useNavigation();
     const recaptchaVerifier = useRef(null);
     const [verificationId, setVerificationId] = useState('');
+    const user = useSelector(selectAuthState);
 
     const handleNextStep = () => {
         if (step === 2 && !form.otp) {
@@ -94,6 +97,12 @@ const RegisterScreen = () => {
             alert("Mã OTP không hợp lệ, vui lòng thử lại.");
         }
     }
+
+    useEffect(() => {
+        if (user.isAuthenticated) {
+            navigation.navigate("Main");
+        }
+    }, [user.isAuthenticated, navigation]);    
 
     return (
         <ScrollView className={registerClassStyle.container}>

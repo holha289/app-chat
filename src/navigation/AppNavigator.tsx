@@ -7,7 +7,7 @@ import { TabNavigatorType } from "../types/navigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { navigationRef } from "./RootNavigation";
 const Stack = createStackNavigator();
-
+// contact
 const AppNavigator = () => {
   return (
     <SafeAreaProvider>

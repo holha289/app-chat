@@ -13,10 +13,11 @@ import TabRoutes from "./tab.router";
 import SearchScreen from "@app/screens/SearchScreen";
 import ChatRoomScreen from "@app/screens/messages/ChatRoomScreen";
 import InfoScreen from "@app/screens/InfoScreen";
+import ProfileEditScreen from "@app/screens/ProfileEditScreen";
 
 const routers: RouterType = {
   navigatorOptions: {
-    initialRouteName: "InfoScreen",
+    initialRouteName: "Main",
   },
   screens: [
     {
@@ -53,6 +54,12 @@ const routers: RouterType = {
       name: "InfoScreen",
       component: InfoScreen,
       options: { headerShown: false },
+    },
+
+    {
+      name: "ProfileEdit",
+      component: ProfileEditScreen,
+      options: { headerShown: true, title: "Chỉnh sửa hồ sơ" },
     },
 
     {
