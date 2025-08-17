@@ -1,5 +1,7 @@
 import { authReducer, counterReducer } from '@app/features'
 import { AuthListenerMiddleware } from '@app/features/auth/auth.middleware';
+import { MsgListenerMiddleware } from '@app/features/message';
+import msgReducer from '@app/features/message/msg.reducer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { createListenerMiddleware, TypedStartListening } from "@reduxjs/toolkit";
@@ -10,12 +12,13 @@ const listenerMiddleware = createListenerMiddleware();
 const rootReducer = combineReducers({
   auth: authReducer,
   counter: counterReducer,
+  msg: msgReducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage, // lưu trữ vào AsyncStorage
-  whitelist: ['auth'],  // chỉ định slice muốn lưu
+  whitelist: ['auth', 'msg'],  // chỉ định slice muốn lưu
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -37,6 +40,7 @@ export default listenerMiddleware;
 
 export const registerAllListeners = () => {
   AuthListenerMiddleware(); // Gọi ở đây, sau khi store đã tạo
+  MsgListenerMiddleware();
 };
 
 export const persistor = persistStore(store);

@@ -122,7 +122,7 @@ const InfoScreen = () => {
       {/* Header */}
       <View className="absolute top-4 left-0 right-0 z-10 flex-row items-center justify-between p-4 mt-1">
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate("Main")}
           className="p-2 bg-black/30 rounded-full"
         >
           <Ionicons name="arrow-back" size={24} color="#000" />

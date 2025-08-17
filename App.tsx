@@ -10,7 +10,6 @@ import { PersistGate } from "redux-persist/lib/integration/react";
 import { selectAuthAccessToken } from "@app/features";
 import { getSocket, initSocket } from "@app/core/socketIo";
 import { requestPermission } from "@app/core/permissions";
-import { API_URL } from "@env";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";

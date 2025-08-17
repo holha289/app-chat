@@ -1,7 +1,7 @@
+import { API_URL } from "@app/config";
 import { RootState, store } from "@app/store";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import { useSelector } from "react-redux";
-import { API_URL } from "@env";
 class ApiService {
   private static instance: ApiService;
   private axiosInstance: AxiosInstance;

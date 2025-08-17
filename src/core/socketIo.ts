@@ -1,4 +1,4 @@
-import { API_URL } from "@env";
+import { API_URL } from "@app/config";
 import { io, Socket } from "socket.io-client";
 
 // Đổi thành domain backend của bạn
