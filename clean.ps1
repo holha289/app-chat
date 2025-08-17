@@ -1,85 +1,94 @@
-# #!/bin/bash
+param(
+  [switch]$DeepClean
+)
 
-# echo "🧹 Đang dọn dẹp dự án React Native Android..."
+$ErrorActionPreference = 'Stop'
 
-# # Xóa thư mục build
-# Remove-Item -Recurse -Force android/app/build
-# Remove-Item -Recurse -Force android/.gradle
-# Remove-Item -Recurse -Force .gradle
-# Remove-Item -Recurse -Force node_modules
-# Remove-Item -Recurse -Force .expo
-# Remove-Item -Recurse -Force .expo-shared
+function Stop-IfRunning($name) {
+  Get-Process $name -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+}
 
-# # Xóa cache hệ thống Gradle (chỉ khi muốn thật sạch)
-# echo "📦 Xóa cache hệ thống Gradle (~/.gradle/caches)..."
-# Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches" -ErrorAction SilentlyContinue
+function SafeRemove($path) {
+  if (Test-Path $path) {
+    Write-Host "Remove: $path"
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $path
+  }
+}
 
-# # Xóa lock file nếu cần
-# Remove-Item -Force yarn.lock package-lock.json
+Write-Host "Start reset for React Native & Gradle..."
 
-# # Cài lại package
-# echo "📦 Cài lại dependencies..."
-# npm install
+# 1) Kill processes
+Write-Host "Kill node.exe & java.exe if any..."
+Stop-IfRunning node
+Stop-IfRunning java
 
-# # Clean gradle
-# cd android
-# ./gradlew clean --no-daemon
-# cd ..
+# 2) Clean Android build & Gradle
+$androidGradle   = Join-Path -Path "android" -ChildPath ".gradle"
+$androidAppBuild = Join-Path -Path "android\app" -ChildPath "build"
+$gradleUserCache = Join-Path -Path $env:USERPROFILE -ChildPath ".gradle\caches"
 
-# # Build lại app
-# echo "🚀 Build lại app Android..."
-# npx react-native run-android
+Write-Host "Clean Android build..."
+SafeRemove $androidAppBuild
+SafeRemove $androidGradle
 
-# echo "✅ Hoàn tất!"
-# reset-react-native.ps1
-
-Write-Host "🚀 Bắt đầu reset môi trường React Native & Gradle..." -ForegroundColor Cyan
-
-# 1. Kill tất cả tiến trình Gradle và Node
-Write-Host "🧨 Kill node.exe & java.exe nếu còn sống..."
-Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
-Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force
-
-# 2. Xoá toàn bộ cache Gradle và thư mục build Android
-$gradleUserCache = "$env:USERPROFILE\.gradle"
-$androidGradle = "android\.gradle"
-$androidAppBuild = "android\app\build"
-
-Write-Host "🧹 Xoá cache Gradle và thư mục build..."
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$gradleUserCache"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$androidGradle"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$androidAppBuild"
-
-# 3. Xoá node_modules, lock files và thư mục .expo nếu có
-Write-Host "🧼 Dọn node_modules, .expo, lock files..."
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "node_modules"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue ".expo"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue ".expo-shared"
-Remove-Item -Force -ErrorAction SilentlyContinue "package-lock.json"
-Remove-Item -Force -ErrorAction SilentlyContinue "yarn.lock"
-
-# 4. Cài lại npm packages
-Write-Host "📦 Cài lại npm packages..."
-npm install
-
-# 5. Tùy chọn: dùng Expo prebuild nếu có app.json
-if (Test-Path "./app.json") {
-    Write-Host "🔧 Phát hiện app.json → chạy expo prebuild --clean"
-    npx expo prebuild --clean --no-install
+if ($DeepClean) {
+  Write-Host "Deep clean Gradle user cache (~/.gradle/caches)..."
+  SafeRemove $gradleUserCache
 } else {
-    Write-Host "⚠️ Không phát hiện app.json → bỏ qua bước prebuild"
+  Write-Host "Skip ~/.gradle/caches (pass -DeepClean to remove)"
 }
 
-# 6. Dọn cache Metro bundler
-Write-Host "🧠 Reset cache Metro bundler..."
-Start-Process -NoNewWindow -FilePath "npx" -ArgumentList "react-native", "start", "--reset-cache" -PassThru | ForEach-Object {
-    Start-Sleep -Seconds 5
-    $_.Kill()
+# 3) Clean node_modules, .expo, locks
+Write-Host "Clean node_modules, .expo, lock files..."
+SafeRemove "node_modules"
+SafeRemove ".expo"
+SafeRemove ".expo-shared"
+if (Test-Path "package-lock.json") { Remove-Item -Force "package-lock.json" -ErrorAction SilentlyContinue }
+if (Test-Path "yarn.lock")        { Remove-Item -Force "yarn.lock"        -ErrorAction SilentlyContinue }
+
+# 4) Reinstall packages
+Write-Host "Install npm packages..."
+if (Test-Path "package-lock.json") {
+  npm ci
+} else {
+  npm install
 }
 
+# 5) Expo prebuild if app.json exists
+if (Test-Path "./app.json") {
+  Write-Host "Found app.json -> expo prebuild --clean --no-install"
+  Start-Process -NoNewWindow -Wait `
+    -FilePath "$env:ComSpec" `
+    -ArgumentList @("/c","npx","expo","prebuild","--clean","--no-install")
+} else {
+  Write-Host "No app.json -> skip prebuild"
+}
 
-# 7. Build lại Android
-Write-Host "📲 Build lại app Android..."
-npx react-native run-android
+# 6) Reset Metro cache
+Write-Host "Reset Metro cache..."
+$metro = Start-Process -PassThru -WindowStyle Hidden `
+  -FilePath "$env:ComSpec" `
+  -ArgumentList @("/c","npx","react-native","start","--reset-cache","--port","8081")
+Start-Sleep -Seconds 5
+if ($metro -and !$metro.HasExited) { $metro.Kill() }
 
-Write-Host "✅ Reset & Build hoàn tất!" -ForegroundColor Green
+# 7) Gradle clean
+Write-Host "Gradle clean..."
+Push-Location android
+try {
+  if (Test-Path ".\gradlew.bat") {
+    .\gradlew.bat clean --no-daemon
+  } else {
+    throw "Missing android\gradlew.bat - open Android project to generate Gradle wrapper."
+  }
+} finally {
+  Pop-Location
+}
+
+# 8) Build Android
+Write-Host "Build Android..."
+Start-Process -NoNewWindow -Wait `
+  -FilePath "$env:ComSpec" `
+  -ArgumentList @("/c","npx","react-native","run-android")
+
+Write-Host "Done!" -ForegroundColor Green
