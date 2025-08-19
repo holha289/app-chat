@@ -39,11 +39,61 @@ class ApiService {
     // Thêm interceptor để xử lý response và error chung
     this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => {
+        // Trả về response.data khi thành công
         return response.data;
       },
       (error: AxiosError) => {
-        // Xử lý lỗi chung ở đây (như refresh token, lỗi mạng, ...)
-        return Promise.reject(error);
+        // Tạo error object với thông tin chi tiết
+        const customError = {
+          message: "Có lỗi xảy ra",
+          status: error.response?.status,
+          data: error.response?.data,
+          isAxiosError: true,
+          response: error.response
+        };
+
+        // Nếu có response từ server
+        if (error.response) {
+          const errorData = error.response.data as any;
+          
+          // Ưu tiên lấy message từ server
+          if (errorData?.message) {
+            customError.message = errorData.message;
+          } else if (errorData?.error) {
+            customError.message = errorData.error;
+          } else if (errorData?.details) {
+            customError.message = errorData.details;
+          } else {
+            // Fallback dựa trên status code
+            switch (error.response.status) {
+              case 400:
+                customError.message = "Yêu cầu không hợp lệ";
+                break;
+              case 401:
+                customError.message = "Không có quyền truy cập";
+                break;
+              case 403:
+                customError.message = "Bị từ chối truy cập";
+                break;
+              case 404:
+                customError.message = "Không tìm thấy";
+                break;
+              case 500:
+                customError.message = "Lỗi máy chủ";
+                break;
+              default:
+                customError.message = `Lỗi ${error.response.status}`;
+            }
+          }
+        } else if (error.request) {
+          // Lỗi mạng
+          customError.message = "Không thể kết nối đến server";
+        } else {
+          // Lỗi khác
+          customError.message = error.message || "Có lỗi xảy ra";
+        }
+
+        return Promise.reject(customError);
       }
     );
   }

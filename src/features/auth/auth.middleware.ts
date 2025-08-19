@@ -33,7 +33,8 @@ const LoginListener = () => {
             ...response.metadata.tokens,
             fcmToken: fcmToken || null
           } as AuthState['tokens'],
-          user: response.metadata.user as AuthState['user']
+          user: response.metadata.user as AuthState['user'],
+          isAuthenticated: true
         }));
         if (fcmToken) {
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
@@ -58,6 +59,7 @@ export const registerAuthListener = () => {
         listenerApi.dispatch(authActions.registerSuccess({
           tokens: response.metadata.tokens as AuthState['tokens'],
           user: response.metadata.user as AuthState['user'],
+          isAuthenticated: true
         }));
         if (fcmToken) {
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
@@ -102,7 +104,6 @@ export const updateProfileListener = () => {
   startAppListening({
     actionCreator: authActions.updateProfile,
     effect: async (action, listenerApi) => {
-      console.log("Update profile action received:", action.payload);
       try {
         const payload = action.payload;
         const response = await apiService.patch<ApiResponse<AuthState['user']>>("/profile/update", payload);

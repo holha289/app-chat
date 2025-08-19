@@ -122,7 +122,11 @@ const ProfileScreen = () => {
           </View>
           <View className="mb-4">
              <Select
-                options={["male", "female", "other"]}
+                options={[
+                  { value: "male", label: "Nam" },
+                  { value: "female", label: "Nữ" },
+                  { value: "other", label: "Khác" }
+                ]}
                 value={form.gender}
                 onChange={(value) => setForm({ ...form, gender: value })}
                 placeholder="Chọn giới tính"

@@ -53,7 +53,7 @@ const routers: RouterType = {
     {
       name: "InfoScreen",
       component: InfoScreen,
-      options: { headerShown: false },
+      options: { headerShown: true, title: "Thông tin" }, // Thêm title cho InfoScreen
     },
 
     {

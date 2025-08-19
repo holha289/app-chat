@@ -17,11 +17,11 @@ const AUTH_ACTIONS_TYPE = {
 
 const authActions = {
     login: createAction<LoginPayload>(AUTH_ACTIONS_TYPE.LOGIN),
-    loginSuccess: createAction<{ tokens: tokensType, user: userType }>(AUTH_ACTIONS_TYPE.LOGIN_SUCCESS),
+    loginSuccess: createAction<{ tokens: tokensType, user: userType, isAuthenticated: boolean }>(AUTH_ACTIONS_TYPE.LOGIN_SUCCESS),
     loginFailed: createAction<string>(AUTH_ACTIONS_TYPE.LOGIN_FAILED),
     logout: createAction(AUTH_ACTIONS_TYPE.LOGOUT),
     register: createAction<RegisterPayload>(AUTH_ACTIONS_TYPE.REGISTER),
-    registerSuccess: createAction<{ tokens: tokensType, user: userType }>(AUTH_ACTIONS_TYPE.REGISTER_SUCCESS),
+    registerSuccess: createAction<{ tokens: tokensType, user: userType, isAuthenticated: boolean }>(AUTH_ACTIONS_TYPE.REGISTER_SUCCESS),
     registerFailed: createAction<string>(AUTH_ACTIONS_TYPE.REGISTER_FAILED),
     setFcmToken: createAction<string>(AUTH_ACTIONS_TYPE.SET_FCM_TOKEN),
     clearFcmToken: createAction(AUTH_ACTIONS_TYPE.CLEAR_FCM_TOKEN),

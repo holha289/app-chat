@@ -23,7 +23,6 @@ const ProfileScreen = () => {
   const handleLogout = () => {
     // Xử lý đăng xuất
     dispatch(authActions.logout());
-    navigation.navigate("Login");
   };
   return (
     <SafeAreaView className={ProfileClassStyle.container}>

@@ -1,11 +1,11 @@
-import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { use, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Input from "@app/components/Input";
 import { loginClassStyle } from "@app/styles/login.style";
 import { classBtn } from "@app/styles/main.style";
 import authActions from "@app/features/auth/auth.action";
-import { selectAuthMessage, selectAuthLoading, selectAuthState, selectAuthError } from "@app/features";
+import { selectAuthLoading, selectAuthError } from "@app/features";
 import { useSelector, useDispatch } from "react-redux";
 import clsx from "clsx";
 import LoadingOverlay from "@app/components/LoadingOverlay";
@@ -17,7 +17,6 @@ const LoginScreen = () => {
     });
     const navigation = useNavigation();
     const dispatch = useDispatch();
-    const user = useSelector(selectAuthState);
     const errorLogin = useSelector(selectAuthError);
     const isLoading: boolean = useSelector(selectAuthLoading);
 
@@ -30,10 +29,10 @@ const LoginScreen = () => {
     };
 
     useEffect(() => {
-        if (user.isAuthenticated) {
-            navigation.navigate("Main");
+        if (errorLogin) {
+            Alert.alert("Đăng nhập thất bại", errorLogin);
         }
-    }, [user.isAuthenticated, navigation]);
+    }, [errorLogin]);
 
     return (
         <ScrollView className="flex-1 bg-white">
@@ -71,11 +70,6 @@ const LoginScreen = () => {
                             height={50}
                         />
                     </View>
-                    {errorLogin && (
-                        <Text className="text-red-500 text-sm mt-2">
-                            {errorLogin}
-                        </Text>
-                    )}
                     <TouchableOpacity className={loginClassStyle.forgotPassword}>
                         <Text className="font-bold text-base text-blue-600">
                            Quên mật khẩu?

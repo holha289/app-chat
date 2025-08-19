@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import routers from "../routers/index.router";
@@ -6,9 +6,19 @@ import TabNavigator from "./TabNavigator";
 import { TabNavigatorType } from "../types/navigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { navigationRef } from "./RootNavigation";
+import { selectIsAuthenticated } from "@app/features/auth/auth.selectors";
+import { useSelector } from "react-redux";
 const Stack = createStackNavigator();
 // contact
 const AppNavigator = () => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigationRef.current?.navigate("Login");
+    } else {
+      navigationRef.current?.navigate("Main");
+    }
+  }, [isAuthenticated]);
   return (
     <SafeAreaProvider>
       <NavigationContainer ref={navigationRef}>
