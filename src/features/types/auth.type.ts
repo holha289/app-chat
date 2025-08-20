@@ -38,3 +38,4 @@ export interface RegisterPayload {
 
 export type tokensType = AuthState['tokens'];
 export type userType = AuthState['user'];
+ 
