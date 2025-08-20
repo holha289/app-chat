@@ -83,7 +83,7 @@ export default function ChatListScreen() {
 
       <FlatList
         data={conversations}
-        keyExtractor={(item) => item.id.toFixed()}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         refreshing={refreshing}

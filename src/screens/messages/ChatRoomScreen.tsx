@@ -8,6 +8,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { classText, colors } from "@app/styles/main.style";
@@ -33,18 +34,19 @@ const ChatRoomScreen = () => {
   const route = useRoute();
   const param = route.params;
   const userInfo = useSelector(selectUser);
+  console.log(userInfo?.id);
   const [inputText, setInputText] = useState("");
-  const conversations = useSelector(selectMessage)[param.id] ?? []; // 🔥 lấy trực tiếp từ store
-  const messages = conversations.items;
+  const conversations = useSelector(selectMessage); // 🔥 lấy trực tiếp từ store
+  const messages = conversations[param.id].items;
   const status = useSelector(selectMsgStatus); // để biết đang loading
 
-  const refreshing = status === "pending";
+  // const refreshing = status === "pending";
 
   const onRefresh = useCallback(() => {
     dispatch(
       msgActions.getMsgByRoom({
         roomId: param.id,
-        cursor: conversations.nextCursor,
+        cursor: null,
       }),
     ); // thunk/saga sẽ cập nhật store
   }, [dispatch]);
@@ -55,22 +57,22 @@ const ChatRoomScreen = () => {
   const renderItem = ({ item }: any) => (
     <View
       className={`flex-row my-2 ${
-        item.senderId === userInfo?.id ? "justify-end" : "justify-start"
+        item.sender.id == userInfo?.id ? "justify-end" : "justify-start"
       }`}
     >
       <View
         className={`max-w-[70%] px-4 py-2 rounded-xl ${
-          item.senderId === userInfo?.id
+          item.sender.id == userInfo?.id
             ? "bg-blue-500 rounded-br-none"
             : "bg-gray-200 rounded-bl-none"
         }`}
       >
         <Text
           className={`text-base ${
-            item.fromMe ? "text-white" : "text-gray-900"
+            item.sender.id == userInfo?.id ? "text-white" : "text-gray-900"
           }`}
         >
-          {item.text}
+          {item.content}
         </Text>
       </View>
     </View>
@@ -111,9 +113,14 @@ const ChatRoomScreen = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         className="px-4 flex-1"
-        // inverted // đảo ngược tin nhắn để nhắn mới hiện ở dưới
-        refreshing={refreshing}
-        onRefresh={onRefresh}
+        inverted // đảo ngược tin nhắn để nhắn mới hiện ở dưới
+        // refreshing={refreshing}
+        // refreshControl={}
+        // onRefresh={onRefresh}
+        // contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-end" }} // khoảng cách dưới cùng
+        onEndReached={onRefresh}
+        ListFooterComponent={<ActivityIndicator />}
+        ListFooterComponentStyle={{ flexGrow: 1, paddingTop: 20 }}
       />
 
       {/* Input */}

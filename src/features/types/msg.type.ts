@@ -1,27 +1,37 @@
 import { StateCore } from "@app/features/types";
 
-export interface MsgState extends StateCore {
-  rooms: Array<{
-    is_read: boolean;
-    id: number;
-    type: "private" | "group";
-    last_message: {};
-    name: string;
-    avatar: string;
-  }>;
-  messages:  Record<string, MessagePage>;
+export interface Room {
+  is_read: boolean;
+  id: string;
+  type: "private" | "group";
+  last_message: Record<string, unknown>;
+  name: string;
+  avatar: string;
 }
-export interface MessageItem {
-  id: string;        // nên để string (thường là ObjectId hoặc public id)
-  senderId: string;  // idem
+export type MessageItem = {
+  id: string;        // nên string
+  senderId: string;
   content: string;
-  timestamp: number; // hoặc Date -> number
-}
-export interface MessagePage {
+  timestamp: number;    // ms kể từ epoch
+};
+export type MessagePage = {
   items: MessageItem[];
-  nextCursor: string | null;
+  nextCursor: string | null; // null = hết trang
+};
+
+export type MessagesByRoom = Record<string, MessagePage>;
+export interface MsgState extends StateCore {
+  rooms: Room[];
+  messages: MessagesByRoom;
 }
-export type messageType = MessagePage;
+
+// {messages:{
+// "dsfsf":{
+  
+// }
+// messages[roomId].
+
+
 export type roomTypes= MsgState['rooms']
 export type msgTypes= MsgState['messages']
 

@@ -1,5 +1,5 @@
 import { createAction } from "@reduxjs/toolkit";
-import { messageType, MsgState, msgTypes, roomTypes } from "../types/msg.type";
+import { MessagePage,MsgState, msgTypes, roomTypes } from "../types/msg.type";
 
 const Room_ACTIONS_TYPES = {
   GETROOM: "GET_ROOM",
@@ -19,7 +19,7 @@ const msgActions = {
   getMsgByRoom: createAction<{ roomId: string; cursor: string | null }>(
     Room_ACTIONS_TYPES.GETMSGBYROOM,
   ),
-  getMsgByRoomSuccess: createAction<{ roomId: string; message: messageType }>(
+  getMsgByRoomSuccess: createAction<{ roomId: string; message: MessagePage }>(
     Room_ACTIONS_TYPES.GETMSGBYROOM_SUCCESS,
   ),
   getMsgByRoomFailed: createAction<string>(

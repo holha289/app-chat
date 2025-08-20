@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { createListenerMiddleware, TypedStartListening } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from 'redux-persist';
+// import FileStore from 'metro-cache/src/stores/FileStore';
 // tạo middleware để lắng nghe các action
 const listenerMiddleware = createListenerMiddleware();
 

@@ -1,6 +1,6 @@
 import { startAppListening } from "@app/store";
 import msgActions from "./msg.action";
-import { messageType, MsgState, msgTypes } from "../types/msg.type";
+import { MessagePage,  MsgState,} from "../types/msg.type";
 import { ApiResponse } from "@app/types/response";
 import apiService from "@app/services/api.service";
 import { useSelector } from "react-redux";
@@ -43,11 +43,11 @@ const GetMsgByRoomListener = () => {
         const cursorQuery = cursor ? `&cursor=${cursor}` : "";
         const response = await apiService.get<
           ApiResponse<MsgState["messages"]>
-        >(`/message/rooms/${roomId}?limit=100${cursorQuery}`);
+        >(`/message/rooms/${roomId}?limit=10${cursorQuery}`);
         listenerApi.dispatch(
           msgActions.getMsgByRoomSuccess({
             roomId,
-            message: response.metadata[roomId] as messageType,
+            message: response.metadata as unknown as MessagePage,
           }),
         );
       } catch (error) {
