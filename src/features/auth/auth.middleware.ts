@@ -1,4 +1,4 @@
-import { getFCMToken } from "@app/core/firebase";
+import { deleteFCMToken, getFCMToken } from "@app/core/firebase";
 import { AuthState, LoginPayload } from "../types/auth.type";
 import authActions from "./auth.action";
 import apiService from "@app/services/api.service";
@@ -13,6 +13,7 @@ export const AuthListenerMiddleware = () => {
   registerAuthListener();
   logoutAuthListener();
   setFcmTokenListener();
+  updateProfileListener();
 };
 
 
@@ -32,7 +33,8 @@ const LoginListener = () => {
             ...response.metadata.tokens,
             fcmToken: fcmToken || null
           } as AuthState['tokens'],
-          user: response.metadata.user as AuthState['user']
+          user: response.metadata.user as AuthState['user'],
+          isAuthenticated: true
         }));
         if (fcmToken) {
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
@@ -57,6 +59,7 @@ export const registerAuthListener = () => {
         listenerApi.dispatch(authActions.registerSuccess({
           tokens: response.metadata.tokens as AuthState['tokens'],
           user: response.metadata.user as AuthState['user'],
+          isAuthenticated: true
         }));
         if (fcmToken) {
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
@@ -88,11 +91,32 @@ export const setFcmTokenListener = () => {
 export const logoutAuthListener = () => {
   startAppListening({
     actionCreator: authActions.logout,
-    effect: (action, listenerApi) => {
-      listenerApi.dispatch(authActions.logout());
+    effect: async (action, listenerApi) => {
+      await deleteFCMToken();
+      // listenerApi.dispatch(authActions.logout());
     },
   });
 };
 
 
+
+export const updateProfileListener = () => {
+  startAppListening({
+    actionCreator: authActions.updateProfile,
+    effect: async (action, listenerApi) => {
+      try {
+        const payload = action.payload;
+        const response = await apiService.patch<ApiResponse<AuthState['user']>>("/profile/update", payload);
+        listenerApi.dispatch(authActions.updateProfileSuccess({
+          user: response.metadata as AuthState['user'],
+        }));
+        payload.callback();
+      } catch (error) {
+        console.error("Update profile failed:", error);
+        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
+        listenerApi.dispatch(authActions.updateProfileFailed(errorMessage));
+      }
+    }
+  })
+}
 

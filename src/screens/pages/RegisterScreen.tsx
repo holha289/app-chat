@@ -93,7 +93,7 @@ const RegisterScreen = () => {
             console.error("Lỗi xác thực mã OTP:", error);
             alert("Mã OTP không hợp lệ, vui lòng thử lại.");
         }
-    }
+    } 
 
     return (
         <ScrollView className={registerClassStyle.container}>

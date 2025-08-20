@@ -1,18 +1,15 @@
 import React, { useEffect } from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { StatusBar } from "expo-status-bar";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { persistor, store } from "./src/store";
 import "./global.css";
 import { initializeFirebase } from "@app/core/firebase";
 import { registerAllListeners } from "@app/store";
 import { PersistGate } from "redux-persist/lib/integration/react";
-import { selectAuthAccessToken } from "@app/features";
-import { getSocket, initSocket } from "@app/core/socketIo";
 import { requestPermission } from "@app/core/permissions";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { NavigationContainer } from "@react-navigation/native";
 import { useSockerIo } from "@app/hooks/use-socketio";
 export default function App() {
   useEffect(() => {
@@ -43,8 +40,6 @@ export default function App() {
     };
 
     initApp();
-
-
     // initSocket();
   }, []);
 
