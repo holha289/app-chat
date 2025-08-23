@@ -43,7 +43,7 @@ const routers: RouterType = {
     {
       name: "Search",
       component: SearchScreen,
-      options: { headerShown: false },
+      options: {},
     },
     {
       name: "ChatRoom",
