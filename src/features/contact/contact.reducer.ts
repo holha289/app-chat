@@ -13,8 +13,6 @@ const ContactReducer = createReducer(contactState, (builder) => {
             // Add to friends list
             state.friends.push(userAccept as any);
         }
-        console.log('user id', action.payload)
-        console.log("Updated state:", JSON.parse(JSON.stringify(state)));
         return state;
     });
     builder.addCase(ContactActions.removeFromSearchResults, (state, action) => {

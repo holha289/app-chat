@@ -78,7 +78,6 @@ const searchUserByPhoneNumber = () => {
         actionCreator: ContactActions.searchContact,
         effect: async (action, api) => {
             try {
-                console.log("Searching for phone:", action.payload.phone);
                 const response = await apiService.get<ApiResponse<ContactState['friends']>>("/profile/find-user-by-phone", {
                    phone: action.payload.phone,
                     type: "all"

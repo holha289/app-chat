@@ -2,13 +2,12 @@ import { API_URL } from "@app/config";
 import authActions from "@app/features/auth/auth.action";
 import { RootState, store } from "@app/store";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
-import { useSelector } from "react-redux";
 class ApiService {
   private static instance: ApiService;
   private axiosInstance: AxiosInstance;
   private constructor() {
     this.axiosInstance = axios.create({
-      baseURL: `http://10.0.2.2:3000/api`, // Thay đổi baseURL theo nhu cầu
+      baseURL: `${API_URL}/api`, // Thay đổi baseURL theo nhu cầu
       timeout: 10000,
       headers: { "Content-Type": "application/json" },
     });
@@ -30,7 +29,6 @@ class ApiService {
         } else {
           config.headers["Content-Type"] = "application/json";
         }
-        console.log('CALL API:', config.baseURL, config.url);
         return config;
       },
       (error) => {
@@ -41,8 +39,6 @@ class ApiService {
     // Thêm interceptor để xử lý response và error chung
     this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => {
-        // Trả về response.data khi thành công
-        console.log('API RESPONSE:', response);
         return response.data;
       },
       (error: AxiosError) => {
@@ -107,8 +103,6 @@ class ApiService {
               store.dispatch(authActions.logout());
            }
         }
-
-         console.error('API ERROR:', customError);
 
         return Promise.reject(customError);
       }
