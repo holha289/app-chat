@@ -10,9 +10,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { createListenerMiddleware, TypedStartListening } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from 'redux-persist';
+ import Reactotron from '../../ReactotronConfig.ts'
 // import FileStore from 'metro-cache/src/stores/FileStore';
 // tạo middleware để lắng nghe các action
 const listenerMiddleware = createListenerMiddleware();
+
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -36,6 +38,8 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
     }).prepend(listenerMiddleware.middleware),
+  enhancers: (getDefaultEnhancers) =>
+    getDefaultEnhancers().concat(Reactotron.createEnhancer!()),
 })
 
 export type RootState = ReturnType<typeof store.getState>
