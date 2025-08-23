@@ -7,6 +7,8 @@ interface InputGroupProps extends TextInputProps {
   suffix?: React.ReactNode; // icon hoặc text cuối
   rounded?: number;
   height?: number;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
 }
 
 const InputGroup: React.FC<InputGroupProps> = ({
@@ -14,6 +16,8 @@ const InputGroup: React.FC<InputGroupProps> = ({
   suffix,
   rounded = 8,
   height = 48,
+  iconLeft,
+  iconRight,
   ...props
 }) => {
   return (
@@ -25,6 +29,11 @@ const InputGroup: React.FC<InputGroupProps> = ({
           ) : (
             prefix
           )}
+        </View>
+      )}
+      {iconLeft && (
+        <View className={InputGroupClassStyle.iconContainer}>
+          {iconLeft}
         </View>
       )}
       <TextInput
@@ -39,6 +48,11 @@ const InputGroup: React.FC<InputGroupProps> = ({
           ) : (
             suffix
           )}
+        </View>
+      )}
+      {iconRight && (
+        <View className={InputGroupClassStyle.iconContainer}>
+          {iconRight}
         </View>
       )}
     </View>

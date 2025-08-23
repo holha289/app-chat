@@ -5,6 +5,7 @@ export interface ContactState extends StateCore {
   groups: Groups[];
   blocked: Blocked[];
   pending: Pending[];
+  searchResults: Friends[];
 }
 
 
@@ -33,6 +34,7 @@ export interface Blocked {
 
 export interface Pending {
     id: number;
-    name: string;
+    fullname: string;
+    phone: string;
     avatar: string;
 }

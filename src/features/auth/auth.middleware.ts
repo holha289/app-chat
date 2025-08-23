@@ -4,6 +4,7 @@ import authActions from "./auth.action";
 import apiService from "@app/services/api.service";
 import { startAppListening } from "@app/store";
 import { ApiResponse } from "@app/types/response";
+import { useErrorResponse } from "@app/hooks/use-error";
 
 /**
  *  call api mới dùng ListenerMiddleware
@@ -41,8 +42,7 @@ const LoginListener = () => {
         }
       } catch (error) {
         console.error("Login failed:", error);
-        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
-        listenerApi.dispatch(authActions.loginFailed(errorMessage));
+        listenerApi.dispatch(authActions.loginFailed(useErrorResponse(error)));
       }
     },
   });
@@ -66,8 +66,7 @@ export const registerAuthListener = () => {
         }
       } catch (error) {
         console.error("Registration failed:", error);
-        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
-        listenerApi.dispatch(authActions.registerFailed(errorMessage));
+        listenerApi.dispatch(authActions.registerFailed(useErrorResponse(error)));
       }
     },
   });
@@ -113,8 +112,7 @@ export const updateProfileListener = () => {
         payload.callback();
       } catch (error) {
         console.error("Update profile failed:", error);
-        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
-        listenerApi.dispatch(authActions.updateProfileFailed(errorMessage));
+        listenerApi.dispatch(authActions.updateProfileFailed(useErrorResponse(error)));
       }
     }
   })

@@ -1,4 +1,5 @@
 import { API_URL } from "@app/config";
+import authActions from "@app/features/auth/auth.action";
 import { RootState, store } from "@app/store";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 import { useSelector } from "react-redux";
@@ -7,7 +8,7 @@ class ApiService {
   private axiosInstance: AxiosInstance;
   private constructor() {
     this.axiosInstance = axios.create({
-      baseURL: `${API_URL}/api`, // Thay đổi baseURL theo nhu cầu
+      baseURL: `http://10.0.2.2:3000/api`, // Thay đổi baseURL theo nhu cầu
       timeout: 10000,
       headers: { "Content-Type": "application/json" },
     });
@@ -29,6 +30,7 @@ class ApiService {
         } else {
           config.headers["Content-Type"] = "application/json";
         }
+        console.log('CALL API:', config.baseURL, config.url);
         return config;
       },
       (error) => {
@@ -40,6 +42,7 @@ class ApiService {
     this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => {
         // Trả về response.data khi thành công
+        console.log('API RESPONSE:', response);
         return response.data;
       },
       (error: AxiosError) => {
@@ -93,6 +96,20 @@ class ApiService {
           customError.message = error.message || "Có lỗi xảy ra";
         }
 
+        if (customError.status === 401) {
+           const state: RootState = store.getState();
+           const refreshToken = state.auth.tokens?.refreshToken;
+           if (refreshToken) {
+              // TODO: Gọi API refresh token
+               store.dispatch(authActions.logout());
+           } else {
+              // Không có refresh token, dispatch logout action
+              store.dispatch(authActions.logout());
+           }
+        }
+
+         console.error('API ERROR:', customError);
+
         return Promise.reject(customError);
       }
     );
@@ -105,10 +122,13 @@ class ApiService {
     }
     return ApiService.instance;
   }
+
   private getAccessToken(): string | null {
     const state: RootState = store.getState();
     return state.auth.tokens?.accessToken || null;
   }
+   
+
   public getAxiosInstance(): AxiosInstance {
     return this.axiosInstance;
   }
@@ -121,15 +141,15 @@ class ApiService {
     return await this.axiosInstance.get(url, { params });
   }
 
-  public async post<T>(url: string, data: Record<string, any>): Promise<T> {
+  public async post<T>(url: string, data?: Record<string, any>): Promise<T> {
     return await this.axiosInstance.post(url, data);
   }
 
-  public async put<T>(url: string, data: Record<string, any>): Promise<T> {
+  public async put<T>(url: string, data?: Record<string, any>): Promise<T> {
     return await this.axiosInstance.put(url, data);
   }
 
-  public async patch<T>(url: string, data: Record<string, any>): Promise<T> {
+  public async patch<T>(url: string, data?: Record<string, any>): Promise<T> {
     return await this.axiosInstance.patch(url, data);
   }
 

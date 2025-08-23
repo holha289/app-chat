@@ -62,7 +62,7 @@ export default function ChatListScreen() {
   );
 
   return (
-    <View className="flex-1 bg-gray-50 pt-16 px-4">
+    <View className="flex-1 bg-gray-50 px-4">
       <View className="flex-row justify-between items-center  mb-4">
         <Text className="text-3xl font-extrabold text-blue-600">WChat</Text>
         <View className="flex-row items-center space-x-2">
