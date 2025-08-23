@@ -1,5 +1,6 @@
 // env.d.ts
 declare module '@env' {
-  export const API_URL: string;
-  export const APP_ENV: string;
+  export const NODE_ENV: 'local' | 'prod';
+  export const LOCAL_API_URL: string;
+  export const PRODUCT_API_URL: string;
 }

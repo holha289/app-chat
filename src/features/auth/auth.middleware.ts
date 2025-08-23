@@ -1,9 +1,10 @@
-import { getFCMToken } from "@app/core/firebase";
+import { deleteFCMToken, getFCMToken } from "@app/core/firebase";
 import { AuthState, LoginPayload } from "../types/auth.type";
 import authActions from "./auth.action";
 import apiService from "@app/services/api.service";
 import { startAppListening } from "@app/store";
 import { ApiResponse } from "@app/types/response";
+import { useErrorResponse } from "@app/hooks/use-error";
 
 /**
  *  call api mới dùng ListenerMiddleware
@@ -13,6 +14,7 @@ export const AuthListenerMiddleware = () => {
   registerAuthListener();
   logoutAuthListener();
   setFcmTokenListener();
+  updateProfileListener();
 };
 
 
@@ -27,22 +29,20 @@ const LoginListener = () => {
           username: payload.phone,
           password: payload.password
         });
-        listenerApi.dispatch(authActions.loginSuccess({ 
+        listenerApi.dispatch(authActions.loginSuccess({
           tokens: {
             ...response.metadata.tokens,
             fcmToken: fcmToken || null
           } as AuthState['tokens'],
-          user: response.metadata.user as AuthState['user']
+          user: response.metadata.user as AuthState['user'],
+          isAuthenticated: true
         }));
-        
         if (fcmToken) {
-          console.log("fcmToken", fcmToken);
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
         }
       } catch (error) {
         console.error("Login failed:", error);
-        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
-        listenerApi.dispatch(authActions.loginFailed(errorMessage));
+        listenerApi.dispatch(authActions.loginFailed(useErrorResponse(error)));
       }
     },
   });
@@ -54,15 +54,19 @@ export const registerAuthListener = () => {
     effect: async (action, listenerApi) => {
       try {
         const payload = action.payload;
+        const fcmToken = await getFCMToken();
         const response = await apiService.post<ApiResponse<AuthState>>("/auth/register", payload);
-        listenerApi.dispatch(authActions.registerSuccess({ 
+        listenerApi.dispatch(authActions.registerSuccess({
           tokens: response.metadata.tokens as AuthState['tokens'],
-          user: response.metadata.user as AuthState['user']
+          user: response.metadata.user as AuthState['user'],
+          isAuthenticated: true
         }));
+        if (fcmToken) {
+          listenerApi.dispatch(authActions.setFcmToken(fcmToken));
+        }
       } catch (error) {
         console.error("Registration failed:", error);
-        const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error);
-        listenerApi.dispatch(authActions.registerFailed(errorMessage));
+        listenerApi.dispatch(authActions.registerFailed(useErrorResponse(error)));
       }
     },
   });
@@ -86,11 +90,31 @@ export const setFcmTokenListener = () => {
 export const logoutAuthListener = () => {
   startAppListening({
     actionCreator: authActions.logout,
-    effect: (action, listenerApi) => {
-      listenerApi.dispatch(authActions.logout());
+    effect: async (action, listenerApi) => {
+      await deleteFCMToken();
+      // listenerApi.dispatch(authActions.logout());
     },
   });
 };
 
 
+
+export const updateProfileListener = () => {
+  startAppListening({
+    actionCreator: authActions.updateProfile,
+    effect: async (action, listenerApi) => {
+      try {
+        const payload = action.payload;
+        const response = await apiService.patch<ApiResponse<AuthState['user']>>("/profile/update", payload);
+        listenerApi.dispatch(authActions.updateProfileSuccess({
+          user: response.metadata as AuthState['user'],
+        }));
+        payload.callback();
+      } catch (error) {
+        console.error("Update profile failed:", error);
+        listenerApi.dispatch(authActions.updateProfileFailed(useErrorResponse(error)));
+      }
+    }
+  })
+}
 

@@ -5,6 +5,7 @@ export interface AuthState extends StateCore {
         accessToken: string | null;
         refreshToken: string | null;
         fcmToken: string | null;
+        expiresIn: number;
     };
     user: {
         id: number;
@@ -15,7 +16,7 @@ export interface AuthState extends StateCore {
         gender: string;
         slug: string;
         dateOfBirth: string;
-       
+
     } | null;
     isAuthenticated: boolean;
 }
@@ -37,3 +38,4 @@ export interface RegisterPayload {
 
 export type tokensType = AuthState['tokens'];
 export type userType = AuthState['user'];
+ 

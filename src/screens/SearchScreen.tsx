@@ -1,67 +1,75 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   FlatList,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "@app/styles/main.style";
-
-const MOCK_DATA = [
-  { id: "1", name: "Phạm Ánh Sao", avatar: "https://i.pravatar.cc/150?img=1" },
-  { id: "2", name: "Lê Thiên Trí", avatar: "https://i.pravatar.cc/150?img=2" },
-  { id: "3", name: "Nguyễn Văn A", avatar: "https://i.pravatar.cc/150?img=3" },
-  { id: "4", name: "Trần B", avatar: "https://i.pravatar.cc/150?img=4" },
-];
+import HeaderSearch from "@app/components/headers/HeaderSearch";
+import { useDebounce } from "@app/hooks/use-debounce";
+import { useSelector } from "react-redux";
+import { selectListSearchResults } from "@app/features/contact/contact.selectors";
+import { useDispatch } from "react-redux";
+import ContactActions from "@app/features/contact/contact.action";
+import UserActions from "@app/features/user/user.action";
+import SendFriendRequestModal from "@app/components/Modals/SendFriendRequestModal";
 
 const SearchScreen = () => {
   const navigation = useNavigation();
   const [query, setQuery] = useState("");
+  const debouncedText = useDebounce(query, 500);
+  const dispatch = useDispatch();
+  const listUsers = useSelector(selectListSearchResults);
+  const [isSendFriendRequestModalOpen, setIsSendFriendRequestModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
-  const filtered = MOCK_DATA.filter((user) =>
-    user.name.toLowerCase().includes(query.toLowerCase())
-  );
+  useEffect(()=>{
+    dispatch(ContactActions.searchContact({ phone: debouncedText }));
+    navigation.setOptions({
+        header: () => <HeaderSearch navigation={navigation} onchange={handleSearchChange} />
+    });
+  }, [navigation, debouncedText]);
+
+  const handleSearchChange = (text: string) => {
+    setQuery(text);
+  };
 
   const renderItem = ({ item }: any) => (
-    <View className="flex-row items-center px-4 py-3 bg-white mb-2 rounded-xl shadow">
+    <TouchableOpacity onPress={() => {
+      setSelectedUser(item);
+      setIsSendFriendRequestModalOpen(true);
+    }}  className="flex-row items-center px-4 py-3 bg-white mb-3 rounded-[12px] shadow border border-gray-200" >
       <Image
         source={{ uri: item.avatar }}
         className="w-12 h-12 rounded-full mr-4"
       />
       <View className="flex-1">
-        <Text className="text-lg font-semibold">{item.name}</Text>
+        <Text className="text-lg font-semibold">{item.fullname}</Text>
       </View>
       <TouchableOpacity>
         <Ionicons name="person-add" size={24} color={colors.color1} />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <View className="flex-1 bg-gray-100 pt-14 px-4">
-      {/* Header */}
-      <View className="flex-row items-center mb-4">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <TextInput
-          className="ml-3 flex-1 bg-white px-4 py-2 rounded-full shadow"
-          placeholder="Tìm kiếm"
-          value={query}
-          onChangeText={setQuery}
-        />
-      </View>
-
+    <View className="flex-1 bg-gray-100 pt-2 px-4">
       {/* Kết quả */}
       <FlatList
-        data={filtered}
+        data={listUsers}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
+      />
+      <SendFriendRequestModal
+        visible={isSendFriendRequestModalOpen}
+        onClose={() => setIsSendFriendRequestModalOpen(false)}
+        user={selectedUser}
       />
     </View>
   );

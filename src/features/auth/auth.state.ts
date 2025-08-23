@@ -4,7 +4,8 @@ const initialState: AuthState = {
     tokens: {
         accessToken: null,
         refreshToken: null,
-        fcmToken: null
+        fcmToken: null,
+        expiresIn: 0,
     },
     user: {
         id: 0,
@@ -15,7 +16,6 @@ const initialState: AuthState = {
         avatar: '',
         gender: '',
         dateOfBirth: '',
-       
     },
     isAuthenticated: false,
     status: "idle",

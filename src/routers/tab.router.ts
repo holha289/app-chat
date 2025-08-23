@@ -1,6 +1,5 @@
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import HomeScreen from '@app/screens/HomeScreen';
 import ProfileScreen from '@app/screens/ProfileScreen';
 import { TabNavigatorType } from '@app/types/navigator';
 import ContactScreen from '@app/screens/ContactScreen';
@@ -38,7 +37,7 @@ const TabRoutes: TabNavigatorType = {
     }
   ],
   navigatorOptions: {
-    initialRouteName: 'Chats',
+    initialRouteName: 'ContactScreen',
   },
 };
 

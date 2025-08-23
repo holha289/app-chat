@@ -1,45 +1,39 @@
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { Avatar } from "@app/components";
+import { Avatar, LoadingOverlay } from "@app/components";
 import { selectUser } from "@app/features";
 import { store } from "@app/store";
-
-const conversations = [
-  {
-    id: "1",
-    name: "Ánh Sao 😚",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    lastMessage: "Tối đi chơi nhaa?",
-    time: "2 phút trước",
-    unread: true,
-  },
-  {
-    id: "2",
-    name: "Trí đẹp trai",
-    avatar: "https://i.pravatar.cc/150?img=8",
-    lastMessage: "Code xong chưa bro?",
-    time: "1 giờ trước",
-    unread: false,
-  },
-  {
-    id: "3",
-    name: "Dev Team 69",
-    avatar: "https://i.pravatar.cc/150?img=11",
-    lastMessage: "Review PR lẹ đi 😤",
-    time: "Hôm qua",
-    unread: true,
-  },
-];
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import msgActions from "@app/features/message/msg.action";
+import {
+  selectMessage,
+  selectMsgStatus,
+  selectRooms,
+} from "@app/features/message/msg.selectors";
+import { useSelector } from "react-redux";
 
 export default function ChatListScreen() {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
-  const user = selectUser(store.getState());
-  console.log(user?.avatar)
+
+  const conversations = useSelector(selectRooms) ?? []; // 🔥 lấy trực tiếp từ store
+  const status = useSelector(selectMsgStatus); // để biết đang loading
+
+  const refreshing = status === "pending";
+
+  const onRefresh = useCallback(() => {
+    dispatch(msgActions.getRoom()); // thunk/saga sẽ cập nhật store
+  }, [dispatch]);
+
+  useEffect(() => {
+    onRefresh(); // load lần đầu
+  }, [onRefresh]);
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
       className="flex-row items-center bg-white p-4 rounded-2xl mb-3 shadow-sm"
-      onPress={() => navigation.navigate("ChatRoom", { userId: item.id })}
+      onPress={() => navigation.navigate("ChatRoom", item)}
     >
       <Image
         source={{ uri: item.avatar }}
@@ -48,23 +42,27 @@ export default function ChatListScreen() {
       <View className="flex-1">
         <View className="flex-row justify-between mb-1">
           <Text className="font-semibold text-base">{item.name}</Text>
-          <Text className="text-xs text-gray-400">{item.time}</Text>
+          <Text className="text-xs text-gray-400">
+            {item.last_message.createdAt}
+          </Text>
         </View>
         <Text
           numberOfLines={1}
           className={`text-sm ${
-            item.unread ? "font-bold text-black" : "text-gray-500"
+            !item.is_read ? "font-bold text-black" : "text-gray-500"
           }`}
         >
-          {item.lastMessage}
+          {item.last_message.msg_content}
         </Text>
       </View>
-      {item.unread && <View className="w-2 h-2 bg-red-500 rounded-full ml-2" />}
+      {item.is_read && (
+        <View className="w-2 h-2 bg-red-500 rounded-full ml-2" />
+      )}
     </TouchableOpacity>
   );
 
   return (
-    <View className="flex-1 bg-gray-50 pt-16 px-4">
+    <View className="flex-1 bg-gray-50 px-4">
       <View className="flex-row justify-between items-center  mb-4">
         <Text className="text-3xl font-extrabold text-blue-600">WChat</Text>
         <View className="flex-row items-center space-x-2">
@@ -82,16 +80,14 @@ export default function ChatListScreen() {
           <Text className="flex-1 ml-2 text-base py-2">Tìm kiếm</Text>
         </View>
       </TouchableOpacity>
-      {/* <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-3xl font-bold">Tin nhắn</Text>
-        <Ionicons name="create-outline" size={24} color="#3b82f6" />
-      </View> */}
 
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
       />
     </View>
   );
