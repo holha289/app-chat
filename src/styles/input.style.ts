@@ -76,6 +76,7 @@ const InputGroupClassStyle = {
     prefixText: 'text-gray-700',
     suffixContainer: 'flex items-center ml-2',
     suffixText: 'text-gray-700',
+    iconContainer: 'flex items-center mx-2',
 }
 
 export { inputStyles, InputOtpStyles, InputGroupClassStyle };

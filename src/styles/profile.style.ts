@@ -30,7 +30,7 @@ const ProfileStyle = StyleSheet.create({
 });
 
 const ProfileClassStyle = {
-    container: 'flex-1 items-center mt-10 bg-[#f9f9f9] px-4',
+    container: 'flex-1 items-center bg-[#f9f9f9] px-4',
     avatar: 'w-32 h-32 rounded-full object-cover mt-10',
     title: clsx(classFontSize['2xl'], classText.primary, 'font-bold', 'my-4'), 
     actionBtn1: 'mt-6 w-full space-y-3 bg-white py-6 rounded-2xl shadow-lg',
