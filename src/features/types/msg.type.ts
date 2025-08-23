@@ -9,10 +9,13 @@ export interface Room {
   avatar: string;
 }
 export type MessageItem = {
-  id: string;        // nên string
-  senderId: string;
+  id: string; // nên string
+  sender: {};
   content: string;
-  timestamp: number;    // ms kể từ epoch
+  updatedAt: string;
+  createdAt: string;
+  readCount: number;
+  isReadByMe: boolean; // ms kể từ epoch
 };
 export type MessagePage = {
   items: MessageItem[];
@@ -27,11 +30,9 @@ export interface MsgState extends StateCore {
 
 // {messages:{
 // "dsfsf":{
-  
+
 // }
 // messages[roomId].
 
-
-export type roomTypes= MsgState['rooms']
-export type msgTypes= MsgState['messages']
-
+export type roomTypes = MsgState["rooms"];
+export type msgTypes = MsgState["messages"];

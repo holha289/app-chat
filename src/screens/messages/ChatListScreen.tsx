@@ -49,7 +49,7 @@ export default function ChatListScreen() {
         <Text
           numberOfLines={1}
           className={`text-sm ${
-            item.is_read ? "font-bold text-black" : "text-gray-500"
+            !item.is_read ? "font-bold text-black" : "text-gray-500"
           }`}
         >
           {item.last_message.msg_content}
