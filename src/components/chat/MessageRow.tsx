@@ -1,6 +1,8 @@
 import React, { memo } from "react";
 import { View, Text } from "react-native";
 import AvatarMini from "./AvatarMini";
+import clsx from "clsx";
+import { colors } from "@app/styles/main.style";
 
 const AVATAR = (name: string) =>
   `https://ui-avatars.com/api/?background=random&size=64&name=${encodeURIComponent(name || "U")}`;
@@ -21,9 +23,18 @@ const MessageRow = memo(({ item, meId }: Props) => {
       : AVATAR(item?.sender?.fullname || "U");
 
   return (
-    <View className={`relative my-2 flex-row ${isMe ? "justify-end pr-6" : "justify-start pl-6"}`}>
-      <View className={`max-w-[70%] rounded-xl px-4 py-2 ${isMe ? "rounded-br-sm bg-blue-500" : "rounded-bl-sm bg-gray-200"}`}>
-        <Text className={`text-base ${isMe ? "text-white" : "text-gray-900"}`}>{item?.content}</Text>
+    <View className={clsx(
+    "relative my-2 flex-row",
+    isMe ? "justify-end pr-8" : "justify-start pl-8"
+  )}>
+      <View className={clsx(
+        "max-w-[70%] rounded-xl px-4 py-2",
+        isMe ? `rounded-br-sm bg-[${colors.color1}]` : "rounded-bl-sm bg-gray-200"
+      )}>
+        <Text className={clsx(
+          "text-base",
+          isMe ? "text-white" : "text-gray-900"
+        )}>{item?.content}</Text>
       </View>
       <AvatarMini uri={avatarUri} side={isMe ? "right" : "left"} />
     </View>
