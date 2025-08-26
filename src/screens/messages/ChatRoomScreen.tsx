@@ -25,6 +25,7 @@ import { useSockerIo } from "@app/hooks/use-socketio";
 import ChatHeader from "@app/components/chat/ChatHeader";
 import MessageList from "@app/components/chat/MessageList";
 import InputBar from "@app/components/chat/InputBar";
+import { isBefore } from "@app/utils/compare";
 
 type RouteParam = { id: string; name: string; avatar?: string };
 
@@ -42,6 +43,7 @@ const ChatRoomScreen = () => {
 
   const messages = conversations[param.id]?.items ?? [];
   const cursor = conversations[param.id]?.nextCursor ?? null;
+  const lastMsgId = conversations[param.id]?.lastMsgId ?? null;
   const meId = userInfo?.id;
 
   const listRef = useRef<FlatList<any>>(null);
@@ -69,6 +71,12 @@ const ChatRoomScreen = () => {
       const m = payload?.metadata?.message;
       if (!m || !param.id) return;
       dispatch(msgActions.reciverMsg({ roomId: param.id, message: m }));
+      const msg = {
+        msg_id: m?.id,
+        createdAt: m?.createdAt,
+        msg_content: m?.content,
+      };
+      dispatch(msgActions.updateLastMsg({ roomId: param.id, message: msg }));
     },
     [dispatch, param.id],
   );
@@ -76,10 +84,8 @@ const ChatRoomScreen = () => {
   useEffect(() => {
     if (!socket) return;
     socket.on("room:sended:message", socketHandler);
-    socket.on("room:message:received", socketHandler);
     return () => {
       socket.off("room:sended:message", socketHandler);
-      socket.off("room:message:received", socketHandler);
     };
   }, [socket, socketHandler]);
 
@@ -141,10 +147,17 @@ const ChatRoomScreen = () => {
       if (viewableItems && viewableItems.length > 0) {
         // Vì list inverted, item đầu tiên là tin nhắn mới nhất đang hiển thị
         const lastSeenMsg = viewableItems[0].item;
-
+        if (isBefore(lastMsgId || "", lastSeenMsg?.id)) {
+          dispatch(
+            msgActions.readMark({
+              roomId: param.id,
+              lastMsgId: lastSeenMsg.id,
+            }),
+          );
+          console.log("Tin nhắn cuối cùng đã xem:", lastSeenMsg);
+        } // không đánh dấu tin nhắn của mình
         // TODO: Gửi lastSeenMsg.id lên server
         // Ví dụ: dispatch(msgActions.markAsSeen({ roomId: param.id, messageId: lastSeenMsg.id }));
-        console.log("Tin nhắn cuối cùng đã xem:", lastSeenMsg.id);
       }
     },
     [],

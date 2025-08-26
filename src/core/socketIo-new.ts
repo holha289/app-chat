@@ -4,9 +4,8 @@ import { io, Socket } from "socket.io-client";
 // Socket instance và flags để quản lý connection
 let socket: Socket | null = null;
 let isConnecting = false;
-let connectionPromise: Promise<Socket> | null = null;
 
-export const initSocket = (token: string): Socket | null => {
+export const initSocket = (token: string): Socket => {
   console.log('🔌 Initializing socket with token:', token ? '***' : 'NO_TOKEN');
   console.log('🌐 API_URL:', API_URL);
   console.log('🔄 Current status:', { 
@@ -17,7 +16,13 @@ export const initSocket = (token: string): Socket | null => {
 
   if (!token) {
     console.error('❌ Cannot initialize socket: No access token provided');
-    return null;
+    return socket as Socket;
+  }
+
+  // Nếu đang connecting, chờ
+  if (isConnecting) {
+    console.log('⏳ Already connecting, please wait...');
+    return socket as Socket;
   }
 
   // Nếu socket đã tồn tại và connected
@@ -26,23 +31,16 @@ export const initSocket = (token: string): Socket | null => {
     return socket;
   }
 
-  // Nếu đang connecting, return existing socket nếu có
-  if (isConnecting) {
-    console.log('⏳ Already connecting, returning current socket...');
+  // Nếu socket tồn tại nhưng not connected
+  if (socket && !socket.connected) {
+    console.log('🔄 Socket exists but disconnected, reconnecting...');
+    socket.connect();
     return socket;
   }
 
   // Tạo socket mới
   console.log('🆕 Creating new socket instance...');
   isConnecting = true;
-
-  // Cleanup existing socket nếu có
-  if (socket) {
-    console.log('🧹 Cleaning up existing socket...');
-    socket.removeAllListeners();
-    socket.disconnect();
-    socket = null;
-  }
 
   socket = io(API_URL, {
     transports: ["websocket", "polling"], // Fallback to polling
@@ -94,15 +92,6 @@ export const initSocket = (token: string): Socket | null => {
   });
 
   console.log("📡 Socket instance created and connecting...");
-  
-  // Timeout để reset flag nếu không connect được sau 15 giây
-  setTimeout(() => {
-    if (isConnecting && (!socket || !socket.connected)) {
-      console.warn('⚠️ Connection timeout, resetting connecting flag');
-      isConnecting = false;
-    }
-  }, 15000);
-  
   return socket;
 };
 

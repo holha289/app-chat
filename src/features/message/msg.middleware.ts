@@ -6,7 +6,7 @@ import { ApiResponse } from "@app/types/response";
 import apiService from "@app/services/api.service";
 import { useSelector } from "react-redux";
 import { selectMessage } from "./msg.selectors";
-import { useSockerIo } from "@app/hooks/use-socketio";
+import { getSocket } from "@app/core/socketIo";
 
 export const MsgListenerMiddleware = () => {
   GetRoomsListener();
@@ -14,6 +14,7 @@ export const MsgListenerMiddleware = () => {
   HandleSocketReciveMsgListener();
 
   HandleSocketSendMsgListener();
+  HandleSoketReadMarMsgListener()
 };
 
 const GetRoomsListener = () => {
@@ -74,9 +75,9 @@ const HandleSocketSendMsgListener = () => {
     actionCreator: msgActions.sendMsgByRoom,
     effect: async (action, listenerApi) => {
       try {
-        const { socket } = useSockerIo();
+        const socket = getSocket();
         const payload = action.payload;
-        console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
+        // console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
         socket?.emit("room:send:message", payload);
         listenerApi.dispatch(msgActions.sendMsgByRoomSuccess());
       } catch (error) {
@@ -97,6 +98,8 @@ const HandleSocketReciveMsgListener = () => {
     effect: async (action, listenerApi) => {
       try {
         const payload = action.payload;
+        const socket = getSocket();
+        socket?.emit("room:message:received", payload);
         listenerApi.dispatch(msgActions.reciverMsgSuccess(payload));
       } catch (error) {
         console.error("Get messages by room failed:", error);
@@ -109,3 +112,25 @@ const HandleSocketReciveMsgListener = () => {
     },
   });
 };
+
+const HandleSoketReadMarMsgListener=()=>{
+  startAppListening({
+    actionCreator: msgActions.readMark,
+    effect: async (action, listenerApi) => {
+      try {
+        const { roomId, lastMsgId } = action.payload;
+        const socket = getSocket();
+        socket?.emit("room:read:message", { roomId, lastMsgId });
+        listenerApi.dispatch(msgActions.readMarkSuccess({ roomId, lastMsgId }));
+
+      } catch (error) {
+        console.error("Read mark failed:", error);
+        const errorMessage =
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message: string }).message
+            : String(error);
+        listenerApi.dispatch(msgActions.readMarkFailed(errorMessage));
+      }
+    },
+  });
+}
