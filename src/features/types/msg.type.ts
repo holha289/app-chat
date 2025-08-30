@@ -4,7 +4,7 @@ export interface Room {
   is_read: boolean;
   id: string;
   type: "private" | "group";
-  last_message: Record<string, unknown>;
+  last_message: LastMsg;
   name: string;
   avatar: string;
 }
@@ -17,9 +17,15 @@ export type MessageItem = {
   readCount: number;
   isReadByMe: boolean; // ms kể từ epoch
 };
+export type LastMsg={
+  msg_id:string,
+  createdAt:string,
+  msg_content:string
+}
 export type MessagePage = {
   items: MessageItem[];
   nextCursor: string | null; // null = hết trang
+  lastMsgId: string | null; // id của tin nhắn mới đã đọc
 };
 
 export type MessagesByRoom = Record<string, MessagePage>;

@@ -1,4 +1,4 @@
-import { Text, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { registerClassStyle, RegisterStyle } from "@app/styles/register.style";
@@ -7,7 +7,7 @@ import { classBtn } from "@app/styles/main.style";
 import clsx from "clsx";
 import InputOtp from "@app/components/InputOtp";
 import InputGroup from "@app/components/InputGroup";
-import { PhoneAuthProvider } from "@react-native-firebase/auth";
+import { PhoneAuthProvider, signInWithCredential, signInWithPhoneNumber } from "@react-native-firebase/auth";
 import { getAuth } from "@app/core/firebase";
 import { formatPhoneNumber, isValidPhoneNumber } from "@app/core/util";
 
@@ -70,7 +70,8 @@ const RegisterScreen = () => {
         }
         
         try {
-            const confirmation = await getAuth().signInWithPhoneNumber(formatPhoneNumber(form.phone));
+            const auth = getAuth();
+            const confirmation = await signInWithPhoneNumber(auth, formatPhoneNumber(form.phone));
             setVerificationId(confirmation.verificationId ?? '');
             // Bạn cũng có thể lưu `confirmation` vào state nếu cần `confirm(code)` sau này
         } catch (error) {
@@ -86,7 +87,8 @@ const RegisterScreen = () => {
         }
         try {
             const credential = PhoneAuthProvider.credential(verificationId, form.otp);
-            await getAuth().signInWithCredential(credential);
+            const auth = getAuth();
+            await signInWithCredential(auth, credential);
             console.log("Xác thực thành công");
             setStep(3); // Chuyển sang bước 3
         } catch (error) {
@@ -96,7 +98,7 @@ const RegisterScreen = () => {
     } 
 
     return (
-        <ScrollView className={registerClassStyle.container}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className={registerClassStyle.container}>
             <View className={registerClassStyle.header}>
                 <Text className={registerClassStyle.title}>
                     Đăng ký tài khoản
@@ -203,7 +205,7 @@ const RegisterScreen = () => {
                     )}
                 </View>
             </View>
-        </ScrollView>
+        </KeyboardAvoidingView>
     );
 };
 

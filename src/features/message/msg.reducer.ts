@@ -24,7 +24,11 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       // đảm bảo mỗi room đều có slot messages
       for (const room of state.rooms) {
         if (!state.messages[room.id]) {
-          state.messages[room.id] = { items: [], nextCursor: null };
+          state.messages[room.id] = {
+            items: [],
+            nextCursor: null,
+            lastMsgId: null,
+          };
         }
       }
       // status/error đã xử lý ở matchers
@@ -39,7 +43,11 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       // đảm bảo room tồn tại
       const target =
         state.messages[roomId] ??
-        (state.messages[roomId] = { items: [], nextCursor: null });
+        (state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+        });
 
       const isReset = !cursor; // '', null, undefined => reset
       if (isReset) {
@@ -66,11 +74,58 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       // đảm bảo room tồn tại
       const target =
         state.messages[roomId] ??
-        (state.messages[roomId] = { items: [], nextCursor: null });
+        (state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+        });
 
       // chỉ thêm nếu chưa tồn tại id này
       if (!target.items.some((m) => m.id === message.id)) {
         target.items.unshift(message);
+      }
+    })
+    .addCase(msgActions.readMarkSuccess, (state, { payload }) => {
+      const { roomId, lastMsgId } = payload;
+      console.log("🚀 ~ payload:", payload);
+      // đảm bảo room tồn tại
+      const target =
+        state.messages[roomId] ??
+        (state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+        });
+      target.lastMsgId = lastMsgId;
+      target.items.forEach((i) => {
+        if (i.id == lastMsgId) {
+          i.isReadByMe = true;
+        }
+      });
+      const room = state.rooms.find((r) => r.id == roomId);
+      // console.log("🚀 ~ room:", room)
+      if (room) {
+        // set tạm thời
+        room.is_read = true;
+      }
+    })
+    .addCase(msgActions.updateLastMsg, (state, { payload }) => {
+      const { roomId, message } = payload;
+      // console.log("🚀 ~ payload:", payload)
+      const room = state.rooms.find((r) => r.id == roomId);
+      // console.log("🚀 ~ room:", room)
+      if (room) {
+        // console.log("Before update:", room);
+        room.last_message = message;
+        room.is_read = state.messages[roomId]?.lastMsgId == message?.msg_id;
+        console.log(
+          "After update:",
+          state.messages[roomId]?.lastMsgId,
+          "  ",
+          message?.msg_id,
+        );
+      } else {
+        console.warn("Room not found", roomId);
       }
     })
 
@@ -81,6 +136,7 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoom,
         msgActions.sendMsgByRoom,
         msgActions.reciverMsg,
+        msgActions.readMark,
       ),
       (state) => {
         state.status = "pending";
@@ -96,6 +152,7 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomFailed,
         msgActions.sendMsgByRoomFailed,
         msgActions.reciverMsgFailed,
+        msgActions.readMarkFailed,
       ),
       (state, { payload }) => {
         state.status = "failed";
@@ -110,6 +167,7 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomSuccess,
         msgActions.sendMsgByRoomSuccess,
         msgActions.reciverMsgSuccess,
+        msgActions.readMarkSuccess,
       ),
       (state) => {
         state.status = "success";

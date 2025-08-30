@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "entitlements": {
@@ -20,7 +22,9 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.appchat.firebase",
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "Cho phép ứng dụng gửi thông báo để cập nhật thông tin mới nhất."
+        "NSUserNotificationUsageDescription": "Cho phép ứng dụng gửi thông báo để cập nhật thông tin mới nhất.",
+        "NSMicrophoneUsageDescription": "Cho phép truy cập micro để gọi thoại/video",
+        "NSCameraUsageDescription": "Cho phép truy cập camera để gọi video"
       }
     },
     "android": {
@@ -31,7 +35,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.appchat.firebase",
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -42,8 +45,27 @@
         "CAMERA",
         "READ_MEDIA_IMAGES",
         "READ_EXTERNAL_STORAGE",
-        "ACCESS_FINE_LOCATION"
-      ]
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "BLUETOOTH_CONNECT",
+        "WAKE_LOCK",
+        "INTERNET",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "NOTIFICATIONS",
+        "POST_NOTIFICATIONS",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "READ_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "BLUETOOTH_CONNECT",
+        "WAKE_LOCK",
+        "INTERNET"
+      ],
+      "package": "com.appchat.firebase"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -60,9 +82,6 @@
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0"
-          },
-          "ios": {
-            "useFrameworks": "static"
           }
         }
       ]

@@ -22,6 +22,7 @@ import { InputGroup, LoadingOverlay } from "@app/components";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import UserActions from "@app/features/user/user.action";
 import SendFriendRequestModal from "@app/components/Modals/SendFriendRequestModal";
+import IncomingCallModal from "@app/components/Modals/IncomingCallModel";
 
 const tabs = [
   { id: "friends", name: "Bạn bè" },
@@ -184,6 +185,13 @@ const ContactScreen = () => {
         isOpen={isCreateGroupModalOpen}
         onClose={() => setIsCreateGroupModalOpen(false)}
       />
+      {/* <IncomingCallModal
+        visible={true}
+        onAccept={() => {}}
+        onDecline={() => {}}
+        caller={{ id: '1', fullname: 'John Doe', avatar: 'https://via.placeholder.com/150' }}
+        isVideoCall={true}
+      /> */}
     </View>
   );
 };

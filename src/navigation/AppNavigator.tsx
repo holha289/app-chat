@@ -16,7 +16,7 @@ const AppNavigator = () => {
     if (!isAuthenticated) {
       navigationRef.current?.navigate("Login");
     } else {
-      navigationRef.current?.navigate("Main");
+      navigationRef.current?.navigate("VideoCall");
     }
   }, [isAuthenticated]);
   return (

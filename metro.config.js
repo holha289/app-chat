@@ -1,5 +1,5 @@
 // metro.config.js
-const { getDefaultConfig } = require("@expo/metro-config");
+const { getDefaultConfig } = require("@react-native/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 
 module.exports = (() => {
