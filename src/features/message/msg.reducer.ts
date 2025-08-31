@@ -71,6 +71,7 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
     })
     .addCase(msgActions.reciverMsgSuccess, (state, { payload }) => {
       const { roomId, message } = payload;
+      // console.log("🚀 ~ message:", message)
       // đảm bảo room tồn tại
       const target =
         state.messages[roomId] ??
@@ -81,13 +82,17 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         });
 
       // chỉ thêm nếu chưa tồn tại id này
-      if (!target.items.some((m) => m.id === message.id)) {
+      const exists = target.items.find(
+        (m) => m.id?.toString() === message.id?.toString(),
+      );
+      if (!exists) {
         target.items.unshift(message);
       }
+      target.lastMsgId = message.id;
     })
     .addCase(msgActions.readMarkSuccess, (state, { payload }) => {
       const { roomId, lastMsgId } = payload;
-      console.log("🚀 ~ payload:", payload);
+      // console.log("🚀 ~ payload:", payload);
       // đảm bảo room tồn tại
       const target =
         state.messages[roomId] ??

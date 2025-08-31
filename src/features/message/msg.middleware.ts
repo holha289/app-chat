@@ -7,6 +7,7 @@ import apiService from "@app/services/api.service";
 import { useSelector } from "react-redux";
 import { selectMessage } from "./msg.selectors";
 import { getSocket } from "@app/core/socketIo";
+import { create } from "axios";
 
 export const MsgListenerMiddleware = () => {
   GetRoomsListener();
@@ -14,7 +15,7 @@ export const MsgListenerMiddleware = () => {
   HandleSocketReciveMsgListener();
 
   HandleSocketSendMsgListener();
-  HandleSoketReadMarMsgListener()
+  HandleSoketReadMarMsgListener();
 };
 
 const GetRoomsListener = () => {
@@ -77,9 +78,21 @@ const HandleSocketSendMsgListener = () => {
       try {
         const socket = getSocket();
         const payload = action.payload;
-        // console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
-        socket?.emit("room:send:message", payload);
+        console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
+        socket?.emit("room:send:message", payload.message);
+        const message = {
+          id: payload.message.id,
+          content: payload.message.content,
+          type: payload.message.type,
+          isReadByMe: true,
+          readCount: 0,
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          sender: payload.sender,
+        };
+        const roomId = payload.message.roomId;
         listenerApi.dispatch(msgActions.sendMsgByRoomSuccess());
+        listenerApi.dispatch(msgActions.reciverMsgSuccess({ roomId, message }));
       } catch (error) {
         console.error("Get messages by room failed:", error);
         const errorMessage =
@@ -99,7 +112,7 @@ const HandleSocketReciveMsgListener = () => {
       try {
         const payload = action.payload;
         const socket = getSocket();
-        socket?.emit("room:message:received", payload);
+        // socket?.emit("room:message:received", payload);
         listenerApi.dispatch(msgActions.reciverMsgSuccess(payload));
       } catch (error) {
         console.error("Get messages by room failed:", error);
@@ -113,7 +126,7 @@ const HandleSocketReciveMsgListener = () => {
   });
 };
 
-const HandleSoketReadMarMsgListener=()=>{
+const HandleSoketReadMarMsgListener = () => {
   startAppListening({
     actionCreator: msgActions.readMark,
     effect: async (action, listenerApi) => {
@@ -122,7 +135,6 @@ const HandleSoketReadMarMsgListener=()=>{
         const socket = getSocket();
         socket?.emit("room:read:message", { roomId, lastMsgId });
         listenerApi.dispatch(msgActions.readMarkSuccess({ roomId, lastMsgId }));
-
       } catch (error) {
         console.error("Read mark failed:", error);
         const errorMessage =
@@ -133,4 +145,4 @@ const HandleSoketReadMarMsgListener=()=>{
       }
     },
   });
-}
+};

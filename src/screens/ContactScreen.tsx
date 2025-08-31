@@ -64,7 +64,7 @@ const ContactScreen = () => {
     setActiveTab(tab);
   };
 
-  const handleAcceptFriendRequest = (userId: number) => {
+  const handleAcceptFriendRequest = (userId: string) => {
     dispatch(UserActions.acceptFriendRequest({ userId, callback: (error) => {
       if (error) {
          Alert.alert("Có lỗi xảy ra", error);
@@ -74,7 +74,7 @@ const ContactScreen = () => {
     }}));
   };
 
-  const handleRejectFriendRequest = (userId: number) => {
+  const handleRejectFriendRequest = (userId: string) => {
     dispatch(UserActions.rejectFriendRequest({ userId, callback: (error) => {
       if (error) {
         Alert.alert("Có lỗi xảy ra", error);

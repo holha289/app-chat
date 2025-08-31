@@ -10,6 +10,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppInitializer } from "@app/components/AppInitializer";
 import GlobalSocketListener from "@app/components/GlobalSocketListener";
 import SocketInitializer from "@app/components/SocketInitializer";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 
 export default function App() {
   return (
@@ -17,10 +18,12 @@ export default function App() {
       <PersistGate loading={null} persistor={persistor}>
         <GestureHandlerRootView className="flex-1">
           <SafeAreaProvider>
-            <AppInitializer />   
-            <SocketInitializer/>
-            <GlobalSocketListener/>
-            <AppNavigator />
+            <AppInitializer />
+            <SocketInitializer />
+            <GlobalSocketListener />
+            <ActionSheetProvider>
+              <AppNavigator />
+            </ActionSheetProvider>
             <StatusBar style="auto" />
           </SafeAreaProvider>
         </GestureHandlerRootView>
