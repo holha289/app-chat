@@ -21,8 +21,8 @@ import { selectContactLoading, selectListFriends, selectListGroups, selectListPe
 import { InputGroup, LoadingOverlay } from "@app/components";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import UserActions from "@app/features/user/user.action";
-import SendFriendRequestModal from "@app/components/Modals/SendFriendRequestModal";
-import IncomingCallModal from "@app/components/Modals/IncomingCallModel";
+import { selectUser } from "@app/features";
+import { Friends } from "@app/features/types/contact.type";
 
 const tabs = [
   { id: "friends", name: "Bạn bè" },
@@ -39,7 +39,8 @@ const ContactScreen = () => {
   const listFriends = useSelector(selectListFriends);
   const listGroups = useSelector(selectListGroups);
   const listPending = useSelector(selectListPending);
-   const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
+  const user = useSelector(selectUser);
 
    // mounted
   useEffect(() => {
@@ -85,6 +86,17 @@ const ContactScreen = () => {
     }}));
   };
 
+  const handleCall = (userTo: Friends, isVideoCall: boolean = false) => {
+    // Dispatch an action to initiate a call
+    dispatch(UserActions.call({
+      from: user as unknown as Friends,
+      to: userTo,
+      roomId: userTo.room.room_id,
+      isVideoCall: isVideoCall,
+      category: 'request'
+    }));
+  };
+
   const renderItem = (item: any, tab: string) => {
     return (
       <TouchableOpacity className={ContactClassStyle.renderItem} onPress={() => handleNavigateByTab(tab, item)}>
@@ -101,10 +113,10 @@ const ContactScreen = () => {
         <View className="flex-row items-center space-x-4">
           { tab === "friends" || tab === "groups" ? (
              <>
-               <TouchableOpacity className="p-2">
+               <TouchableOpacity className="p-2" onPress={() => handleCall(item)}>
                   <Ionicons name="call" size={20} color={colors.color1} />
                 </TouchableOpacity>
-                <TouchableOpacity className="p-2">
+                <TouchableOpacity className="p-2" onPress={() => handleCall(item, true)}>
                   <Ionicons name="videocam" size={20} color={colors.color1} />
                 </TouchableOpacity>
              </>
@@ -185,13 +197,6 @@ const ContactScreen = () => {
         isOpen={isCreateGroupModalOpen}
         onClose={() => setIsCreateGroupModalOpen(false)}
       />
-      {/* <IncomingCallModal
-        visible={true}
-        onAccept={() => {}}
-        onDecline={() => {}}
-        caller={{ id: '1', fullname: 'John Doe', avatar: 'https://via.placeholder.com/150' }}
-        isVideoCall={true}
-      /> */}
     </View>
   );
 };

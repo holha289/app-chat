@@ -1,4 +1,6 @@
 import { createAction } from "@reduxjs/toolkit";
+import { Friends } from "../types/contact.type";
+import { PayloadCall } from "../types/user.type";
 
 const USER_ACTIONS = {
     SEND_FRIEND_REQUEST: "SEND_FRIEND_REQUEST",
@@ -9,7 +11,9 @@ const USER_ACTIONS = {
     ACCEPT_FRIEND_REQUEST_SUCCESS: "ACCEPT_FRIEND_REQUEST_SUCCESS",
     ACCEPT_FRIEND_REQUEST_FAILURE: "ACCEPT_FRIEND_REQUEST_FAILURE",
     REJECT_FRIEND_REQUEST_SUCCESS: "REJECT_FRIEND_REQUEST_SUCCESS",
-    REJECT_FRIEND_REQUEST_FAILURE: "REJECT_FRIEND_REQUEST_FAILURE"
+    REJECT_FRIEND_REQUEST_FAILURE: "REJECT_FRIEND_REQUEST_FAILURE",
+    CALL: "CALL", // gửi cuộc gọi
+    CLEAR_CALL: "CLEAR_CALL"
 };
 
 const UserActions = {
@@ -21,7 +25,9 @@ const UserActions = {
   acceptFriendRequestSuccess: createAction<number>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST_SUCCESS),
   acceptFriendRequestFailure: createAction<string>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST_FAILURE),
   rejectFriendRequestSuccess: createAction<number>(USER_ACTIONS.REJECT_FRIEND_REQUEST_SUCCESS),
-  rejectFriendRequestFailure: createAction<string>(USER_ACTIONS.REJECT_FRIEND_REQUEST_FAILURE)
+  rejectFriendRequestFailure: createAction<string>(USER_ACTIONS.REJECT_FRIEND_REQUEST_FAILURE),
+  call: createAction<PayloadCall>(USER_ACTIONS.CALL),
+  clearCall: createAction(USER_ACTIONS.CLEAR_CALL),
 };
 
 export default UserActions;

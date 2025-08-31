@@ -10,7 +10,7 @@ export interface AuthState extends StateCore {
     user: {
         id: number;
         fullname: string;
-        email: string;
+        email: string | null;
         phone: string;
         avatar: string;
         gender: string;

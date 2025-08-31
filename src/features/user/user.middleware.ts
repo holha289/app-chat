@@ -4,11 +4,15 @@ import apiService from "@app/services/api.service";
 import { ApiResponse } from "@app/types/response";
 import ContactActions from "../contact/contact.action";
 import { useErrorResponse } from "@app/hooks/use-error";
+import { getSocket } from "@app/core/socketIo";
+import { use } from "react";
+import { useWebRTC } from "@app/hooks/use-webrtc";
 
 const UserListenerMiddleware = () => {
     sendFriendRequest();
     acceptFriendRequest();
     rejectFriendRequest();
+    call();
 }
 
 
@@ -58,6 +62,28 @@ const rejectFriendRequest = () => {
             } catch (error) {
                 api.dispatch(UserActions.rejectFriendRequestFailure(useErrorResponse(error)));
                 action.payload.callback(useErrorResponse(error));
+            }
+        },
+    });
+}
+
+
+const call = () => {
+    startAppListening({
+        actionCreator: UserActions.call,
+        effect: async (action, api) => {
+            try {
+                const socket = getSocket();
+                if (action.payload.category === 'reject') {
+                    api.dispatch(UserActions.clearCall());
+                    socket?.emit("call:reject", action.payload);
+                } else if (action.payload.category === 'accept') {
+                    socket?.emit("call:accept", action.payload);
+                } else if (action.payload.category === 'request') {
+                    socket?.emit("call:invite", action.payload);
+                }
+            } catch (error) {
+                console.error("Error ending call:", error);
             }
         },
     });

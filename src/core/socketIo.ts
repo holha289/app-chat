@@ -44,7 +44,7 @@ export const initSocket = (token: string): Socket | null => {
     socket = null;
   }
 
-  socket = io(API_URL, {
+  socket = io('http://10.0.2.2:3000', {
     transports: ["websocket", "polling"], // Fallback to polling
     extraHeaders: {
       Authorization: `Bearer ${token}`,
