@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     Modal,
     View,
     Text,
     TouchableOpacity,
     Image,
-    StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@app/styles/main.style';
 import { Friends } from '@app/features/types/contact.type';
-import { useWebRTC } from '@app/hooks/use-webrtc';
-import { RTCView } from 'react-native-webrtc';
 import CallComponent from '../CallComponent';
 
 interface CallModalProps {
@@ -36,8 +33,17 @@ const CallModal: React.FC<CallModalProps> = ({
     roomId = null
 }) => {
     const defaultAvatar = 'https://via.placeholder.com/150/cccccc/ffffff?text=User';
- 
-    if (!visible) return null;
+
+    if (!visible) {
+      return null;
+    } else {
+      setTimeout(() => {
+        if (!isAccepted) {
+          onDecline();
+          return;
+        }
+      }, 30000); // 30 giây không trả lời thì tự động từ chối
+    }
 
     // --- Render khi đã accepted ---
     if (isAccepted && roomId && caller) {

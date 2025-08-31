@@ -35,16 +35,25 @@ const ContactScreen = () => {
   const [activeTab, setActiveTab] = useState("friends");
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
   const dispatch = useDispatch();
-  const isLoading = useSelector(selectContactLoading);
   const listFriends = useSelector(selectListFriends);
   const listGroups = useSelector(selectListGroups);
   const listPending = useSelector(selectListPending);
   const insets = useSafeAreaInsets();
   const user = useSelector(selectUser);
+  const [isLoading, setIsLoading] = useState(false);
 
    // mounted
   useEffect(() => {
-     dispatch(ContactActions.getListFriendsRequest());
+    setIsLoading(true);
+    const wait = async () => {
+      await Promise.all([
+        dispatch(ContactActions.getListFriendsRequest({ offset: 0, limit: 20 })),
+        dispatch(ContactActions.getListGroupsRequest({ offset: 0, limit: 20 })),
+        dispatch(ContactActions.getListPendingRequest({ offset: 0, limit: 20 }))
+      ]);
+      setIsLoading(false);
+    };
+    wait();
   }, []);
 
 
@@ -56,18 +65,13 @@ const ContactScreen = () => {
   };
 
   const handleTabPress = (tab: string) => {
-    if (tab === "friends") {
-      dispatch(ContactActions.getListFriendsRequest());
-    } else if (tab === "groups") {
-      dispatch(ContactActions.getListGroupsRequest());
-    } else if (tab === "requests") {
-      dispatch(ContactActions.getListPendingRequest());
-    }
     setActiveTab(tab);
   };
 
   const handleAcceptFriendRequest = (userId: string) => {
+    setIsLoading(true);
     dispatch(UserActions.acceptFriendRequest({ userId, callback: (error) => {
+      setIsLoading(false);
       if (error) {
          Alert.alert("Có lỗi xảy ra", error);
       } else {
@@ -77,7 +81,9 @@ const ContactScreen = () => {
   };
 
   const handleRejectFriendRequest = (userId: string) => {
+    setIsLoading(true);
     dispatch(UserActions.rejectFriendRequest({ userId, callback: (error) => {
+      setIsLoading(false);
       if (error) {
         Alert.alert("Có lỗi xảy ra", error);
       } else {
@@ -101,13 +107,13 @@ const ContactScreen = () => {
     return (
       <TouchableOpacity className={ContactClassStyle.renderItem} onPress={() => handleNavigateByTab(tab, item)}>
         <Image
-          source={{ uri: Array.isArray(item.avatar) ? item.avatar[0] : item.avatar }}
+          source={{ uri: item.room_avatar ? item.room_avatar : (Array.isArray(item.avatar) ? item.avatar[0] : item.avatar) }}
           className="w-12 h-12 rounded-full mr-4"
         />
         <View className="flex-1">
-          <Text className="text-lg font-semibold">{item.fullname}</Text>
+          <Text className="text-lg font-semibold">{item.fullname || item.name}</Text>
           <Text className="text-sm text-gray-500">
-            {tab === "friends" ? "Bạn bè" : tab === "groups" ? `${item.members} thành viên` : "Yêu cầu kết bạn"}
+            {tab === "friends" ? "Bạn bè" : tab === "groups" ? `${item.member_count} thành viên` : "Yêu cầu kết bạn"}
           </Text>
         </View>
         <View className="flex-row items-center space-x-4">
@@ -144,7 +150,7 @@ const ContactScreen = () => {
           <View className="flex-row items-center py-2">
             <InputGroup
               iconLeft={<Ionicons name="search" size={20} color="gray" />}
-              placeholder={activeTab === "friends" ? "Tìm kiếm bạn bè" : 
+              placeholder={activeTab === "friends" ? "Tìm kiếm bạn bè" :
               activeTab === "groups" ? "Tìm kiếm nhóm" : "Tìm kiếm yêu cầu"}
               rounded={20}
               height={40}
