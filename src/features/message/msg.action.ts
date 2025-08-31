@@ -1,5 +1,14 @@
 import { createAction } from "@reduxjs/toolkit";
-import { LastMsg, MessageItem, MessagePage, MsgState, msgTypes, roomTypes } from "../types/msg.type";
+import {
+  LastMsg,
+  MessageItem,
+  MessagePage,
+  MsgState,
+  msgTypes,
+  roomTypes,
+  SenderTypes,
+} from "../types/msg.type";
+import { userType } from "../types/auth.type";
 
 const Room_ACTIONS_TYPES = {
   // get list room
@@ -49,9 +58,21 @@ const msgActions = {
   ),
 
   // send message
-  sendMsgByRoom: createAction<{ roomId: string; content: string; type: string }>(
-    Room_ACTIONS_TYPES.SENDMSGBYROOM,
-  ),
+  sendMsgByRoom: createAction<{
+    message: {
+      roomId: string;
+      content: string;
+      type: string;
+      id: string;
+    };
+    sender: {
+      fullname: string;
+      avatar: string;
+      slug: string;
+      status: string;
+      id: string;
+    };
+  }>(Room_ACTIONS_TYPES.SENDMSGBYROOM),
   sendMsgByRoomSuccess: createAction(Room_ACTIONS_TYPES.SENDMSGBYROOM_SUCCESS),
   sendMsgByRoomFailed: createAction<string>(
     Room_ACTIONS_TYPES.SENDMSGBYROOM_FAILED,
@@ -59,16 +80,25 @@ const msgActions = {
 
   // recive message
 
-  reciverMsg:createAction<{roomId:string, message:MessageItem}>(Room_ACTIONS_TYPES.RECEIVEMSG),
-  reciverMsgSuccess:createAction<{roomId:string, message:MessageItem}>(Room_ACTIONS_TYPES.RECEIVEMSG_SUCCESS),
-  reciverMsgFailed:createAction<string>(Room_ACTIONS_TYPES.RECEIVEMSG_FAILED),
-  updateLastMsg:createAction<{roomId:string, message:LastMsg}>(Room_ACTIONS_TYPES.UPDATELASTMSG),
+  reciverMsg: createAction<{ roomId: string; message: MessageItem }>(
+    Room_ACTIONS_TYPES.RECEIVEMSG,
+  ),
+  reciverMsgSuccess: createAction<{ roomId: string; message: MessageItem }>(
+    Room_ACTIONS_TYPES.RECEIVEMSG_SUCCESS,
+  ),
+  reciverMsgFailed: createAction<string>(Room_ACTIONS_TYPES.RECEIVEMSG_FAILED),
+  updateLastMsg: createAction<{ roomId: string; message: LastMsg }>(
+    Room_ACTIONS_TYPES.UPDATELASTMSG,
+  ),
 
   // read mark
 
-  readMark:createAction<{roomId:string, lastMsgId:string}>(Room_ACTIONS_TYPES.READMARK),
-  readMarkSuccess:createAction<{roomId:string, lastMsgId:string}>(Room_ACTIONS_TYPES.READMARK_SUCCESS),
-  readMarkFailed:createAction<string>(Room_ACTIONS_TYPES.READMARK_FAILED),
-
+  readMark: createAction<{ roomId: string; lastMsgId: string }>(
+    Room_ACTIONS_TYPES.READMARK,
+  ),
+  readMarkSuccess: createAction<{ roomId: string; lastMsgId: string }>(
+    Room_ACTIONS_TYPES.READMARK_SUCCESS,
+  ),
+  readMarkFailed: createAction<string>(Room_ACTIONS_TYPES.READMARK_FAILED),
 };
 export default msgActions;

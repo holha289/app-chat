@@ -18,16 +18,16 @@ const USER_ACTIONS = {
 
 const UserActions = {
   sendFriendRequest: createAction<{ receiveId: string, message: string, callback: (error?: string) => void }>(USER_ACTIONS.SEND_FRIEND_REQUEST),
-  acceptFriendRequest: createAction<{ userId: number, callback: (error?: string) => void }>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST),
-  rejectFriendRequest: createAction<{ userId: number, callback: (error?: string) => void }>(USER_ACTIONS.REJECT_FRIEND_REQUEST),
+  acceptFriendRequest: createAction<{ userId: string, callback: (error?: string) => void }>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST),
+  rejectFriendRequest: createAction<{ userId: string, callback: (error?: string) => void }>(USER_ACTIONS.REJECT_FRIEND_REQUEST),
   sendFriendRequestSuccess: createAction(USER_ACTIONS.SEND_FRIEND_REQUEST_SUCCESS),
   sendFriendRequestFailure: createAction<string>(USER_ACTIONS.SEND_FRIEND_REQUEST_FAILURE),
-  acceptFriendRequestSuccess: createAction<number>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST_SUCCESS),
+  acceptFriendRequestSuccess: createAction<string>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST_SUCCESS),
   acceptFriendRequestFailure: createAction<string>(USER_ACTIONS.ACCEPT_FRIEND_REQUEST_FAILURE),
   rejectFriendRequestSuccess: createAction<number>(USER_ACTIONS.REJECT_FRIEND_REQUEST_SUCCESS),
   rejectFriendRequestFailure: createAction<string>(USER_ACTIONS.REJECT_FRIEND_REQUEST_FAILURE),
   call: createAction<PayloadCall>(USER_ACTIONS.CALL),
-  clearCall: createAction(USER_ACTIONS.CLEAR_CALL),
+  clearCall: createAction(USER_ACTIONS.CLEAR_CALL)
 };
 
 export default UserActions;

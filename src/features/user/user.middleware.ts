@@ -41,7 +41,7 @@ const acceptFriendRequest = () => {
             try {
                 const response = await apiService.post<ApiResponse<{ message: string }>>(`/profile/accept-friend-request/${action.payload.userId}`);
                 api.dispatch(UserActions.acceptFriendRequestSuccess(action.payload.userId));
-                api.dispatch(ContactActions.removeFromPendingList(action.payload.userId));
+                api.dispatch(ContactActions.removeFromPendingList(action.payload.userId as unknown as number));
                 action.payload.callback();
             } catch (error) {
                 api.dispatch(UserActions.acceptFriendRequestFailure(useErrorResponse(error)));
@@ -57,8 +57,8 @@ const rejectFriendRequest = () => {
         effect: async (action, api) => {
             try {
                 const response = await apiService.post<ApiResponse<{ message: string }>>(`/profile/reject-friend-request/${action.payload.userId}`);
-                api.dispatch(UserActions.rejectFriendRequestSuccess(action.payload.userId));
-                api.dispatch(ContactActions.removeFromPendingList(action.payload.userId));
+                api.dispatch(UserActions.rejectFriendRequestSuccess(action.payload.userId as unknown as number));
+                api.dispatch(ContactActions.removeFromPendingList(action.payload.userId as unknown as number));
             } catch (error) {
                 api.dispatch(UserActions.rejectFriendRequestFailure(useErrorResponse(error)));
                 action.payload.callback(useErrorResponse(error));

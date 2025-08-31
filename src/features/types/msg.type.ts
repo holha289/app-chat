@@ -17,11 +17,11 @@ export type MessageItem = {
   readCount: number;
   isReadByMe: boolean; // ms kể từ epoch
 };
-export type LastMsg={
-  msg_id:string,
-  createdAt:string,
-  msg_content:string
-}
+export type LastMsg = {
+  msg_id: string;
+  createdAt: string;
+  msg_content: string;
+};
 export type MessagePage = {
   items: MessageItem[];
   nextCursor: string | null; // null = hết trang
@@ -42,3 +42,11 @@ export interface MsgState extends StateCore {
 
 export type roomTypes = MsgState["rooms"];
 export type msgTypes = MsgState["messages"];
+
+export interface SenderTypes  {
+  fullname: string;
+  avatar: string;
+  slug: string;
+  status: string;
+  id: string;
+};

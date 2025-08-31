@@ -26,6 +26,7 @@ import ChatHeader from "@app/components/chat/ChatHeader";
 import MessageList from "@app/components/chat/MessageList";
 import InputBar from "@app/components/chat/InputBar";
 import { isBefore } from "@app/utils/compare";
+import { randomId } from "@app/utils/randomId";
 
 type RouteParam = { id: string; name: string; avatar?: string };
 
@@ -68,9 +69,12 @@ const ChatRoomScreen = () => {
 
   const socketHandler = useCallback(
     (payload: any) => {
+      console.log("🚀 ~D", payload)
       const m = payload?.metadata?.message;
+      
       if (!m || !param.id) return;
       dispatch(msgActions.reciverMsg({ roomId: param.id, message: m }));
+     dispatch(msgActions.reciverMsgSuccess({ roomId: param.id, message: m }));
       const msg = {
         msg_id: m?.id,
         createdAt: m?.createdAt,
@@ -97,8 +101,15 @@ const ChatRoomScreen = () => {
   const sendMsg = useCallback(() => {
     const content = inputText.trim();
     if (!content) return;
+    const sender = {
+      fullname: userInfo?.fullname || "",
+      avatar: userInfo?.avatar || "",
+      slug: userInfo?.slug || "",
+      status: "active",
+      id: userInfo?.id || "",
+    };
     dispatch(
-      msgActions.sendMsgByRoom({ roomId: param.id, content, type: "text" }),
+      msgActions.sendMsgByRoom({ message: { roomId: param.id, content, id: randomId(), type: "text" }, sender: sender }),
     );
     setInputText("");
     scrollToBottom();
@@ -147,7 +158,7 @@ const ChatRoomScreen = () => {
       if (viewableItems && viewableItems.length > 0) {
         // Vì list inverted, item đầu tiên là tin nhắn mới nhất đang hiển thị
         const lastSeenMsg = viewableItems[0].item;
-        if (isBefore(lastMsgId || "", lastSeenMsg?.id)) {
+        if (isBefore(lastMsgId || "", lastSeenMsg?.id) && lastSeenMsg?.sender?.id !== meId) {
           dispatch(
             msgActions.readMark({
               roomId: param.id,
