@@ -11,6 +11,7 @@ import { AppInitializer } from "@app/components/AppInitializer";
 import GlobalSocketListener from "@app/components/GlobalSocketListener";
 import SocketInitializer from "@app/components/SocketInitializer";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 export default function App() {
   return (
@@ -21,9 +22,7 @@ export default function App() {
             <AppInitializer />
             <SocketInitializer />
             <GlobalSocketListener />
-            <ActionSheetProvider>
               <AppNavigator />
-            </ActionSheetProvider>
             <StatusBar style="auto" />
           </SafeAreaProvider>
         </GestureHandlerRootView>
