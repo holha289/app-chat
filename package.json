@@ -12,7 +12,7 @@
     "ios": "expo run:ios",
     "native:asset": "npx react-native-asset",
     "gradlew:clean": "cd android && gradlew clean && cd ..",
-    "build:release": "cd android && gradlew assembleRelease && cd .."
+    "build:release": "set NODE_ENV=production&& cd android && gradlew assembleRelease && cd .."
   },
   "dependencies": {
     "@expo/react-native-action-sheet": "^4.1.1",
