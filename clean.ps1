@@ -40,7 +40,7 @@ if ($DeepClean) {
 
 # 3) Clean node_modules, .expo, locks
 Write-Host "Clean node_modules, .expo, lock files..."
-# SafeRemove "node_modules"
+SafeRemove "node_modules"
 SafeRemove ".expo"
 SafeRemove ".expo-shared"
 if (Test-Path "package-lock.json") { Remove-Item -Force "package-lock.json" -ErrorAction SilentlyContinue }
