@@ -36,13 +36,6 @@ const CallModal: React.FC<CallModalProps> = ({
 
     if (!visible) {
       return null;
-    } else {
-      setTimeout(() => {
-        if (!isAccepted) {
-          onDecline();
-          return;
-        }
-      }, 30000); // 30 giây không trả lời thì tự động từ chối
     }
 
     // --- Render khi đã accepted ---

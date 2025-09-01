@@ -5,8 +5,6 @@ import { ApiResponse } from "@app/types/response";
 import ContactActions from "../contact/contact.action";
 import { useErrorResponse } from "@app/hooks/use-error";
 import { getSocket } from "@app/core/socketIo";
-import { use } from "react";
-import { useWebRTC } from "@app/hooks/use-webrtc";
 
 const UserListenerMiddleware = () => {
     sendFriendRequest();
@@ -79,13 +77,6 @@ const call = () => {
                     socket?.emit("call:reject", action.payload);
                 } else if (action.payload.category === 'accept') {
                     socket?.emit("call:accept", action.payload);
-                     // Người nhận bấm chấp nhận
-                    const webRTC = useWebRTC({
-                        roomId: action.payload.roomId as string,
-                        fromUserId: action.payload.from.id as unknown as string,
-                    });
-                    // Khởi tạo stream
-                    webRTC.initStream();
                 } else if (action.payload.category === 'request') {
                     socket?.emit("call:invite", action.payload);
                 }

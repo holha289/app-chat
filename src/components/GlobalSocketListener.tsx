@@ -249,19 +249,20 @@ const GlobalSocketListener = () => {
 
 
   useEffect(() => {
-    if (call) {
-      const isOpen = call.from?.id === user?.id || call.to?.id === user?.id;
-      const caller = call.from?.id === user?.id ? call.from : call.to;
+    if (call && user) {
+      const isOpen = String(call.from?.id) === String(user.id) || String(call.to?.id) === String(user?.id);
+      const caller = String(call.from?.id) === String(user?.id) ? call.to : call.from;
+
       setFormModal({
         isOpen,
         caller: caller,
         isVideoCall: call.isVideoCall,
         isAccepted: call.category === 'accept',
-        isTo: call.to?.id === user?.id,
+        isTo: String(call.to?.id) === String(user?.id),
         roomId: call.roomId as string | null
       });
     }
-  }, [call]);
+  }, [call, user]);
 
   const onAcceptCall = () => {
     const userTo = call.to?.id !== user?.id ? call.to : call.from;
@@ -269,7 +270,7 @@ const GlobalSocketListener = () => {
       roomId: call.roomId as string,
       from: user as unknown as Friends,
       to: userTo as Friends,
-      isVideoCall: false,
+      isVideoCall: call.isVideoCall,
       category: 'accept'
     }));
   };
@@ -280,7 +281,7 @@ const GlobalSocketListener = () => {
       roomId: call.roomId as string,
       from: user as unknown as Friends,
       to: userTo as Friends,
-      isVideoCall: false,
+      isVideoCall: call.isVideoCall,
       category: 'reject'
     }));
   };
