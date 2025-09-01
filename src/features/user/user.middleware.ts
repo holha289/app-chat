@@ -79,6 +79,13 @@ const call = () => {
                     socket?.emit("call:reject", action.payload);
                 } else if (action.payload.category === 'accept') {
                     socket?.emit("call:accept", action.payload);
+                     // Người nhận bấm chấp nhận
+                    const webRTC = useWebRTC({
+                        roomId: action.payload.roomId as string,
+                        fromUserId: action.payload.from.id as unknown as string,
+                    });
+                    // Khởi tạo stream
+                    webRTC.initStream();
                 } else if (action.payload.category === 'request') {
                     socket?.emit("call:invite", action.payload);
                 }

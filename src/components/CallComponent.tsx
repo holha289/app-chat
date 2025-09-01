@@ -9,6 +9,7 @@ import { selectCall } from '@app/features/user/user.selecter';
 import { getSocket } from '@app/core/socketIo';
 import { colors } from '@app/styles/main.style';
 import { Friends } from '@app/features/types/contact.type';
+import { selectUser } from '@app/features';
 
 type Props = {
     currentUser: Friends;
@@ -17,8 +18,8 @@ type Props = {
 const CallComponent: React.FC<Props> = ({
     currentUser
 }) => {
+    const user = useSelector(selectUser);
     const accepted = useSelector(selectCall);
-    const socketIo = getSocket();
     const {
         localStream,
         remoteStream,
@@ -32,15 +33,22 @@ const CallComponent: React.FC<Props> = ({
         initStream,
     } = useWebRTC({
         roomId: accepted.roomId as string,
-        selfSocketId: socketIo?.id as string,
+        fromUserId: (accepted.from && accepted.from.id.toString() === user?.id.toString()
+            ? user.id.toString()
+            : accepted?.to?.id?.toString() ?? ""),
     });
 
     useEffect(() => {
         if (accepted && accepted.to) {
-            console.log("Accepted call:", accepted);
-            initStream();
-            startCall(accepted.to.id as unknown as string);
+            // Người gọi nhận stream
+            const otherUserId = (accepted.from && accepted.from.id.toString() !== user?.id.toString()
+                ? accepted.from.id.toString()
+                : accepted.to.id.toString());
+            console.log('acccpet to', accepted.to);
             setIsVoiceOnly(accepted.isVideoCall);
+            initStream();
+            startCall(otherUserId);
+            
         }
     }, [accepted]);
 

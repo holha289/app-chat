@@ -7,6 +7,7 @@ import {
   RTCIceCandidate,
   MediaStream,
 } from "react-native-webrtc";
+import { requestMediaPermissions } from "@app/core/permissions";
 
 const pcConfig: RTCConfiguration = {
   iceServers: [
@@ -24,10 +25,10 @@ const pendingCandidates = new Map<string, RTCIceCandidateInit[]>();
 
 export const useWebRTC = ({
   roomId,
-  selfSocketId,
+  fromUserId,
 }: {
   roomId: string;
-  selfSocketId: string;
+  fromUserId: string;
 }) => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -39,18 +40,20 @@ export const useWebRTC = ({
   // Khởi tạo local stream
   const initStream = async () => {
     try {
+      const ok = await requestMediaPermissions();
+      if (!ok) {
+        console.warn("❌ User từ chối quyền Camera/Micro");
+        return;
+      }
+
       const stream = await mediaDevices.getUserMedia({
         audio: true,
-        video: true,
+        video: !isVoiceOnly,
       });
+
       setLocalStream(stream);
-    //   if (
-    //     typeof InCallManager !== "undefined" &&
-    //     InCallManager !== null &&
-    //     typeof InCallManager.start === "function"
-    //   ) {
-    //     InCallManager.start({ media: isVoiceOnly ? "audio" : "video" });
-    //   }
+      // Nếu muốn quản lý audio mode
+      InCallManager.start({ media: isVoiceOnly ? "audio" : "video" });
     } catch (err) {
       console.error("Error init media:", err);
     }
@@ -68,7 +71,7 @@ export const useWebRTC = ({
       if (event.candidate) {
         socketIo?.emit("call:signal", {
           to: peerId,
-          from: selfSocketId,
+          from: fromUserId,
           roomId,
           candidate: event.candidate,
         });
@@ -94,7 +97,7 @@ export const useWebRTC = ({
     try {
       await socketIo?.emit("call:signal", {
         to,
-        from: selfSocketId,
+        from: fromUserId,
         roomId,
         offer,
       });
@@ -106,11 +109,11 @@ export const useWebRTC = ({
   // Hang up call
   const hangUp = () => {
     if (localStream && typeof localStream.getTracks === "function") {
-        localStream.getTracks().forEach((track) => {
-            if (track && typeof track.stop === "function") {
-                track.stop();
-            }
-        });
+      localStream.getTracks().forEach((track) => {
+        if (track && typeof track.stop === "function") {
+          track.stop();
+        }
+      });
     }
     setLocalStream(null);
     setRemoteStream(null);
@@ -154,7 +157,7 @@ export const useWebRTC = ({
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        socketIo.emit("call:signal", { to: from, from: selfSocketId, roomId, answer });
+        socketIo.emit("call:signal", { to: from, from: fromUserId, roomId, answer });
       }
 
       // Nếu nhận answer
