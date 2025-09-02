@@ -42,7 +42,6 @@
     "prettier-plugin-tailwindcss": "^0.5.11",
     "react": "19.0.0",
     "react-native": "^0.79.5",
-    "react-native-dotenv": "^3.4.11",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-image-picker": "^8.2.1",
