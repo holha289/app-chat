@@ -8,5 +8,6 @@ declare module 'react-native-webrtc' {
     oniceconnectionstatechange: (() => void) | null;
     onconnectionstatechange: (() => void) | null;
     onicegatheringstatechange: (() => void) | null;
+    onerror: ((event: { error: Error }) => void) | null;
   }
 }
