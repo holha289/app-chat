@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     Modal,
     View,
@@ -34,8 +34,19 @@ const CallModal: React.FC<CallModalProps> = ({
 }) => {
     const defaultAvatar = 'https://via.placeholder.com/150/cccccc/ffffff?text=User';
 
+    // Auto close modal nếu không accepted trong 30 giây
+    useEffect(() => {
+        if (visible && !isAccepted) {
+            const timer = setTimeout(() => {
+                onDecline();
+            }, 30000); // 30 giây
+
+            return () => clearTimeout(timer);
+        }
+    }, [visible, isAccepted, onDecline]);
+
     if (!visible) {
-      return null;
+        return null;
     }
 
     // --- Render khi đã accepted ---

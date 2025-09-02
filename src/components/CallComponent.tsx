@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RTCView } from 'react-native-webrtc';
@@ -6,7 +6,6 @@ import Helpers from '@app/utils/helpers';
 import { useWebRTC } from '@app/hooks/use-webrtc';
 import { useSelector } from 'react-redux';
 import { selectCall } from '@app/features/user/user.selecter';
-import { getSocket } from '@app/core/socketIo';
 import { colors } from '@app/styles/main.style';
 import { Friends } from '@app/features/types/contact.type';
 import { selectUser } from '@app/features';
@@ -33,129 +32,148 @@ const CallComponent: React.FC<Props> = ({
         hangUp,
         callee,
         caller,
-        setIsVoiceOnly,
-        listenCall
-    } = useWebRTC();
+        listenCall,
+        isMuted,
+        isSpeakerOn,
+        isVideoOff
+    } = useWebRTC(accepted?.isVideoCall ?? false);
 
-    // Debug streams
+    // Use ref to prevent unnecessary re-renders
+    const hasInitialized = useRef(false);
+    const currentAcceptedId = useRef<string | null>(null);
+
+    // Memoize currentUser data để tránh re-render
+    const userInfo = useMemo(() => ({
+        fullname: currentUser.fullname,
+        avatar: currentUser.avatar
+    }), [currentUser.fullname, currentUser.avatar]);
+
+    // Debug streams - sử dụng dependency chính xác
     useEffect(() => {
-        console.log("🎬 Local stream available:", !!localStream);
         if (localStream) {
-            console.log("🎬 Local tracks:", localStream.getTracks().map(t => ({
-                kind: t.kind,
-                enabled: t.enabled,
-                id: t.id
-            })));
+            console.log("🎬 Local stream tracks:", localStream.getTracks().length);
         }
-    }, [localStream]);
+    }, [!!localStream]); // Chỉ theo dõi sự tồn tại của stream
 
     useEffect(() => {
-        console.log("📺 Remote stream available:", !!remoteStream);
         if (remoteStream) {
-            console.log("📺 Remote tracks:", remoteStream.getTracks().map(t => ({
-                kind: t.kind,
-                enabled: t.enabled,
-                id: t.id
-            })));
+            console.log("📺 Remote stream tracks:", remoteStream.getTracks().length);
         }
-    }, [remoteStream]);
+    }, [!!remoteStream]); // Chỉ theo dõi sự tồn tại của stream
 
+    // Tối ưu call logic
     useEffect(() => {
-        console.log("📞 Call accepted:", accepted);
-        if (accepted && user && accepted.category === 'accept') {
-            // Đảm bảo bắt đầu lắng nghe tín hiệu trước
-            listenCall();
-            
-            const userCaller = accepted.to; // người gọi
-            const userCallee = accepted.from; // người nhận
-            // Xác định rõ vai trò của người dùng hiện tại
-            const iAmCaller = userCaller?.id?.toString() === user?.id?.toString();
-            // Nếu là người gọi thì lấy userCallee, ngược lại lấy userCaller
-            const partnerId = iAmCaller ? userCallee?.id?.toString() : userCaller?.id?.toString();
-            // Đặt isVoiceOnly dựa trên loại cuộc gọi
-            // - Nếu isVideoCall = true: đặt isVoiceOnly = false (cuộc gọi video)
-            // - Nếu isVideoCall = false: đặt isVoiceOnly = true (cuộc gọi thoại)
-            setIsVoiceOnly(!accepted.isVideoCall);
-            // Nếu là cuộc gọi thoại, cập nhật UI ngay lập tức
-            if (!accepted.isVideoCall) {
-                setIsVideoOn(false);
-            }
-            
-            // Tạo kết nối dựa trên vai trò
-            if (iAmCaller) {
-                caller(accepted.roomId as string, partnerId as string);
-            } else {
-                callee(accepted.roomId as string, partnerId as string);
-            }
+        if (!accepted || !user || accepted.category !== 'accept') {
+            return;
         }
-        
-        // Cleanup khi component unmount hoặc khi accepted thay đổi
-        return () => {
-            if (accepted && accepted.category === 'reject') {
-                console.log("🧹 Cleaning up WebRTC resources due to call rejection or component unmount");
-                hangUp();
+
+        // Tránh khởi tạo lại nếu đã xử lý cuộc gọi này rồi
+        const callId = `${accepted.roomId}-${accepted.from?.id}-${accepted.to?.id}`;
+        if (hasInitialized.current && currentAcceptedId.current === callId) {
+            return;
+        }
+
+        console.log("📞 Initializing call:", callId);
+
+        // Đánh dấu đã khởi tạo
+        hasInitialized.current = true;
+        currentAcceptedId.current = callId;
+
+        // Khởi tạo call logic
+        const initializeCall = async () => {
+            try {
+                listenCall();
+
+                const userCaller = accepted.to;
+                const userCallee = accepted.from;
+                const iAmCaller = userCaller?.id?.toString() === user?.id?.toString();
+                const partnerId = iAmCaller ? userCallee?.id?.toString() : userCaller?.id?.toString();
+
+                if (iAmCaller) {
+                    await caller(accepted.roomId as string, partnerId as string);
+                } else {
+                    await callee(accepted.roomId as string, partnerId as string);
+                }
+            } catch (error) {
+                console.error("❌ Error initializing call:", error);
             }
         };
-    }, [accepted, user]);
 
-    // UI states
-    const [isMuted, setIsMuted] = useState(false);
-    const [isSpeakerOn, setIsSpeakerOn] = useState(true);
-    // Khởi tạo isVideoOn dựa trên loại cuộc gọi
-    const [isVideoOn, setIsVideoOn] = useState(accepted ? accepted.isVideoCall : true);
+        initializeCall();
+
+        // Cleanup function
+        return () => {
+            console.log("🧹 Cleaning up call");
+            hangUp();
+            hasInitialized.current = false;
+            currentAcceptedId.current = null;
+        };
+    }, [accepted?.roomId, accepted?.category, user?.id]); // Chỉ dependency cần thiết
+
+    // State cho UI
     const [isLocalVideoMinimized, setIsLocalVideoMinimized] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [callDuration, setCallDuration] = useState(0);
-    
-    // Theo dõi thay đổi loại cuộc gọi
-    useEffect(() => {
-        if (accepted) {
-            // Nếu không phải video call, tắt video
-            if (!accepted.isVideoCall) {
-                setIsVideoOn(false);
-            }
-        }
-    }, [accepted?.isVideoCall]);
 
+    // Timer cho call duration
     useEffect(() => {
+        if (!accepted || accepted.category !== 'accept') return;
+
         const timer = setInterval(() => {
             setCallDuration((prev) => prev + 1);
         }, 1000);
+
         return () => clearInterval(timer);
+    }, [accepted?.category]); // Chỉ chạy khi call được accept
+
+    // Memoize handlers để tránh re-render con
+    const handleScreenTap = useCallback(() => {
+        setShowControls((v) => !v);
     }, []);
 
-    // UI handlers
-    const handleScreenTap = () => setShowControls((v) => !v);
-    const handleEndCall = () => {
+    const handleEndCall = useCallback(() => {
         hangUp();
-        if (accepted && accepted.from && accepted.to) {
-            dispatch(UserActions.call({
-                ...accepted,
-                category: 'reject',
-                from: accepted.from,
-                to: accepted.to
-            }))
-        }
-    };
+        const userTo = accepted.to?.id !== user?.id ? accepted.to : accepted.from;
+        dispatch(UserActions.call({
+            roomId: accepted.roomId as string,
+            from: user as unknown as Friends,
+            to: userTo as Friends,
+            isVideoCall: accepted.isVideoCall,
+            category: 'reject'
+        }));
+    }, [accepted, hangUp, dispatch]);
 
-    const handleToggleMute = () => {
-        setIsMuted((v) => !v);
-        toggleMute && toggleMute();
-    };
-    const handleToggleSpeaker = () => {
-        setIsSpeakerOn((v) => !v);
-        toggleSpeaker && toggleSpeaker(isSpeakerOn);
-    };
-    const handleToggleVideo = () => {
-        // Nếu không phải cuộc gọi video, không cho phép bật video
-        if (!accepted?.isVideoCall && !isVideoOn) {
+    const handleToggleMute = useCallback(() => {
+        toggleMute?.();
+    }, [toggleMute]);
+
+    const handleToggleSpeaker = useCallback(() => {
+        toggleSpeaker?.();
+    }, [toggleSpeaker]);
+
+    const handleToggleVideo = useCallback(() => {
+        if (!accepted?.isVideoCall && isVideoOff) {
             return;
         }
-        setIsVideoOn((v) => !v);
-        toggleVideo && toggleVideo();
-    };
-    const handleToggleLocalVideo = () => setIsLocalVideoMinimized((v) => !v);
-    const handleSwitchCamera = () => switchCamera && switchCamera();
+        toggleVideo?.();
+    }, [accepted?.isVideoCall, isVideoOff, toggleVideo]);
+
+    const handleToggleLocalVideo = useCallback(() => {
+        setIsLocalVideoMinimized((v) => !v);
+    }, []);
+
+    const handleSwitchCamera = useCallback(() => {
+        switchCamera?.();
+    }, [switchCamera]);
+
+    // Memoize video display logic
+    const showRemoteVideo = useMemo(() => {
+        return accepted?.isVideoCall && remoteStream;
+    }, [accepted?.isVideoCall, !!remoteStream]);
+
+    const showLocalVideo = useMemo(() => {
+        return !isVideoOff && localStream;
+    }, [isVideoOff, !!localStream]);
 
     console.log("remoteStream", remoteStream, localStream)
     return (
@@ -164,20 +182,18 @@ const CallComponent: React.FC<Props> = ({
             activeOpacity={1}
             onPress={handleScreenTap}
         >
-            {/* Remote Video View (Full screen) */}
+            {/* Remote Video View */}
             <View className="flex-1 justify-center items-center" style={{ backgroundColor: colors.color2 }}>
-                {/* Nếu là cuộc gọi video, có remoteStream và video đang bật -> Hiển thị video */}
-                {accepted?.isVideoCall && isVideoOn && remoteStream ? (
+                {showRemoteVideo ? (
                     <RTCView
                         streamURL={(remoteStream as any).toURL?.()}
                         style={{ width: '100%', height: '100%' }}
                         objectFit="cover"
                     />
                 ) : (
-                    /* Trường hợp không hiển thị video: cuộc gọi thoại hoặc video bị tắt */
                     <View className="justify-center items-center">
                         <Image
-                            source={{ uri: currentUser.avatar }}
+                            source={{ uri: userInfo.avatar }}
                             style={{
                                 width: 160,
                                 height: 160,
@@ -190,7 +206,7 @@ const CallComponent: React.FC<Props> = ({
                             resizeMode="cover"
                         />
                         <Text className="text-white text-xl font-bold mb-2">
-                            {currentUser.fullname}
+                            {userInfo.fullname}
                         </Text>
                         <Text className="text-white/70 text-lg">
                             {accepted?.isVideoCall ? 'Camera đã tắt' : 'Cuộc gọi thoại'}
@@ -198,14 +214,14 @@ const CallComponent: React.FC<Props> = ({
                     </View>
                 )}
 
-                {/* Local Video View (Picture in Picture) - Chỉ hiển thị nếu là cuộc gọi video */}
+                {/* Local Video */}
                 {accepted?.isVideoCall && !isLocalVideoMinimized && (
                     <TouchableOpacity
                         className="absolute top-16 right-4 w-28 h-36 bg-neutral-800 rounded-xl overflow-hidden border-2 border-white/30"
                         onPress={handleToggleLocalVideo}
                         activeOpacity={0.8}
                     >
-                        {isVideoOn && localStream ? (
+                        {showLocalVideo ? (
                             <RTCView
                                 streamURL={(localStream as any).toURL?.()}
                                 style={{ width: '100%', height: '100%' }}
@@ -266,6 +282,7 @@ const CallComponent: React.FC<Props> = ({
                                     color="white"
                                 />
                             </TouchableOpacity>
+
                             {/* Speaker Toggle */}
                             <TouchableOpacity
                                 className={`w-16 h-16 rounded-full justify-center items-center ${isSpeakerOn ? 'bg-blue-500' : 'bg-white/20'}`}
@@ -277,7 +294,7 @@ const CallComponent: React.FC<Props> = ({
                                     color="white"
                                 />
                             </TouchableOpacity>
-                            
+
                             {/* Các điều khiển video chỉ hiển thị nếu là cuộc gọi video */}
                             {accepted?.isVideoCall && (
                                 <>
@@ -288,13 +305,14 @@ const CallComponent: React.FC<Props> = ({
                                     >
                                         <Ionicons name="camera-reverse" size={20} color="white" />
                                     </TouchableOpacity>
+
                                     {/* Video Toggle Button */}
                                     <TouchableOpacity
-                                        className={`w-16 h-16 rounded-full justify-center items-center ${!isVideoOn ? 'bg-red-500' : 'bg-white/20'}`}
+                                        className={`w-16 h-16 rounded-full justify-center items-center ${isVideoOff ? 'bg-red-500' : 'bg-white/20'}`}
                                         onPress={handleToggleVideo}
                                     >
                                         <Ionicons
-                                            name={isVideoOn ? "videocam" : "videocam-off"}
+                                            name={isVideoOff ? "videocam-off" : "videocam"}
                                             size={28}
                                             color="white"
                                         />
@@ -302,6 +320,7 @@ const CallComponent: React.FC<Props> = ({
                                 </>
                             )}
                         </View>
+
                         {/* End Call Button */}
                         <View className="flex-row justify-center items-center mt-6">
                             <TouchableOpacity
