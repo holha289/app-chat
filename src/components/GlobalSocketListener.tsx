@@ -7,6 +7,7 @@ import IncomingCallModal from "./Modals/CallModal";
 import { selectCall } from "@app/features/user/user.selecter";
 import UserActions from "@app/features/user/user.action";
 import { Friends } from "@app/features/types/contact.type";
+import { useWebRTC } from "@app/hooks/use-webrtc";
 
 const GlobalSocketListener = () => {
   const { socket, connectSocket } = useSockerIo();
@@ -23,6 +24,23 @@ const GlobalSocketListener = () => {
     isAccepted: false,
     roomId: null as string | null
   });
+  // Luôn gọi hook ở cấp cao nhất của component, không phụ thuộc vào điều kiện
+  const {
+    localStream,
+    remoteStream,
+    connectState,
+    setIsScreenSharing,
+    handleCaller,
+    handleCallee,
+    listenCall,
+    hangOut,
+    toggleVideo,
+    toggleAudio,
+    isVideoEnabled,
+    isAudioEnabled
+  } = useWebRTC();
+  const listenVideoCallRef = useRef(false);
+
 
   // Memoize callbacks để tránh tạo lại function
   const onNewMessage = useCallback((payload: any) => {
@@ -264,6 +282,21 @@ const GlobalSocketListener = () => {
     }
   }, [call, user]);
 
+  useEffect(() => {
+    if (call.isVideoCall) {
+      setIsScreenSharing(true);
+    }
+    if (call.category === 'request') {
+      handleCaller(call.roomId as string, user?.id as string);
+    } else if (call.category === 'accept') {
+      handleCallee(call.roomId as string, user?.id as string);
+    }
+  }, [call]);
+
+  useEffect(() => {
+    listenCall();
+  }, []);
+
   const onAcceptCall = () => {
     const userTo = call.to?.id !== user?.id ? call.to : call.from;
     dispatch(UserActions.call({
@@ -284,7 +317,15 @@ const GlobalSocketListener = () => {
       isVideoCall: call.isVideoCall,
       category: 'reject'
     }));
+    hangOut();
   };
+
+  useEffect(() => {
+    console.log("🌐 WebRTC State Changed:");
+    console.log("  - Local Stream:", localStream);
+    console.log("  - Remote Stream:", remoteStream);
+    console.log("  - Connection State:", connectState);
+  }, [localStream, remoteStream, connectState])
 
   return (
     <>
@@ -292,11 +333,20 @@ const GlobalSocketListener = () => {
         visible={formModal.isOpen}
         onAccept={() => onAcceptCall()}
         onDecline={() => onDeclineCall()}
-        caller={formModal.caller}
+        userInfo={formModal.caller}
         isVideoCall={formModal.isVideoCall}
         isTo={formModal.isTo}
         isAccepted={formModal.isAccepted}
         roomId={formModal.roomId}
+        webRTC={{
+          localStream: localStream as MediaStream | null,
+          remoteStream: remoteStream as MediaStream | null,
+          connectState: connectState as 'idle' | 'connecting' | 'connected' | 'failed',
+          toggleVideo,
+          toggleAudio,
+          isVideoEnabled,
+          isAudioEnabled
+        }}
       />
     </>
   );
