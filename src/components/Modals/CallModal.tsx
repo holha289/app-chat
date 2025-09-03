@@ -28,8 +28,8 @@ interface CallModalProps {
         localStream: MediaStream | null;
         remoteStream: MediaStream | null;
         connectState: 'idle' | 'connecting' | 'connected' | 'failed';
-        toggleVideo: () => void;
-        toggleAudio: () => void;
+        toggleVideo: (roomId: string) => void;
+        toggleAudio: (roomId: string) => void;
         isVideoEnabled: boolean;
         isAudioEnabled: boolean;
     };
@@ -210,7 +210,7 @@ const CallModal: React.FC<CallModalProps> = ({
                             <>
                                 {/* Toggle Audio Button */}
                                 <TouchableOpacity
-                                    onPress={webRTC.toggleAudio}
+                                    onPress={() => webRTC.toggleAudio(roomId as string)}
                                     className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isAudioEnabled ? "bg-green-500" : "bg-gray-500"} mr-4`}
                                     activeOpacity={0.8}
                                 >
@@ -224,7 +224,7 @@ const CallModal: React.FC<CallModalProps> = ({
                                 {isVideoCall && (
                                     <>
                                         <TouchableOpacity
-                                            onPress={webRTC.toggleVideo}
+                                            onPress={() => webRTC.toggleVideo(roomId as string)}
                                             className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isVideoEnabled ? "bg-green-500" : "bg-gray-500"}`}
                                             activeOpacity={0.8}
                                         >

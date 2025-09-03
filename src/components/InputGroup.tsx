@@ -23,7 +23,7 @@ const InputGroup: React.FC<InputGroupProps> = ({
   return (
     <View
       className={InputGroupClassStyle.container}
-      style={[{ borderRadius: rounded }]}
+      style={[{ borderRadius: rounded, height: height }]}
     >
       {prefix && (
         <View className={InputGroupClassStyle.prefixContainer}>
@@ -40,8 +40,8 @@ const InputGroup: React.FC<InputGroupProps> = ({
         </View>
       )}
       <TextInput
-        className={`${InputGroupClassStyle.input} h-[${height}]`}
-        style={{ flex: 1 }}
+        className={InputGroupClassStyle.input}
+        style={{ flex: 1, height: height }}
         {...props}
       />
       {suffix && (

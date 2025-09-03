@@ -30,8 +30,8 @@ const GlobalSocketListener = () => {
     remoteStream,
     connectState,
     setIsScreenSharing,
-    handleCaller,
-    handleCallee,
+    handleStreamAndPeer,
+    handleCreateOffer,
     listenCall,
     hangOut,
     toggleVideo,
@@ -286,10 +286,9 @@ const GlobalSocketListener = () => {
     if (call.isVideoCall) {
       setIsScreenSharing(true);
     }
-    if (call.category === 'request') {
-      handleCaller(call.roomId as string, user?.id as string);
-    } else if (call.category === 'accept') {
-      handleCallee(call.roomId as string, user?.id as string);
+    console.log("🎥 Call isVideoCall changed:", call);
+    if (call.category === 'request' && call.from?.id === user?.id) {
+      handleCreateOffer(call.roomId as string, user?.id as unknown as string);
     }
   }, [call]);
 
@@ -342,8 +341,8 @@ const GlobalSocketListener = () => {
           localStream: localStream as MediaStream | null,
           remoteStream: remoteStream as MediaStream | null,
           connectState: connectState as 'idle' | 'connecting' | 'connected' | 'failed',
-          toggleVideo,
-          toggleAudio,
+          toggleVideo: (roomId: string) => toggleVideo(roomId),
+          toggleAudio: (roomId: string) => toggleAudio(roomId),
           isVideoEnabled,
           isAudioEnabled
         }}
