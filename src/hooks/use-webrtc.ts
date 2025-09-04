@@ -22,12 +22,10 @@ const pcConfig: RTCConfiguration = {
     },
   ],
   iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'relay',
+  iceTransportPolicy: 'all',
   bundlePolicy: 'max-bundle',
   rtcpMuxPolicy: 'require',
 };
-
-const pendingCandidates = new Map<string, RTCIceCandidateInit[]>();
 
 export const useWebRTC = () => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -36,23 +34,37 @@ export const useWebRTC = () => {
   const [connectState, setConnectState] = useState('disconnected');
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [localVideoTrack, setLocalVideoTrack] = useState<MediaStreamTrack | null>(null);
-  const peers = useRef<Map<string, RTCPeerConnection>>(new Map());
   const socketIo = getSocket();
   const localStreamRef = useRef<MediaStream | null>(null);
+  const pendingOffer = useRef<RTCSessionDescription | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const pendingCandidates = useRef<Map<string, RTCIceCandidate[]>>(new Map());
 
   const cleanUp = () => {
-    peers.current.forEach((pc, peerId) => {
-      pc.close();
-      peers.current.delete(peerId);
-    });
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+    }
+
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current.getTracks().forEach(track => {
+        track.stop(); // dừng cả mic + camera
+      });
       localStreamRef.current = null;
     }
+
+    if (remoteStream) {
+      remoteStream.getTracks().forEach(track => {
+        track.stop(); // đảm bảo dừng audio của đối phương
+      });
+    }
+
     setLocalStream(null);
     setRemoteStream(null);
-    InCallManager.stop();
+
+    InCallManager.stop(); // dừng audio manager
+    InCallManager.setForceSpeakerphoneOn(false); // reset loa
+    InCallManager.setMicrophoneMute(true); // mute mic
     console.log("✅ WebRTC cleanup completed");
   };
 
@@ -65,6 +77,7 @@ export const useWebRTC = () => {
     };
   }, []);
 
+  // Khởi tạo local stream
   const initStream = async () => {
     if (localStreamRef.current) {
       console.log("✅ Stream already initialized:", localStreamRef.current.getTracks());
@@ -80,14 +93,23 @@ export const useWebRTC = () => {
 
       const stream = await mediaDevices.getUserMedia({
         audio: true,
-        video: isScreenSharing,
+        video: isScreenSharing ? {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 }
+        } : false
       });
       console.log("✅ Local stream tracks:", stream.getTracks());
 
       localStreamRef.current = stream;
       setLocalStream(stream);
-      InCallManager.start({ media: "video", auto: true, ringback: "_DEFAULT_" });
-      console.log("✅ InCallManager started");
+      if (!isScreenSharing) {
+        InCallManager.start({ media: "video", auto: true, ringback: "_DEFAULT_" });
+        console.log("✅ InCallManager started");
+      } else {
+        InCallManager.start({ media: "audio", auto: true, ringback: "_DEFAULT_" });
+      }
       return stream;
     } catch (err) {
       console.error("❌ Error init media:", err);
@@ -95,81 +117,93 @@ export const useWebRTC = () => {
     }
   };
 
-  const createPeerConnection = (roomId: string, peerId: string, stream: MediaStream | null) => {
-    const streamToUse = stream || localStreamRef.current;
-    if (!streamToUse) {
-      console.error("❌ Cannot create peer connection: No stream available");
+  // Tạo peer connection
+  const createPeerConnection = (roomId: string, peerId: string, stream: MediaStream): RTCPeerConnection | null => {
+    const streamToUse = stream;
+    try {
+      // Tạo RTCPeerConnection mới nếu chưa có
+      const pc = new RTCPeerConnection(pcConfig);
+      pcRef.current = pc;
+      // Thêm các track từ local stream vào peer connection
+      streamToUse.getTracks().forEach((track) => {
+        console.log("✅ Adding track:", track.kind, track.id);
+        pc.addTrack(track, streamToUse);
+      });
+
+      // Sự kiện ICE candidate mới
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log("✅ New ICE candidate:", event.candidate);
+          socketIo?.emit("call:signal", {
+            peerId: peerId,
+            roomId,
+            candidate: event.candidate,
+          });
+        } else {
+          console.log("✅ All ICE candidates sent");
+        }
+      };
+
+      // Sự kiện thay đổi trạng thái kết nối ICE
+      pc.oniceconnectionstatechange = () => {
+        console.log(`ICE Connection State for ${peerId}:`, pc.iceConnectionState);
+        switch (pc.iceConnectionState) {
+          case 'connected':
+          case 'completed':
+            console.log(`✅ WebRTC connected for peer ${peerId}`);
+            setConnectState('connected');
+            break;
+          case 'disconnected':
+            console.warn(`⚠️ WebRTC disconnected for peer ${peerId}`);
+            setConnectState('disconnected');
+
+            // Schedule reconnection attempt
+            setTimeout(() => {
+              if (pc.iceConnectionState === 'disconnected') {
+                console.log(`🔄 Attempting to reconnect for peer ${peerId}`);
+                pc.restartIce();
+              }
+            }, 2000);
+            break;
+          case 'failed':
+            console.error(`❌ WebRTC connection failed for peer ${peerId}`);
+            setConnectState('failed');
+            break;
+          case 'closed':
+            console.log(`WebRTC connection closed for peer ${peerId}`);
+            setConnectState('closed');
+            break;
+        }
+      };
+
+      // Sự kiện nhận track từ remote
+      pc.ontrack = (event) => {
+        if (event.streams && event.streams[0]) {
+          const stream = event.streams[0];
+          console.log("✅ Remote stream received, tracks:", stream.getTracks());
+          setRemoteStream(stream as any);
+        } else {
+          console.error("❌ No remote stream received");
+        }
+      };
+      return pc;
+    } catch (err) {
+      console.error("❌ Error creating peer connection:", err);
       return null;
     }
-
-    if (peers.current.has(peerId)) {
-      return peers.current.get(peerId)!;
-    }
-
-    const pc = new RTCPeerConnection(pcConfig);
-    peers.current.set(peerId, pc);
-
-    streamToUse.getTracks().forEach((track) => {
-      console.log("✅ Adding track:", track);
-      pc.addTrack(track, streamToUse);
-    });
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        console.log("✅ New ICE candidate:", event.candidate);
-        socketIo?.emit("call:signal", {
-          peerId: peerId,
-          roomId,
-          candidate: event.candidate,
-        });
-      } else {
-        console.log("✅ All ICE candidates sent");
-      }
-    };
-
-    pc.oniceconnectionstatechange = () => {
-      console.log(`ICE Connection State for ${peerId}:`, pc.iceConnectionState);
-      switch (pc.iceConnectionState) {
-        case 'connected':
-        case 'completed':
-          console.log(`✅ WebRTC connected for peer ${peerId}`);
-          setConnectState('connected');
-          break;
-        case 'disconnected':
-          console.warn(`⚠️ WebRTC disconnected for peer ${peerId}`);
-          setConnectState('disconnected');
-          break;
-        case 'failed':
-          console.error(`❌ WebRTC connection failed for peer ${peerId}`);
-          setConnectState('failed');
-          break;
-        case 'closed':
-          console.log(`WebRTC connection closed for peer ${peerId}`);
-          setConnectState('closed');
-          break;
-      }
-    };
-
-    pc.ontrack = (event) => {
-      if (event.streams && event.streams[0]) {
-        const stream = event.streams[0];
-        console.log("✅ Remote stream received, tracks:", stream.getTracks());
-        setRemoteStream(stream as any);
-      } else {
-        console.error("❌ No remote stream received");
-      }
-    };
-
-    return pc;
   };
 
   const handleCreateOffer = async (roomId: string, peerId: string) => {
-    let pc: RTCPeerConnection | null | undefined = peers.current.get(peerId);
+    const stream = await initStream();
+    if (!stream) {
+      console.error("❌ Failed to initialize local stream for caller");
+      return;
+    }
+
+    const pc = createPeerConnection(roomId, peerId, stream);
     if (!pc) {
-      const stream = localStreamRef.current || await initStream();
-      if (!stream) return;
-      pc = createPeerConnection(roomId, peerId, stream);
-      if (!pc) return;
+      console.error("❌ Failed to create peer connection for caller");
+      return;
     }
 
     try {
@@ -190,84 +224,95 @@ export const useWebRTC = () => {
     }
   };
 
-  const handleStreamAndPeer = async (roomId: string, callerId: string) => {
-    const stream = localStreamRef.current || await initStream();
+  const handleAcceptCall = async (roomId: string, peerId: string) => {
+    // peerId là id người gọi
+    const stream = await initStream(); // Sử dụng hàm initStream để đảm bảo stream được khởi tạo đúng cách
     if (!stream) {
       console.error("❌ Failed to initialize local stream for callee");
       return;
     }
+    // Tạo và gửi câu trả lời
+    const pc = createPeerConnection(roomId, peerId, stream);
+    if (!pc) {
+      console.error("❌ Failed to create peer connection for callee");
+      return;
+    }
 
-    createPeerConnection(roomId, callerId, stream);
+    if (!pendingOffer.current) {
+      console.error("❌ No pending offer to accept");
+      return;
+    }
+    await pc.setRemoteDescription(pendingOffer.current);
+    pendingOffer.current = null;
+    // Tạo và gửi câu trả lời
+    InCallManager.stopRingback();  // dừng âm báo
+    try {
+      const answerDesc = await pc.createAnswer();
+      await pc.setLocalDescription(answerDesc);
+      console.log("📤 Sending answer:", answerDesc);
+      socketIo?.emit("call:signal", {
+        peerId: peerId,
+        roomId,
+        answer: answerDesc,
+      });
+      // flush ICE sau khi accept
+      if (pendingCandidates.current.has(peerId)) {
+        for (const cand of pendingCandidates.current.get(peerId)!) {
+          await pc.addIceCandidate(new RTCIceCandidate(cand));
+        }
+        pendingCandidates.current.delete(peerId);
+      }
+    } catch (error) {
+      console.error("❌ Error creating answer:", error);
+    }
   };
 
   const listenCall = () => {
     const handleSignal = async ({ metadata }: any) => {
+      if (!socketIo) {
+        console.error("❌ No socket.io instance available");
+        return;
+      }
       console.log("📡 Received signal:", metadata);
-      const { peerId, roomId, offer, answer, candidate, videoToggle, audioToggle } = metadata;
+      const { peerId, roomId, offer, answer, candidate } = metadata;
 
       if (!peerId || !roomId) {
         console.error("❌ Invalid signal: missing peerId or roomId");
         return;
       }
 
-      let pc: RTCPeerConnection | null | undefined = peers.current.get(peerId);
-      if (!pc) {
-        const stream = localStreamRef.current || await initStream();
-        if (!stream) return;
-        pc = createPeerConnection(roomId, peerId, stream);
-        if (!pc) return;
-      }
-
       try {
         if (offer) {
-          console.log("📥 Processing offer:", offer);
-          await pc.setRemoteDescription(new RTCSessionDescription(offer));
-          const pendingCands = pendingCandidates.get(peerId) || [];
-          for (const candidate of pendingCands) {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          }
-          pendingCandidates.delete(peerId);
-
-          const answerDesc = await pc.createAnswer();
-          await pc.setLocalDescription(answerDesc);
-          console.log("📤 Sending answer:", answerDesc);
-          socketIo?.emit("call:signal", {
-            peerId: peerId,
-            roomId,
-            answer: answerDesc,
-          });
+          // Nếu người gọi đến thiết lập kết nối mới cho người nhận
+          pendingOffer.current = new RTCSessionDescription(offer);
+          return;
         }
 
         if (answer) {
-          console.log("📥 Processing answer:", answer);
+          InCallManager.stopRingback();  // dừng âm báo
+          // Người gọi xử lý câu trả lời từ người nhận
+          const pc = pcRef.current;
+          if (!pc) {
+            console.error("❌ No peer connection for answer from", peerId);
+            return;
+          }
+          // Thiết lập mô tả từ xa
           await pc.setRemoteDescription(new RTCSessionDescription(answer));
-          const pendingCands = pendingCandidates.get(peerId) || [];
-          for (const candidate of pendingCands) {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          }
-          pendingCandidates.delete(peerId);
         }
-
+        // Xử lý ICE candidate mới
         if (candidate) {
-          console.log("📥 Processing candidate:", candidate);
-          if (pc.remoteDescription) {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          const pc = pcRef.current;
+          if (!pc || !pc.remoteDescription) {
+            // lưu tạm nếu chưa accept
+            if (!pendingCandidates.current.has(peerId)) {
+              pendingCandidates.current.set(peerId, []);
+            }
+            pendingCandidates.current.get(peerId)!.push(candidate);
+            console.log("📥 Candidate queued:", candidate);
           } else {
-            const queue = pendingCandidates.get(peerId) || [];
-            queue.push(candidate);
-            pendingCandidates.set(peerId, queue);
-            console.log("📌 Queued candidate for later processing");
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log("✅ Candidate added immediately");
           }
-        }
-
-        if (videoToggle !== undefined) {
-          console.log(`📹 Remote video toggle: ${videoToggle}`);
-          setIsVideoEnabled(videoToggle);
-        }
-
-        if (audioToggle !== undefined) {
-          console.log(`🔊 Remote audio toggle: ${audioToggle}`);
-          setIsAudioEnabled(audioToggle);
         }
       } catch (err) {
         console.error("❌ Error processing signal:", err);
@@ -285,37 +330,11 @@ export const useWebRTC = () => {
 
   const toggleVideo = async (roomId: string) => {
     setIsVideoEnabled((prev) => !prev);
-    if (isVideoEnabled) {
-      if (localVideoTrack) {
-        localVideoTrack.enabled = false;
-        console.log("✅ Video track disabled");
-        socketIo?.emit("call:signal", {
-          peerId: peers.current.keys().next().value, // Giả sử chỉ có một peer
-          roomId: roomId,
-          videoToggle: false,
-        });
-      }
-    } else {
-      try {
-        const videoStream = await mediaDevices.getUserMedia({ video: true });
-        const newVideoTrack = videoStream.getVideoTracks()[0];
-        peers.current.forEach((pc, peerId) => {
-          console.log("✅ Adding new video track to peer:", newVideoTrack);
-          pc.addTrack(newVideoTrack, localStreamRef.current!);
-          socketIo?.emit("call:signal", {
-            peerId: peerId,
-            roomId: roomId,
-            videoToggle: true,
-          });
-        });
-        setLocalVideoTrack(newVideoTrack as any);
-        if (localStreamRef.current) {
-          localStreamRef.current.addTrack(newVideoTrack);
-          setLocalStream(localStreamRef.current);
-        }
-        console.log("✅ Video track enabled");
-      } catch (error) {
-        console.error("❌ Failed to get video stream:", error);
+    if (localStreamRef.current) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        console.log(`✅ Video track ${videoTrack.enabled ? 'enabled' : 'disabled'}`);
       }
     }
   };
@@ -327,11 +346,6 @@ export const useWebRTC = () => {
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
         console.log(`✅ Audio track ${audioTrack.enabled ? 'enabled' : 'disabled'}`);
-        socketIo?.emit("call:signal", {
-          peerId: peers.current.keys().next().value, // Giả sử chỉ có một peer
-          roomId: roomId,
-          audioToggle: audioTrack.enabled,
-        });
       }
     }
   };
@@ -343,12 +357,12 @@ export const useWebRTC = () => {
     listenCall,
     setIsScreenSharing,
     handleCreateOffer,
-    handleStreamAndPeer,
     connectState,
     hangOut,
     toggleVideo,
     toggleAudio,
     isVideoEnabled,
     isAudioEnabled,
+    handleAcceptCall
   };
 };

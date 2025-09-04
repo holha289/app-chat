@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, use } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSockerIo } from "@app/hooks/use-socketio";
 import msgActions from "@app/features/message/msg.action";
@@ -30,7 +30,7 @@ const GlobalSocketListener = () => {
     remoteStream,
     connectState,
     setIsScreenSharing,
-    handleStreamAndPeer,
+    handleAcceptCall,
     handleCreateOffer,
     listenCall,
     hangOut,
@@ -39,7 +39,6 @@ const GlobalSocketListener = () => {
     isVideoEnabled,
     isAudioEnabled
   } = useWebRTC();
-  const listenVideoCallRef = useRef(false);
 
 
   // Memoize callbacks để tránh tạo lại function
@@ -218,6 +217,7 @@ const GlobalSocketListener = () => {
       const metadata = data?.metadata || {};
       const userTo = metadata.to && metadata.to.id === user?.id;
       if (userTo) {
+        hangOut();
         dispatch(UserActions.call(metadata));
       }
     });
@@ -230,6 +230,7 @@ const GlobalSocketListener = () => {
       }
     });
 
+    listenCall();
     // Debug listener
     socket.onAny(debugListener);
 
@@ -292,10 +293,6 @@ const GlobalSocketListener = () => {
     }
   }, [call]);
 
-  useEffect(() => {
-    listenCall();
-  }, []);
-
   const onAcceptCall = () => {
     const userTo = call.to?.id !== user?.id ? call.to : call.from;
     dispatch(UserActions.call({
@@ -305,6 +302,8 @@ const GlobalSocketListener = () => {
       isVideoCall: call.isVideoCall,
       category: 'accept'
     }));
+    console.log("🚀 Accepting call, joining room:",userTo);
+    handleAcceptCall(call.roomId as string, user?.id as unknown as string);
   };
 
   const onDeclineCall = () => {

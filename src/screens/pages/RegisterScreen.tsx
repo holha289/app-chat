@@ -76,7 +76,7 @@ const RegisterScreen = () => {
             // Bạn cũng có thể lưu `confirmation` vào state nếu cần `confirm(code)` sau này
         } catch (error) {
             console.error("Lỗi gửi OTP:", error);
-            alert("Không thể gửi mã OTP, vui lòng thử lại sau.");
+            alert("Không thể gửi mã OTP, vui lòng thử lại sau.\n" + JSON.stringify(error));
         }
     }
 
