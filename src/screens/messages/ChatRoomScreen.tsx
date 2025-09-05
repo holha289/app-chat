@@ -24,7 +24,6 @@ import {
 } from "@app/features/message/msg.selectors";
 import msgActions from "@app/features/message/msg.action";
 import { selectUser } from "@app/features";
-import { useSockerIo } from "@app/hooks/use-socketio";
 import ChatHeader from "@app/components/chat/ChatHeader";
 import MessageList from "@app/components/chat/MessageList";
 import InputBar from "@app/components/chat/InputBar";
@@ -40,7 +39,6 @@ const ChatRoomScreen = () => {
   const route = useRoute<any>();
   const param = route.params as RouteParam;
   const isGroup = param.type === "group";
-  const { socket } = useSockerIo();
   const dispatch = useDispatch();
   const getinputText = useSelector((state: RootState) =>
     selectInputText(state, param.id)
@@ -80,39 +78,6 @@ const ChatRoomScreen = () => {
       dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor }));
     }
   }, [cursor, status, dispatch, param.id]);
-
-  // const socketHandler = useCallback(
-  //   (payload: any) => {
-  //     console.log("🚀 ~D", payload);
-  //     const m = payload?.metadata?.message;
-
-  //     if (!m || !param.id) return;
-  //     dispatch(msgActions.reciverMsg({ roomId: param.id, message: m }));
-  //     dispatch(
-  //       msgActions.reciverMsgSuccess({
-  //         roomId: param.id,
-  //         message: m,
-  //         replytoId: null,
-  //       })
-  //     );
-  //     const msg = {
-  //       msg_id: m?.id,
-  //       createdAt: m?.createdAt,
-  //       msg_content: m?.content,
-  //     };
-  //     dispatch(msgActions.updateLastMsg({ roomId: param.id, message: msg }));
-  //   },
-  //   [dispatch, param.id]
-  // );
-
-  // useEffect(() => {
-  //   if (!socket) return;
-  //   socket.on("room:sended:message", socketHandler);
-  //   return () => {
-  //     socket.off("room:sended:message", socketHandler);
-  //   };
-  // }, [socket, socketHandler]);
-
   useEffect(() => {
     dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor: null }));
   }, [dispatch, param.id]);

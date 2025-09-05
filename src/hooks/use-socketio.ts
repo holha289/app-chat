@@ -59,7 +59,7 @@ export const useSockerIo = () => {
         });
         setSocket(currentSocket);
       }
-    }, 2000); // Check every 2 seconds instead of 1
+    }, 20000); // Check every 20 seconds instead of 1
 
     return () => clearInterval(interval);
   }, [socket]);
