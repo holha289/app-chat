@@ -8,6 +8,7 @@ type Props = {
   meId?: string | number;
   onScroll?: any;
   roomdId?: string;
+  isGroup?: boolean;
   onMomentumScrollBegin?: () => void;
   onEndReached?: () => void;
   ListFooterComponent?: React.ReactElement | null;
@@ -18,6 +19,7 @@ type Props = {
 
 const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
   {
+    isGroup,
     messages,
     roomdId,
     meId,
@@ -29,12 +31,17 @@ const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
     onViewableItemsChanged,
     viewabilityConfig,
   },
-  
+
   ref
 ) {
   console.log("🚀 ~ roomdId:", roomdId);
   const renderItem = ({ item }: ListRenderItemInfo<MessageItem>) => (
-    <MessageRow roomdId={roomdId} item={item} meId={meId} />
+    <MessageRow
+      isGroupChat={isGroup}
+      roomdId={roomdId}
+      item={item}
+      meId={meId}
+    />
   );
 
   return (

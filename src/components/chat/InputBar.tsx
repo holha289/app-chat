@@ -38,12 +38,12 @@ export default function InputBar({
   return (
     <View className="flex items-center w-full  border-t border-gray-100">
       {replyToMsg?.id && (
-        <View className="w-full h-20  bg-red-400 flex-row items-start ">
-          <View className="flex-1 p-5">
+        <View className="w-full h-15  bg-gray-200 flex-row items-start ">
+          <View className="flex-1 p-2">
             <Text className="text-xs ">
               Trả lời {isMe ? "tôi" : replyToMsg?.sender.fullname}
             </Text>
-            <Text className="">{replyToMsg?.content.slice(0, 40)}...</Text>
+            <Text className="">{replyToMsg?.content.slice(0, 100)}{replyToMsg?.content.length>100?"...":""}</Text>
           </View>
           <View>
             <TouchableOpacity className="p-5" onPress={onPress}>

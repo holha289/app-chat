@@ -102,7 +102,7 @@ const HandleSocketSendMsgListener = () => {
           })
         );
       } catch (error) {
-        console.error("Get messages by room failed:", error);
+        console.error("Send messages by room failed:", error);
         const errorMessage =
           typeof error === "object" && error !== null && "message" in error
             ? (error as { message: string }).message

@@ -150,22 +150,30 @@ const MessageRow = memo(
     // Render reply preview
     const renderReplyPreview = useCallback(() => {
       if (!item.replyTo) return null;
-      const isMe = item.replyTo?.sender?.id === meId;
+      const replyIsMe = item?.replyTo?.sender?.id == meId;
       return (
-        <View
-          className={`bg-gray-500 rounded-2xl px-4 py-2 ${
-            isMe
-              ? "rounded-br-md  shadow-sm mr-1 ml-6"
-              : "rounded-bl-md  shadow-sm ml-1 mr-6"
-          }`}
-        >
+        <View>
           <Text className="text-xs text-blue-600 font-medium">
-            Bạn dã trả lời{" "}
-            {isMe ? " chính mình" : item.replyTo?.sender?.fullname || "Unknown"}
+            {/* Bạn dã trả lời{" "}
+            {replyIsMe ? " chính mình" : item.replyTo?.sender?.fullname || "Unknown"} */}
+            {isMe ? "Bạn" : item.sender?.fullname || "Unknown"} đã trả lời
+            {replyIsMe && isMe && <Text> chính mình</Text>}
+            {replyIsMe && !isMe && (
+              <Text> Bạn</Text>
+            )}
+            {!replyIsMe && isMe && <Text> {item.replyTo?.sender?.fullname || "Unknown"}</Text>}
           </Text>
-          <Text className="text-sm text-gray-600 text-end" numberOfLines={2}>
-            {item.replyTo?.content}
-          </Text>
+          <View
+            className={`bg-gray-200 rounded-2xl px-4 py-2 ${
+              isMe
+                ? "rounded-br-md  shadow-sm mr-1 ml-6"
+                : "rounded-bl-md  shadow-sm ml-1 mr-6"
+            }`}
+          >
+            <Text className="text-sm text-gray-600 text-end" numberOfLines={2}>
+              {item.replyTo?.content}
+            </Text>
+          </View>
         </View>
       );
     }, [item.replyTo]);
@@ -202,7 +210,6 @@ const MessageRow = memo(
       //     Alert.alert("Lỗi", "Không có nội dung để sao chép");
       //     return;
       //   }
-
       //   Clipboard.setString(item.content);
       //   console.log("Copy message successful:", item.content);
       //   Alert.alert("Sao chép", "Tin nhắn đã được sao chép vào clipboard");

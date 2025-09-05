@@ -1,4 +1,5 @@
 import React, {
+  use,
   useCallback,
   useEffect,
   useMemo,
@@ -16,6 +17,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
+  replyToMsg,
+  selectInputText,
   selectMessage,
   selectMsgStatus,
 } from "@app/features/message/msg.selectors";
@@ -27,24 +30,35 @@ import MessageList from "@app/components/chat/MessageList";
 import InputBar from "@app/components/chat/InputBar";
 import { isBefore } from "@app/utils/compare";
 import { randomId } from "@app/utils/randomId";
+import { MessageItem } from "@app/features/types/msg.type";
+import { RootState } from "@app/store";
 
-type RouteParam = { id: string; name: string; avatar?: string };
+type RouteParam = { id: string; name: string; avatar?: string; type?: string };
 
 const ChatRoomScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<any>();
   const param = route.params as RouteParam;
-
+  const isGroup = param.type === "group";
   const { socket } = useSockerIo();
   const dispatch = useDispatch();
-
+  const getinputText = useSelector((state: RootState) =>
+    selectInputText(state, param.id)
+  );
   const userInfo = useSelector(selectUser);
-  const conversations = useSelector(selectMessage);
+  const conversations = useSelector((state: RootState) =>
+    selectMessage(state, param.id)
+  );
+  const reply = useSelector((state: RootState) => replyToMsg(state, param.id));
+  const replyIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    replyIdRef.current = reply?.id ?? null; // luôn sync giá trị mới nhất
+  }, [reply]);
   const status = useSelector(selectMsgStatus);
 
-  const messages = conversations[param.id]?.items ?? [];
-  const cursor = conversations[param.id]?.nextCursor ?? null;
-  const lastMsgId = conversations[param.id]?.lastMsgId ?? null;
+  const messages = conversations?.items ?? [];
+  const cursor = conversations?.nextCursor ?? null;
+  const lastMsgId = conversations?.lastMsgId ?? null;
   const meId = userInfo?.id;
 
   const listRef = useRef<FlatList<any>>(null);
@@ -67,45 +81,43 @@ const ChatRoomScreen = () => {
     }
   }, [cursor, status, dispatch, param.id]);
 
-  const socketHandler = useCallback(
-    (payload: any) => {
-      console.log("🚀 ~D", payload);
-      const m = payload?.metadata?.message;
+  // const socketHandler = useCallback(
+  //   (payload: any) => {
+  //     console.log("🚀 ~D", payload);
+  //     const m = payload?.metadata?.message;
 
-      if (!m || !param.id) return;
-      dispatch(msgActions.reciverMsg({ roomId: param.id, message: m }));
-      dispatch(
-        msgActions.reciverMsgSuccess({
-          roomId: param.id,
-          message: m,
-          replytoId: null,
-        })
-      );
-      const msg = {
-        msg_id: m?.id,
-        createdAt: m?.createdAt,
-        msg_content: m?.content,
-      };
-      dispatch(msgActions.updateLastMsg({ roomId: param.id, message: msg }));
-    },
-    [dispatch, param.id]
-  );
+  //     if (!m || !param.id) return;
+  //     dispatch(msgActions.reciverMsg({ roomId: param.id, message: m }));
+  //     dispatch(
+  //       msgActions.reciverMsgSuccess({
+  //         roomId: param.id,
+  //         message: m,
+  //         replytoId: null,
+  //       })
+  //     );
+  //     const msg = {
+  //       msg_id: m?.id,
+  //       createdAt: m?.createdAt,
+  //       msg_content: m?.content,
+  //     };
+  //     dispatch(msgActions.updateLastMsg({ roomId: param.id, message: msg }));
+  //   },
+  //   [dispatch, param.id]
+  // );
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.on("room:sended:message", socketHandler);
-    return () => {
-      socket.off("room:sended:message", socketHandler);
-    };
-  }, [socket, socketHandler]);
+  // useEffect(() => {
+  //   if (!socket) return;
+  //   socket.on("room:sended:message", socketHandler);
+  //   return () => {
+  //     socket.off("room:sended:message", socketHandler);
+  //   };
+  // }, [socket, socketHandler]);
 
   useEffect(() => {
     dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor: null }));
   }, [dispatch, param.id]);
 
-  const [inputText, setInputText] = useState(
-    conversations[param.id]?.inputText || ""
-  );
+  const [inputText, setInputText] = useState(getinputText || "");
   const sendMsg = useCallback(() => {
     const content = inputText.trim();
     if (!content) return;
@@ -116,6 +128,9 @@ const ChatRoomScreen = () => {
       status: "active",
       id: userInfo?.id || "",
     };
+    console.log("reply: ", reply);
+    const replytoId = replyIdRef.current; // 👈 lấy giá trị mới nhất, không bị stale
+
     dispatch(
       msgActions.sendMsgByRoom({
         message: {
@@ -123,7 +138,7 @@ const ChatRoomScreen = () => {
           content,
           id: randomId(),
           type: "text",
-          replytoId: conversations[param.id]?.replyToMsg?.id || null,
+          replytoId: replytoId,
         },
         sender: sender,
       })
@@ -213,6 +228,7 @@ const ChatRoomScreen = () => {
           onBack={() => navigation.goBack()}
         />
         <MessageList
+          isGroup={isGroup}
           ref={listRef}
           messages={messages}
           meId={meId}
@@ -228,9 +244,9 @@ const ChatRoomScreen = () => {
           value={inputText}
           onChangeText={setInputText}
           onSend={sendMsg}
-          replyToMsg={conversations[param.id]?.replyToMsg || undefined}
+          replyToMsg={reply || undefined}
           roomdId={param.id}
-          isMe={meId === conversations[param.id]?.replyToMsg?.sender.id}
+          isMe={meId === reply?.sender.id}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
