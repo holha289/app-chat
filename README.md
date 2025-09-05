@@ -1,8 +1,33 @@
-# App Chat - React Native Expo Project
+# Ap## 🚀 Tải APK & Demo
+
+### 📲 **Download APK** 
+**[⬇️ Tải APK Android](https://dply.me/5n6xwv)**
+
+> Ứng dụng đã được build và deploy sẵn. Chỉ cần tải về và cài đặt trực tiếp trên thiết bị Android.
+
+### ⚡ **Quick Start**
+1. **Tải APK** từ link trên về điện thoại Android
+2. **Bật Unknown Sources** trong Settings > Security 
+3. **Cài đặt APK** và mở ứng dụng
+4. **Đăng ký tài khoản** mới hoặc đăng nhập
+5. **Test các tính năng**:
+   - Long press tin nhắn để mở modal với emoji reactions
+   - Thử copy tin nhắn, reply, forward
+   - Test real-time chat với Socket.io
+   - Xem profile, edit thông tin cá nhân
+
+## 📱 Demo Ứng dụng React Native Expo Project
 
 Ứng dụng chat đa nền tảng xây dựng với React Native, Expo, Redux Toolkit, Firebase, Socket.io và NativeWind (Tailwind CSS cho React Native).
 
-## 📱 Demo Ứng dụng
+## � Tải APK & Demo
+
+### 📲 **Download APK** 
+**[⬇️ Tải APK Android](https://dply.me/5n6xwv)**
+
+> Ứng dụng đã được build và deploy sẵn. Chỉ cần tải về và cài đặt trực tiếp trên thiết bị Android.
+
+## �📱 Demo Ứng dụng
 
 ### Màn hình Profile & Thông tin cá nhân
 <div align="center">
@@ -101,7 +126,14 @@ npm install
 yarn install
 ```
 
-### Build & chạy native (không dùng expo start/web)
+### 🔄 **Option 1: Sử dụng APK có sẵn (Khuyên dùng)**
+```bash
+# Tải APK từ link: https://dply.me/5n6xwv
+# Cài đặt trực tiếp trên thiết bị Android
+# Không cần build source code
+```
+
+### 🛠️ **Option 2: Build từ source code**
 ```bash
 # Prebuild native code (Android)
 npx expo prebuild --platform android
@@ -188,6 +220,29 @@ const ACTION_BUTTONS = [
 - Copy tin nhắn vào clipboard với error handling
 - Đóng modal khi tap outside
 - Animation mượt mà với React Native
+
+## 🌐 Deployment
+
+### APK Distribution
+- **Platform**: dply.me (APK hosting service)
+- **Link**: https://dply.me/5n6xwv
+- **Build**: Production-ready APK với Firebase config
+- **Size**: ~50MB (bao gồm native dependencies)
+
+### Build Info
+```bash
+# Build commands đã sử dụng
+npx expo prebuild --platform android
+cd android && ./gradlew assembleRelease
+```
+
+**APK Features:**
+- ✅ Firebase Auth & Cloud Messaging
+- ✅ Socket.io real-time messaging  
+- ✅ Redux-persist session storage
+- ✅ NativeWind responsive UI
+- ✅ Message modal with emoji reactions
+- ✅ Clipboard copy functionality
 
 
 ## 🔍 Troubleshooting
