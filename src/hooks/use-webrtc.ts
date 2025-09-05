@@ -37,13 +37,17 @@ export const useWebRTC = () => {
   const socketIo = getSocket();
   const localStreamRef = useRef<MediaStream | null>(null);
   const pendingOffer = useRef<RTCSessionDescription | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
   const pendingCandidates = useRef<Map<string, RTCIceCandidate[]>>(new Map());
+  const peerIdRef = useRef<Map<string, RTCPeerConnection>>(new Map()); // roomId -> peerId
+  const pcRef = useRef<RTCPeerConnection | null>(null);
 
   const cleanUp = () => {
-    if (pcRef.current) {
-      pcRef.current.close();
-      pcRef.current = null;
+    if (peerIdRef.current) {
+      peerIdRef.current.forEach((peerConnection, roomId) => {
+        console.log(`Cleaning up peer connection for room ${roomId}`);
+        peerConnection.close();
+      });
+      peerIdRef.current.clear();
     }
 
     if (localStreamRef.current) {
@@ -93,12 +97,12 @@ export const useWebRTC = () => {
 
       const stream = await mediaDevices.getUserMedia({
         audio: true,
-        video: isScreenSharing ? {
+        video: {
           facingMode: 'user',
           width: { ideal: 1280 },
           height: { ideal: 720 },
           frameRate: { ideal: 30 }
-        } : false
+        }
       });
       console.log("✅ Local stream tracks:", stream.getTracks());
 
@@ -117,103 +121,73 @@ export const useWebRTC = () => {
     }
   };
 
-  // Tạo peer connection
-  const createPeerConnection = (roomId: string, peerId: string, stream: MediaStream): RTCPeerConnection | null => {
-    const streamToUse = stream;
-    try {
-      // Tạo RTCPeerConnection mới nếu chưa có
-      const pc = new RTCPeerConnection(pcConfig);
-      pcRef.current = pc;
-      // Thêm các track từ local stream vào peer connection
-      streamToUse.getTracks().forEach((track) => {
-        console.log("✅ Adding track:", track.kind, track.id);
-        pc.addTrack(track, streamToUse);
-      });
-
-      // Sự kiện ICE candidate mới
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log("✅ New ICE candidate:", event.candidate);
-          socketIo?.emit("call:signal", {
-            peerId: peerId,
-            roomId,
-            candidate: event.candidate,
-          });
-        } else {
-          console.log("✅ All ICE candidates sent");
-        }
-      };
-
-      // Sự kiện thay đổi trạng thái kết nối ICE
-      pc.oniceconnectionstatechange = () => {
-        console.log(`ICE Connection State for ${peerId}:`, pc.iceConnectionState);
-        switch (pc.iceConnectionState) {
-          case 'connected':
-          case 'completed':
-            console.log(`✅ WebRTC connected for peer ${peerId}`);
-            setConnectState('connected');
-            break;
-          case 'disconnected':
-            console.warn(`⚠️ WebRTC disconnected for peer ${peerId}`);
-            setConnectState('disconnected');
-
-            // Schedule reconnection attempt
-            setTimeout(() => {
-              if (pc.iceConnectionState === 'disconnected') {
-                console.log(`🔄 Attempting to reconnect for peer ${peerId}`);
-                pc.restartIce();
-              }
-            }, 2000);
-            break;
-          case 'failed':
-            console.error(`❌ WebRTC connection failed for peer ${peerId}`);
-            setConnectState('failed');
-            break;
-          case 'closed':
-            console.log(`WebRTC connection closed for peer ${peerId}`);
-            setConnectState('closed');
-            break;
-        }
-      };
-
-      // Sự kiện nhận track từ remote
-      pc.ontrack = (event) => {
-        if (event.streams && event.streams[0]) {
-          const stream = event.streams[0];
-          console.log("✅ Remote stream received, tracks:", stream.getTracks());
-          setRemoteStream(stream as any);
-        } else {
-          console.error("❌ No remote stream received");
-        }
-      };
-      return pc;
-    } catch (err) {
-      console.error("❌ Error creating peer connection:", err);
-      return null;
-    }
-  };
-
   const handleCreateOffer = async (roomId: string, peerId: string) => {
     const stream = await initStream();
     if (!stream) {
       console.error("❌ Failed to initialize local stream for caller");
       return;
     }
+    // Tạo peer connection và gửi lời mời
+    pcRef.current = new RTCPeerConnection(pcConfig);
+    peerIdRef.current.set(peerId, pcRef.current);
+    // Thêm các track từ local stream vào peer connection
+    stream.getTracks().forEach((track) => {
+      console.log("✅ Adding track:", track.kind, track.id);
+      pcRef.current?.addTrack(track, stream);
+    });
 
-    const pc = createPeerConnection(roomId, peerId, stream);
-    if (!pc) {
-      console.error("❌ Failed to create peer connection for caller");
-      return;
-    }
+    pcRef.current.onconnectionstatechange = () => {
+      switch (pcRef.current?.connectionState) {
+        case "connected":
+          console.log("✅ Connection established");
+          break;
+        case "disconnected":
+        case "failed":
+          console.warn("⚠️ Connection failed/disconnected");
+          cleanUp();
+          setConnectState('disconnected');
+          break;
+        case "closed":
+          console.log("ℹ️ Connection closed");
+          cleanUp();
+          setConnectState('disconnected');
+          break;
+        default:
+          break;
+      }
+    };
+
+    // Sự kiện ICE candidate mới
+    pcRef.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log("✅ New ICE candidate:", event.candidate);
+        socketIo?.emit("call:signal", {
+          peerId: peerId, // gửi về máy 2
+          roomId,
+          candidate: event.candidate,
+        });
+      } else {
+        console.log("✅ All ICE candidates sent");
+      }
+    };
+
+    // Sự kiện nhận track từ remote
+    pcRef.current.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        const stream = event.streams[0];
+        console.log("✅ Remote stream received, tracks:", stream.getTracks());
+        setRemoteStream(stream as any);
+      }
+    };
 
     try {
-      const offer = await pc.createOffer({
+      const offer = await pcRef.current.createOffer({
         offerToReceiveVideo: true,
         offerToReceiveAudio: true,
         voiceActivityDetection: false,
       });
-      await pc.setLocalDescription(offer);
-      console.log("📤 Sending offer:", offer);
+      await pcRef.current.setLocalDescription(offer);
+      // Gửi lời mời về máy 2
       socketIo?.emit("call:signal", {
         peerId: peerId,
         roomId,
@@ -224,44 +198,93 @@ export const useWebRTC = () => {
     }
   };
 
-  const handleAcceptCall = async (roomId: string, peerId: string) => {
-    // peerId là id người gọi
-    const stream = await initStream(); // Sử dụng hàm initStream để đảm bảo stream được khởi tạo đúng cách
+  const handleAcceptCall = async (roomId: string, peerId: string, callerId: string) => {
+    // Sụ kiện máy 2 nhận lời mời
+    const stream = await initStream();
     if (!stream) {
       console.error("❌ Failed to initialize local stream for callee");
       return;
     }
-    // Tạo và gửi câu trả lời
-    const pc = createPeerConnection(roomId, peerId, stream);
-    if (!pc) {
-      console.error("❌ Failed to create peer connection for callee");
-      return;
-    }
+    pcRef.current = new RTCPeerConnection(pcConfig);
+    peerIdRef.current.set(peerId, pcRef.current);
+    // Thêm các track từ local stream vào peer connection
+    stream.getTracks().forEach((track) => {
+      console.log("✅ Adding track:", track.kind, track.id);
+      pcRef.current?.addTrack(track, stream);
+    });
+
+    pcRef.current.onconnectionstatechange = () => {
+      switch (pcRef.current?.connectionState) {
+        case "connected":
+          console.log("✅ Connection established");
+          setConnectState('connected');
+          break;
+        case "disconnected":
+        case "failed":
+          console.warn("⚠️ Connection failed/disconnected");
+          cleanUp();
+          setConnectState('disconnected');
+          break;
+        case "closed":
+          console.log("ℹ️ Connection closed");
+          cleanUp();
+          setConnectState('disconnected');
+          break;
+        default:
+          break;
+      }
+    };
+
+    pcRef.current.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log("✅ New ICE candidate:", event.candidate);
+        socketIo?.emit("call:signal", {
+          peerId: callerId, // gửi về máy 1
+          roomId,
+          candidate: event.candidate,
+        });
+      } else {
+        console.log("✅ All ICE candidates sent");
+      }
+    };
+
+    pcRef.current.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        const stream = event.streams[0];
+        console.log("✅ Remote stream received, tracks:", stream.getTracks());
+        setRemoteStream(stream as any);
+      }
+    };
 
     if (!pendingOffer.current) {
       console.error("❌ No pending offer to accept");
       return;
     }
-    await pc.setRemoteDescription(pendingOffer.current);
+    // Thiết lập mô tả từ xa 
+    await pcRef.current.setRemoteDescription(pendingOffer.current);
     pendingOffer.current = null;
+    // Các ICE candidate chờ
+    if (pendingCandidates.current.has(peerId)) {
+      const candidates = pendingCandidates.current.get(peerId);
+      if (candidates && candidates.length > 0) {
+        for (const c of candidates) {
+          await pcRef.current.addIceCandidate(new RTCIceCandidate(c));
+          console.log("✅ Pending candidate added:", c);
+        }
+      }
+      pendingCandidates.current.delete(peerId);
+    }
     // Tạo và gửi câu trả lời
     InCallManager.stopRingback();  // dừng âm báo
     try {
-      const answerDesc = await pc.createAnswer();
-      await pc.setLocalDescription(answerDesc);
+      const answerDesc = await pcRef.current.createAnswer();
+      await pcRef.current.setLocalDescription(answerDesc);
       console.log("📤 Sending answer:", answerDesc);
       socketIo?.emit("call:signal", {
-        peerId: peerId,
+        peerId: callerId, // gửi về máy 1
         roomId,
         answer: answerDesc,
       });
-      // flush ICE sau khi accept
-      if (pendingCandidates.current.has(peerId)) {
-        for (const cand of pendingCandidates.current.get(peerId)!) {
-          await pc.addIceCandidate(new RTCIceCandidate(cand));
-        }
-        pendingCandidates.current.delete(peerId);
-      }
     } catch (error) {
       console.error("❌ Error creating answer:", error);
     }
@@ -273,45 +296,70 @@ export const useWebRTC = () => {
         console.error("❌ No socket.io instance available");
         return;
       }
-      console.log("📡 Received signal:", metadata);
-      const { peerId, roomId, offer, answer, candidate } = metadata;
-
+      const { peerId, roomId, offer, answer, candidate, type } = metadata;
       if (!peerId || !roomId) {
         console.error("❌ Invalid signal: missing peerId or roomId");
         return;
       }
 
       try {
-        if (offer) {
+        if (type && type === 'offer') {
           // Nếu người gọi đến thiết lập kết nối mới cho người nhận
           pendingOffer.current = new RTCSessionDescription(offer);
           return;
         }
 
-        if (answer) {
+        if (type && type === 'answer') {
           InCallManager.stopRingback();  // dừng âm báo
-          // Người gọi xử lý câu trả lời từ người nhận
-          const pc = pcRef.current;
+          // peerId là id người gọi, để lấy đúng peer connection
+          const pc = peerIdRef.current.get(peerId);
           if (!pc) {
             console.error("❌ No peer connection for answer from", peerId);
             return;
           }
           // Thiết lập mô tả từ xa
           await pc.setRemoteDescription(new RTCSessionDescription(answer));
+          // Các ICE candidate chờ
+          if (pendingCandidates.current.has(peerId)) {
+            const candidates = pendingCandidates.current.get(peerId);
+            if (candidates && candidates.length > 0) {
+              for (const c of candidates) {
+                await pc.addIceCandidate(new RTCIceCandidate(c));
+                console.log("✅ Pending candidate added:", c);
+              }
+            }
+            pendingCandidates.current.delete(peerId);
+          }
+          return;
         }
         // Xử lý ICE candidate mới
-        if (candidate) {
-          const pc = pcRef.current;
-          if (!pc || !pc.remoteDescription) {
-            // lưu tạm nếu chưa accept
-            if (!pendingCandidates.current.has(peerId)) {
-              pendingCandidates.current.set(peerId, []);
-            }
-            pendingCandidates.current.get(peerId)!.push(candidate);
-            console.log("📥 Candidate queued:", candidate);
-          } else {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
-            console.log("✅ Candidate added immediately");
+        if (type && type === 'candidate' && candidate) {
+          const pc = peerIdRef.current.get(peerId); // peerId là người GỬI
+          const candInit = candidate; // object JSON
+
+          if (!pc) {
+            // Chưa có PC -> queue theo fromPeer
+            if (!pendingCandidates.current.has(peerId)) pendingCandidates.current.set(peerId, []);
+            pendingCandidates.current.get(peerId)!.push(candInit);
+            console.log("📥 Candidate queued (no PC yet) from:", peerId);
+            return;
+          }
+
+          if (!pc.remoteDescription) {
+            if (!pendingCandidates.current.has(peerId)) pendingCandidates.current.set(peerId, []);
+            pendingCandidates.current.get(peerId)!.push(candInit);
+            console.log("📥 Candidate queued (no remoteDescription) from:", peerId);
+            return;
+          }
+
+          // ✅ Có PC và đã setRemoteDescription -> add luôn
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candInit));
+            console.log("✅ addIceCandidate immediately:", candInit);
+          } catch (e) {
+            console.warn("⚠️ addIceCandidate failed, re-queue:", e);
+            if (!pendingCandidates.current.has(peerId)) pendingCandidates.current.set(peerId, []);
+            pendingCandidates.current.get(peerId)!.push(candInit);
           }
         }
       } catch (err) {

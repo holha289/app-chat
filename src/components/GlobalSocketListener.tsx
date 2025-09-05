@@ -289,7 +289,8 @@ const GlobalSocketListener = () => {
     }
     console.log("🎥 Call isVideoCall changed:", call);
     if (call.category === 'request' && call.from?.id === user?.id) {
-      handleCreateOffer(call.roomId as string, user?.id as unknown as string);
+      const callerId = user?.id as unknown as string;
+      handleCreateOffer(call.roomId as string, callerId);
     }
   }, [call]);
 
@@ -302,8 +303,9 @@ const GlobalSocketListener = () => {
       isVideoCall: call.isVideoCall,
       category: 'accept'
     }));
-    console.log("🚀 Accepting call, joining room:",userTo);
-    handleAcceptCall(call.roomId as string, user?.id as unknown as string);
+    const calleeId = user?.id as unknown as string; // Người nhận cuộc gọi hiện tại
+    const callerId = userTo?.id as unknown as string; // Người gọi
+    handleAcceptCall(call.roomId as string, calleeId, callerId);
   };
 
   const onDeclineCall = () => {

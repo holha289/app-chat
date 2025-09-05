@@ -18,7 +18,6 @@ class ApiService {
         //  TODO: Thêm logic để lấy token
         // const token = localStorage.getItem('authToken'); // Hoặc lấy từ store, context, ...
         const tokens = this.getAccessToken();
-        console.log(tokens)
         if (tokens) {
           config.headers["Authorization"] = `Bearer ${tokens}`;
         }
