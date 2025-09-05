@@ -29,7 +29,7 @@ const GlobalSocketListener = () => {
     };
     
     console.log("✅ Dispatching message actions for room:", roomId);
-    dispatch(msgActions.reciverMsg({ roomId, message: m }));
+    dispatch(msgActions.reciverMsg({ roomId, message: m,  }));
     dispatch(msgActions.updateLastMsg({ roomId, message: msg }));
   }, [dispatch]);
 

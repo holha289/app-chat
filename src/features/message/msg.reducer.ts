@@ -28,6 +28,8 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
             items: [],
             nextCursor: null,
             lastMsgId: null,
+            inputText: "",
+            replyToMsg: null,
           };
         }
       }
@@ -47,6 +49,8 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
           items: [],
           nextCursor: null,
           lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
         });
 
       const isReset = !cursor; // '', null, undefined => reset
@@ -70,7 +74,8 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       target.nextCursor = nextCursor;
     })
     .addCase(msgActions.reciverMsgSuccess, (state, { payload }) => {
-      const { roomId, message } = payload;
+      const { roomId, message, replytoId } = payload;
+
       // console.log("🚀 ~ message:", message)
       // đảm bảo room tồn tại
       const target =
@@ -79,11 +84,19 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
           items: [],
           nextCursor: null,
           lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
         });
+      if (replytoId) {
+        const replyToMsg = target.items.find((m) => m.id === replytoId);
+        if (replyToMsg) {
+          message.replyTo = replyToMsg;
+        }
+      }
 
       // chỉ thêm nếu chưa tồn tại id này
       const exists = target.items.find(
-        (m) => m.id?.toString() === message.id?.toString(),
+        (m) => m.id?.toString() === message.id?.toString()
       );
       if (!exists) {
         target.items.unshift(message);
@@ -100,6 +113,8 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
           items: [],
           nextCursor: null,
           lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
         });
       target.lastMsgId = lastMsgId;
       target.items.forEach((i) => {
@@ -127,13 +142,40 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
           "After update:",
           state.messages[roomId]?.lastMsgId,
           "  ",
-          message?.msg_id,
+          message?.msg_id
         );
       } else {
         console.warn("Room not found", roomId);
       }
     })
-
+    // input text
+    .addCase(msgActions.inputText, (state, { payload }) => {
+      const { roomId, text } = payload;
+      const target =
+        state.messages[roomId] ??
+        (state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
+        });
+      target.inputText = text;
+    })
+    .addCase(msgActions.replyToMsg, (state, { payload }) => {
+      const { roomId, message } = payload;
+      console.log("Replying to message:", message);
+      const target =
+        state.messages[roomId] ??
+        (state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
+        });
+      target.replyToMsg = message;
+    })
     // ===== PENDING =====
     .addMatcher(
       isAnyOf(
@@ -141,13 +183,13 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoom,
         msgActions.sendMsgByRoom,
         msgActions.reciverMsg,
-        msgActions.readMark,
+        msgActions.readMark
       ),
       (state) => {
         state.status = "pending";
         state.error = null;
         state.message = "";
-      },
+      }
     )
 
     // ===== FAILED =====
@@ -157,12 +199,12 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomFailed,
         msgActions.sendMsgByRoomFailed,
         msgActions.reciverMsgFailed,
-        msgActions.readMarkFailed,
+        msgActions.readMarkFailed
       ),
       (state, { payload }) => {
         state.status = "failed";
         state.error = payload;
-      },
+      }
     )
 
     // ===== SUCCESS =====
@@ -172,12 +214,12 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomSuccess,
         msgActions.sendMsgByRoomSuccess,
         msgActions.reciverMsgSuccess,
-        msgActions.readMarkSuccess,
+        msgActions.readMarkSuccess
       ),
       (state) => {
         state.status = "success";
         state.error = null;
-      },
+      }
     );
 });
 

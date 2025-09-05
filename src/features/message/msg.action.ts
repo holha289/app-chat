@@ -33,19 +33,21 @@ const Room_ACTIONS_TYPES = {
   READMARK: "READ_MARK",
   READMARK_SUCCESS: "READ_MARK_SUCCESS",
   READMARK_FAILED: "READ_MARK_FAILED",
+  INPUTTEXT: "INPUT_TEXT",
+  REPLYTOMSG: "REPLAY_TO_MSG",
 };
 
 const msgActions = {
   // get list room
   getRoom: createAction(Room_ACTIONS_TYPES.GETROOM),
   getRoomSuccess: createAction<MsgState["rooms"]>(
-    Room_ACTIONS_TYPES.GETROOM_SUCCESS,
+    Room_ACTIONS_TYPES.GETROOM_SUCCESS
   ),
   getRoomsFailed: createAction<string>(Room_ACTIONS_TYPES.GETROOMS_FAILED),
 
   // get message by room
   getMsgByRoom: createAction<{ roomId: string; cursor: string | null }>(
-    Room_ACTIONS_TYPES.GETMSGBYROOM,
+    Room_ACTIONS_TYPES.GETMSGBYROOM
   ),
   getMsgByRoomSuccess: createAction<{
     // lastMsgId: string | null;
@@ -54,7 +56,7 @@ const msgActions = {
     message: MessagePage;
   }>(Room_ACTIONS_TYPES.GETMSGBYROOM_SUCCESS),
   getMsgByRoomFailed: createAction<string>(
-    Room_ACTIONS_TYPES.GETMSGBYROOM_FAILED,
+    Room_ACTIONS_TYPES.GETMSGBYROOM_FAILED
   ),
 
   // send message
@@ -64,6 +66,7 @@ const msgActions = {
       content: string;
       type: string;
       id: string;
+      replytoId: string | null;
     };
     sender: {
       fullname: string;
@@ -75,30 +78,38 @@ const msgActions = {
   }>(Room_ACTIONS_TYPES.SENDMSGBYROOM),
   sendMsgByRoomSuccess: createAction(Room_ACTIONS_TYPES.SENDMSGBYROOM_SUCCESS),
   sendMsgByRoomFailed: createAction<string>(
-    Room_ACTIONS_TYPES.SENDMSGBYROOM_FAILED,
+    Room_ACTIONS_TYPES.SENDMSGBYROOM_FAILED
   ),
 
   // recive message
 
-  reciverMsg: createAction<{ roomId: string; message: MessageItem }>(
-    Room_ACTIONS_TYPES.RECEIVEMSG,
+  reciverMsg: createAction<{ roomId: string; message: MessageItem,}>(
+    Room_ACTIONS_TYPES.RECEIVEMSG
   ),
-  reciverMsgSuccess: createAction<{ roomId: string; message: MessageItem }>(
-    Room_ACTIONS_TYPES.RECEIVEMSG_SUCCESS,
+  reciverMsgSuccess: createAction<{ roomId: string; message: MessageItem, replytoId:string |null}>(
+    Room_ACTIONS_TYPES.RECEIVEMSG_SUCCESS
   ),
   reciverMsgFailed: createAction<string>(Room_ACTIONS_TYPES.RECEIVEMSG_FAILED),
   updateLastMsg: createAction<{ roomId: string; message: LastMsg }>(
-    Room_ACTIONS_TYPES.UPDATELASTMSG,
+    Room_ACTIONS_TYPES.UPDATELASTMSG
   ),
 
   // read mark
 
   readMark: createAction<{ roomId: string; lastMsgId: string }>(
-    Room_ACTIONS_TYPES.READMARK,
+    Room_ACTIONS_TYPES.READMARK
   ),
   readMarkSuccess: createAction<{ roomId: string; lastMsgId: string }>(
-    Room_ACTIONS_TYPES.READMARK_SUCCESS,
+    Room_ACTIONS_TYPES.READMARK_SUCCESS
   ),
   readMarkFailed: createAction<string>(Room_ACTIONS_TYPES.READMARK_FAILED),
+
+  // input text
+  inputText: createAction<{ roomId: string; text: string }>(
+    Room_ACTIONS_TYPES.INPUTTEXT
+  ),
+  replyToMsg: createAction<{ roomId: string; message: MessageItem | null }>(
+    Room_ACTIONS_TYPES.REPLYTOMSG
+  ),
 };
 export default msgActions;

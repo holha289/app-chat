@@ -53,7 +53,7 @@ const ChatRoomScreen = () => {
   const scrollToBottom = useCallback((animated = true) => {
     setTimeout(
       () => listRef.current?.scrollToOffset({ offset: 0, animated }),
-      50,
+      50
     );
   }, []);
 
@@ -69,12 +69,18 @@ const ChatRoomScreen = () => {
 
   const socketHandler = useCallback(
     (payload: any) => {
-      console.log("🚀 ~D", payload)
+      console.log("🚀 ~D", payload);
       const m = payload?.metadata?.message;
-      
+
       if (!m || !param.id) return;
       dispatch(msgActions.reciverMsg({ roomId: param.id, message: m }));
-     dispatch(msgActions.reciverMsgSuccess({ roomId: param.id, message: m }));
+      dispatch(
+        msgActions.reciverMsgSuccess({
+          roomId: param.id,
+          message: m,
+          replytoId: null,
+        })
+      );
       const msg = {
         msg_id: m?.id,
         createdAt: m?.createdAt,
@@ -82,7 +88,7 @@ const ChatRoomScreen = () => {
       };
       dispatch(msgActions.updateLastMsg({ roomId: param.id, message: msg }));
     },
-    [dispatch, param.id],
+    [dispatch, param.id]
   );
 
   useEffect(() => {
@@ -97,7 +103,9 @@ const ChatRoomScreen = () => {
     dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor: null }));
   }, [dispatch, param.id]);
 
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState(
+    conversations[param.id]?.inputText || ""
+  );
   const sendMsg = useCallback(() => {
     const content = inputText.trim();
     if (!content) return;
@@ -109,11 +117,24 @@ const ChatRoomScreen = () => {
       id: userInfo?.id || "",
     };
     dispatch(
-      msgActions.sendMsgByRoom({ message: { roomId: param.id, content, id: randomId(), type: "text" }, sender: sender }),
+      msgActions.sendMsgByRoom({
+        message: {
+          roomId: param.id,
+          content,
+          id: randomId(),
+          type: "text",
+          replytoId: conversations[param.id]?.replyToMsg?.id || null,
+        },
+        sender: sender,
+      })
     );
+    dispatch(msgActions.replyToMsg({ roomId: param.id, message: null }));
     setInputText("");
     scrollToBottom();
   }, [dispatch, inputText, param.id, scrollToBottom]);
+  useEffect(() => {
+    dispatch(msgActions.inputText({ roomId: param.id, text: inputText }));
+  }, [inputText]);
 
   const lastMsgIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -135,7 +156,7 @@ const ChatRoomScreen = () => {
       status === "pending" ? (
         <ActivityIndicator style={{ marginVertical: 20 }} />
       ) : null,
-    [status],
+    [status]
   );
 
   const viewabilityConfig = {
@@ -158,12 +179,15 @@ const ChatRoomScreen = () => {
       if (viewableItems && viewableItems.length > 0) {
         // Vì list inverted, item đầu tiên là tin nhắn mới nhất đang hiển thị
         const lastSeenMsg = viewableItems[0].item;
-        if (isBefore(lastMsgId || "", lastSeenMsg?.id) && lastSeenMsg?.sender?.id !== meId) {
+        if (
+          isBefore(lastMsgId || "", lastSeenMsg?.id) &&
+          lastSeenMsg?.sender?.id !== meId
+        ) {
           dispatch(
             msgActions.readMark({
               roomId: param.id,
               lastMsgId: lastSeenMsg.id,
-            }),
+            })
           );
           console.log("Tin nhắn cuối cùng đã xem:", lastSeenMsg);
         } // không đánh dấu tin nhắn của mình
@@ -171,7 +195,7 @@ const ChatRoomScreen = () => {
         // Ví dụ: dispatch(msgActions.markAsSeen({ roomId: param.id, messageId: lastSeenMsg.id }));
       }
     },
-    [],
+    []
   );
   return (
     <SafeAreaView
@@ -198,11 +222,15 @@ const ChatRoomScreen = () => {
           ListFooterComponent={ListFooter}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
+          roomdId={param.id}
         />
         <InputBar
           value={inputText}
           onChangeText={setInputText}
           onSend={sendMsg}
+          replyToMsg={conversations[param.id]?.replyToMsg || undefined}
+          roomdId={param.id}
+          isMe={meId === conversations[param.id]?.replyToMsg?.sender.id}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

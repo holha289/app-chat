@@ -15,7 +15,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import {
-  selectMessage,
   selectMsgStatus,
   selectRooms,
 } from "@app/features/message/msg.selectors";

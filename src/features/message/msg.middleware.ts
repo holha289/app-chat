@@ -23,10 +23,9 @@ const GetRoomsListener = () => {
     actionCreator: msgActions.getRoom,
     effect: async (action, listenerApi) => {
       try {
-        const response =
-          await apiService.get<ApiResponse<MsgState["rooms"]>>(
-            "/message/rooms",
-          );
+        const response = await apiService.get<ApiResponse<MsgState["rooms"]>>(
+          "/message/rooms"
+        );
         console.log("🚀 ~ GetRoomsListener ~ response:", response);
         listenerApi.dispatch(msgActions.getRoomSuccess(response.metadata));
       } catch (error) {
@@ -57,7 +56,7 @@ const GetMsgByRoomListener = () => {
             roomId,
             cursor: cursor ?? "",
             message: response.metadata as unknown as MessagePage,
-          }),
+          })
         );
       } catch (error) {
         console.error("Get messages by room failed:", error);
@@ -78,8 +77,9 @@ const HandleSocketSendMsgListener = () => {
       try {
         const socket = getSocket();
         const payload = action.payload;
-        console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
+        // console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
         socket?.emit("room:send:message", payload.message);
+
         const message = {
           id: payload.message.id,
           content: payload.message.content,
@@ -92,7 +92,15 @@ const HandleSocketSendMsgListener = () => {
         };
         const roomId = payload.message.roomId;
         listenerApi.dispatch(msgActions.sendMsgByRoomSuccess());
-        listenerApi.dispatch(msgActions.reciverMsgSuccess({ roomId, message }));
+        listenerApi.dispatch(
+          msgActions.reciverMsgSuccess({
+            roomId,
+            message,
+            replytoId: payload.message?.replytoId
+              ? payload.message.replytoId
+              : null,
+          })
+        );
       } catch (error) {
         console.error("Get messages by room failed:", error);
         const errorMessage =
@@ -111,9 +119,12 @@ const HandleSocketReciveMsgListener = () => {
     effect: async (action, listenerApi) => {
       try {
         const payload = action.payload;
-        const socket = getSocket();
-        // socket?.emit("room:message:received", payload);
-        listenerApi.dispatch(msgActions.reciverMsgSuccess(payload));
+        listenerApi.dispatch(
+          msgActions.reciverMsgSuccess({
+            ...payload,
+            replytoId: null,
+          })
+        );
       } catch (error) {
         console.error("Get messages by room failed:", error);
         const errorMessage =

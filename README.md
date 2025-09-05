@@ -2,17 +2,59 @@
 
 Ứng dụng chat đa nền tảng xây dựng với React Native, Expo, Redux Toolkit, Firebase, Socket.io và NativeWind (Tailwind CSS cho React Native).
 
+## 📱 Demo Ứng dụng
 
-## 🚀 Tính năng chính
+### Màn hình Profile & Thông tin cá nhân
+<div align="center">
+  <img src="docs/screenshots/profile_screen.jpg" width="300" alt="Profile Screen" />
+  <img src="docs/screenshots/user_info.jpg" width="300" alt="User Info" />
+</div>
 
-- Đăng ký, đăng nhập, xác thực người dùng (Firebase Auth)
-- Chat thời gian thực (Socket.io)
-- Nhận thông báo đẩy (Firebase Cloud Messaging)
-- Lưu trạng thái đăng nhập (redux-persist)
-- Quản lý state với Redux Toolkit
-- Giao diện hiện đại với NativeWind (Tailwind CSS)
-- Điều hướng đa màn hình (React Navigation)
-- Tối ưu hiệu năng với Reanimated, SafeArea, GestureHandler
+*Hiển thị thông tin cá nhân với avatar, trạng thái hoạt động, và các tùy chọn cài đặt*
+
+### Màn hình Chat & Tin nhắn
+<div align="center">
+  <img src="docs/screenshots/chat_screen.jpg" width="300" alt="Chat Screen" />
+  <img src="docs/screenshots/message_actions.jpg" width="300" alt="Message Actions" />
+</div>
+
+*Giao diện chat với tin nhắn thời gian thực, emoji reactions và các tùy chọn tương tác*
+
+### Xác thực & Đăng ký
+<div align="center">
+  <img src="docs/screenshots/login_screen.jpg" width="300" alt="Login Screen" />
+  <img src="docs/screenshots/register_screen.jpg" width="300" alt="Register Screen" />
+</div>
+
+*Màn hình đăng nhập và đăng ký tài khoản mới*
+
+> **Lưu ý**: Screenshots được lưu tại thư mục `docs/screenshots/`. Bạn có thể copy các file ảnh từ thiết bị của mình vào đây để hiển thị demo app.
+
+## 🔥 Tính năng nổi bật
+
+### 💬 **Chat Features**
+- **Tin nhắn thời gian thực**: Socket.io với latency thấp
+- **Message Modal**: Long press để hiện emoji reactions và 12 action buttons
+- **Emoji Reactions**: 6 emoji phổ biến (👍😍😂😮😢😡)  
+- **Copy tin nhắn**: Clipboard integration với error handling
+- **Reply & Forward**: Trả lời và chuyển tiếp tin nhắn
+- **Message Actions**: Pin, Reminder, Quick Message, Translate, Read Aloud
+
+### 🔐 **Authentication**
+- **Firebase Auth**: Đăng ký/đăng nhập an toàn
+- **Session Persist**: Lưu trạng thái đăng nhập với Redux-persist  
+- **Auto Login**: Tự động đăng nhập khi mở app
+
+### 🎨 **UI/UX**
+- **NativeWind**: Tailwind CSS cho React Native
+- **Responsive Design**: Tối ưu cho mọi kích thước màn hình
+- **Dark/Light Theme**: Hỗ trợ theme động
+- **Smooth Animations**: React Native Reanimated
+
+### 🔔 **Notifications**  
+- **Firebase FCM**: Push notifications
+- **Real-time Updates**: Thông báo tin nhắn mới
+- **Badge Counter**: Đếm tin nhắn chưa đọc
 
 
 ## 📁 Cấu trúc dự án
@@ -118,6 +160,35 @@ Notification được xử lý qua Firebase Cloud Messaging và notifee. Xem `sr
 ### Sử dụng socket
 Socket.io client được khởi tạo ở `src/core/socketIo.ts` và tích hợp vào App qua middleware.
 
+### Message Modal & Interactions
+App có hệ thống modal tương tác tin nhắn tương tự WhatsApp/Telegram:
+
+```typescript
+// Trong MessageRow.tsx - Long press để mở modal
+<TouchableOpacity 
+  onLongPress={() => setShowModal(true)}
+  // ...
+>
+  {/* Tin nhắn */}
+</TouchableOpacity>
+
+// MessageModelEvent.tsx - Modal với emoji và actions
+const EMOJI_REACTIONS = ['👍', '😍', '😂', '😮', '😢', '😡'];
+const ACTION_BUTTONS = [
+  { id: 'reply', name: 'Trả lời', icon: 'arrow-undo' },
+  { id: 'forward', name: 'Chuyển tiếp', icon: 'arrow-forward' },
+  { id: 'copy', name: 'Sao chép', icon: 'copy' },
+  // ... 9 actions khác
+];
+```
+
+**Tính năng Modal:**
+- 6 emoji reactions phổ biến  
+- 12 action buttons (Reply, Forward, Copy, Pin, Reminder, v.v.)
+- Copy tin nhắn vào clipboard với error handling
+- Đóng modal khi tap outside
+- Animation mượt mà với React Native
+
 
 ## 🔍 Troubleshooting
 
@@ -148,7 +219,7 @@ Dự án này được phân phối dưới giấy phép MIT. Xem `LICENSE` đ�
 ## 👥 Tác giả
 
 - **Hải Long** - *Main* - [GitHub](https://github.com/holha289)
-- **Thiên Tri** - *...* - [GitHub](https://github.com/holha289)
+- **Thiên Tri** - *...* - [GitHub](https://github.com/thientrile)
 
 ---
 **Lưu ý**: Đây là dự án học tập về lập trình đa nền tảng với React Native và Expo.
