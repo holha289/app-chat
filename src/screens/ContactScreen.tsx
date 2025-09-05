@@ -7,10 +7,11 @@ import {
   Image,
   Dimensions,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { classBtn, colors } from "@app/styles/main.style";
-import { useNavigation,useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { ContactClassStyle } from "@app/styles/contact.style";
 import clsx from "clsx";
 import CreateGroupModal from "@app/components/Modals/CreatGroupModal";
@@ -18,7 +19,7 @@ import { useDispatch } from "react-redux";
 import ContactActions from "@app/features/contact/contact.action";
 import { useSelector } from "react-redux";
 import { selectContactLoading, selectListFriends, selectListGroups, selectListPending } from "@app/features/contact/contact.selectors";
-import { InputGroup, LoadingOverlay } from "@app/components";
+import { Input, InputGroup, LoadingOverlay } from "@app/components";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import UserActions from "@app/features/user/user.action";
 import { selectUser } from "@app/features";
@@ -41,8 +42,9 @@ const ContactScreen = () => {
   const insets = useSafeAreaInsets();
   const user = useSelector(selectUser);
   const [isLoading, setIsLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-   // mounted
+  // mounted
   useEffect(() => {
     setIsLoading(true);
     const wait = async () => {
@@ -70,26 +72,43 @@ const ContactScreen = () => {
 
   const handleAcceptFriendRequest = (userId: string) => {
     setIsLoading(true);
-    dispatch(UserActions.acceptFriendRequest({ userId, callback: (error) => {
-      setIsLoading(false);
-      if (error) {
-         Alert.alert("Có lỗi xảy ra", error);
-      } else {
-        Alert.alert("Thành công", "Đã chấp nhận lời mời kết bạn");
+    dispatch(UserActions.acceptFriendRequest({
+      userId, callback: (error) => {
+        setIsLoading(false);
+        if (error) {
+          Alert.alert("Có lỗi xảy ra", error);
+        } else {
+          Alert.alert("Thành công", "Đã chấp nhận lời mời kết bạn");
+        }
       }
-    }}));
+    }));
   };
 
   const handleRejectFriendRequest = (userId: string) => {
     setIsLoading(true);
-    dispatch(UserActions.rejectFriendRequest({ userId, callback: (error) => {
-      setIsLoading(false);
-      if (error) {
-        Alert.alert("Có lỗi xảy ra", error);
-      } else {
-        Alert.alert("Thành công", "Đã từ chối lời mời kết bạn");
+    dispatch(UserActions.rejectFriendRequest({
+      userId, callback: (error) => {
+        setIsLoading(false);
+        if (error) {
+          Alert.alert("Có lỗi xảy ra", error);
+        } else {
+          Alert.alert("Thành công", "Đã từ chối lời mời kết bạn");
+        }
       }
-    }}));
+    }));
+  };
+
+  const onRefresh = () => {
+    if (tabs.length === 0) return;
+    setIsRefreshing(true);
+    if (activeTab === "friends") {
+      dispatch(ContactActions.getListFriendsRequest({ offset: 0, limit: 20 }));
+    } else if (activeTab === "groups") {
+      dispatch(ContactActions.getListGroupsRequest({ offset: 0, limit: 20 }));
+    } else if (activeTab === "requests") {
+      dispatch(ContactActions.getListPendingRequest({ offset: 0, limit: 20 }));
+    }
+    setIsRefreshing(false);
   };
 
   const handleCall = (userTo: Friends, isVideoCall: boolean = false) => {
@@ -117,22 +136,22 @@ const ContactScreen = () => {
           </Text>
         </View>
         <View className="flex-row items-center space-x-4">
-          { tab === "friends" || tab === "groups" ? (
-             <>
-               <TouchableOpacity className="p-2" onPress={() => handleCall(item)}>
-                  <Ionicons name="call" size={20} color={colors.color1} />
-                </TouchableOpacity>
-                <TouchableOpacity className="p-2" onPress={() => handleCall(item, true)}>
-                  <Ionicons name="videocam" size={20} color={colors.color1} />
-                </TouchableOpacity>
-             </>
+          {tab === "friends" || tab === "groups" ? (
+            <>
+              <TouchableOpacity className="p-2" onPress={() => handleCall(item)}>
+                <Ionicons name="call" size={20} color={colors.color1} />
+              </TouchableOpacity>
+              <TouchableOpacity className="p-2" onPress={() => handleCall(item, true)}>
+                <Ionicons name="videocam" size={20} color={colors.color1} />
+              </TouchableOpacity>
+            </>
           ) : (
             <>
-            <TouchableOpacity className="p-2" onPress={() => handleRejectFriendRequest(item.id)}>
-                <Ionicons name="close" size={25} color="red"  />
+              <TouchableOpacity className="p-2" onPress={() => handleRejectFriendRequest(item.id)}>
+                <Ionicons name="close" size={25} color="red" />
               </TouchableOpacity>
               <TouchableOpacity className="p-2" onPress={() => handleAcceptFriendRequest(item.id)}>
-                <Ionicons name="checkmark" size={25} color="green"  />
+                <Ionicons name="checkmark" size={25} color="green" />
               </TouchableOpacity>
             </>
           )}
@@ -142,23 +161,24 @@ const ContactScreen = () => {
   }
 
   return (
-    <View className={ContactClassStyle.container}  style={{ paddingTop: insets.top }}>
+    <View className={ContactClassStyle.container} style={{ paddingTop: insets.top }}>
       {isLoading && <LoadingOverlay visible={isLoading} />}
       {/* Search Input and Add Button */}
       <View className={ContactClassStyle.searchInput}>
         <TouchableOpacity className="flex-1 mr-3">
-          <View className="flex-row items-center py-2">
-            <InputGroup
-              iconLeft={<Ionicons name="search" size={20} color="gray" />}
+          <View className="flex-row items-center py-2 w-full">
+            <Input
+              // iconLeft={<Ionicons name="search" size={20} color="gray" />}
               placeholder={activeTab === "friends" ? "Tìm kiếm bạn bè" :
-              activeTab === "groups" ? "Tìm kiếm nhóm" : "Tìm kiếm yêu cầu"}
+                activeTab === "groups" ? "Tìm kiếm nhóm" : "Tìm kiếm yêu cầu"}
               rounded={20}
               height={40}
             />
+
           </View>
         </TouchableOpacity>
-        <TouchableOpacity className="h-10 w-10 flex items-center justify-center bg-white rounded-full shadow"  onPress={() => navigation.navigate("Search")}>
-          <Ionicons name="person-add" size={20} color={colors.color1}  />
+        <TouchableOpacity className="h-10 w-10 flex items-center justify-center bg-white rounded-full shadow" onPress={() => navigation.navigate("Search")}>
+          <Ionicons name="person-add" size={20} color={colors.color1} />
         </TouchableOpacity>
       </View>
 
@@ -179,13 +199,13 @@ const ContactScreen = () => {
         ))}
       </View>
 
-      { activeTab === "groups" && (
-         <>
-            <TouchableOpacity className={clsx(classBtn.outline, "mb-4 flex-row gap-2")} onPress={() => setIsCreateGroupModalOpen(true)}>
-                <FontAwesome name="group" size={20} color={colors.color1} />
-                <Text className="font-semibold">Tạo nhóm mới</Text>
-            </TouchableOpacity>
-         </>
+      {activeTab === "groups" && (
+        <>
+          <TouchableOpacity className={clsx(classBtn.outline, "mb-4 flex-row gap-2")} onPress={() => setIsCreateGroupModalOpen(true)}>
+            <FontAwesome name="group" size={20} color={colors.color1} />
+            <Text className="font-semibold">Tạo nhóm mới</Text>
+          </TouchableOpacity>
+        </>
       )
 
       }
@@ -197,6 +217,14 @@ const ContactScreen = () => {
         keyExtractor={(item: any, index: number) => index.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor="#3b82f6"
+            colors={["#3b82f6"]}
+          />
+        }
       />
       {/* Create Group Modal */}
       <CreateGroupModal

@@ -43,7 +43,8 @@ const RegisterScreen = () => {
             return;
         }
         if (step === 1) {
-            handleOtpChange();
+           const isValid = handleOtpChange();
+           if (!isValid) return;
         } else if (step === 2) {
             confirmCode();
             return
@@ -62,11 +63,11 @@ const RegisterScreen = () => {
     const handleOtpChange = async () => {
         if (!form.phone) {
             alert("Vui lòng nhập số điện thoại");
-            return;
+            return false;
         }
         if (!isValidPhoneNumber(form.phone)) {
             alert("Số điện thoại không hợp lệ");
-            return;
+            return false;
         }
         
         try {
@@ -78,6 +79,7 @@ const RegisterScreen = () => {
             console.error("Lỗi gửi OTP:", error);
             alert("Không thể gửi mã OTP, vui lòng thử lại sau.\n" + JSON.stringify(error));
         }
+        return true;
     }
 
     async function confirmCode() {
