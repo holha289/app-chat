@@ -9,10 +9,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@app/styles/main.style';
 import { Friends } from '@app/features/types/contact.type';
-import { useWebRTC } from '@app/hooks/use-webrtc';
-import { useAppSelector } from '@app/hooks/use-hook';
-import { selectCall } from '@app/features/user/user.selecter';
-import { selectUserId } from '@app/features';
 import { RTCView } from 'react-native-webrtc';
 
 interface CallModalProps {
@@ -28,8 +24,8 @@ interface CallModalProps {
         localStream: MediaStream | null;
         remoteStream: MediaStream | null;
         connectState: 'idle' | 'connecting' | 'connected' | 'failed';
-        toggleVideo: (roomId: string) => void;
-        toggleAudio: (roomId: string) => void;
+        toggleVideo: () => void;
+        toggleAudio: () => void;
         isVideoEnabled: boolean;
         isAudioEnabled: boolean;
     };
@@ -210,7 +206,7 @@ const CallModal: React.FC<CallModalProps> = ({
                             <>
                                 {/* Toggle Audio Button */}
                                 <TouchableOpacity
-                                    onPress={() => webRTC.toggleAudio(roomId as string)}
+                                    onPress={() => webRTC.toggleAudio()}
                                     className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isAudioEnabled ? "bg-green-500" : "bg-gray-500"} mr-4`}
                                     activeOpacity={0.8}
                                 >
@@ -224,7 +220,7 @@ const CallModal: React.FC<CallModalProps> = ({
                                 {isVideoCall && (
                                     <>
                                         <TouchableOpacity
-                                            onPress={() => webRTC.toggleVideo(roomId as string)}
+                                            onPress={() => webRTC.toggleVideo()}
                                             className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isVideoEnabled ? "bg-green-500" : "bg-gray-500"}`}
                                             activeOpacity={0.8}
                                         >

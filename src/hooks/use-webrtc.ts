@@ -30,7 +30,7 @@ const pcConfig: RTCConfiguration = {
 export const useWebRTC = () => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isVideoCall, setIsVideoCall] = useState(false);
   const [connectState, setConnectState] = useState('disconnected');
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
@@ -104,12 +104,7 @@ export const useWebRTC = () => {
 
       localStreamRef.current = stream;
       setLocalStream(stream);
-      if (!isScreenSharing) {
-        InCallManager.start({ media: "video", auto: true, ringback: "_DEFAULT_" });
-        console.log("✅ InCallManager started");
-      } else {
-        InCallManager.start({ media: "audio", auto: true, ringback: "_DEFAULT_" });
-      }
+      InCallManager.start({ media: isVideoCall ? 'video' : 'audio', auto: true, ringback: '_DEFAULT_' });
       return stream;
     } catch (err) {
       console.error("❌ Error init media:", err);
@@ -268,7 +263,7 @@ export const useWebRTC = () => {
     setConnectState('disconnected');
   };
 
-  const toggleVideo = async (roomId: string) => {
+  const toggleVideo = async () => {
     setIsVideoEnabled((prev) => !prev);
     if (localStreamRef.current) {
       const videoTrack = localStreamRef.current.getVideoTracks()[0];
@@ -279,7 +274,7 @@ export const useWebRTC = () => {
     }
   };
 
-  const toggleAudio = (roomId: string) => {
+  const toggleAudio = () => {
     setIsAudioEnabled((prev) => !prev);
     if (localStreamRef.current) {
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
@@ -295,7 +290,7 @@ export const useWebRTC = () => {
     remoteStream,
     initStream,
     listenCall,
-    setIsScreenSharing,
+    setIsVideoCall,
     handleCreateOffer,
     connectState,
     hangOut,

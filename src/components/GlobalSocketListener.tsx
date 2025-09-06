@@ -29,7 +29,7 @@ const GlobalSocketListener = () => {
     localStream,
     remoteStream,
     connectState,
-    setIsScreenSharing,
+    setIsVideoCall,
     handleAcceptCall,
     handleCreateOffer,
     listenCall,
@@ -268,10 +268,16 @@ const GlobalSocketListener = () => {
 
 
   useEffect(() => {
+    setIsVideoCall(call?.isVideoCall || false);
     if (call && user) {
       const isOpen = String(call.from?.id) === String(user.id) || String(call.to?.id) === String(user?.id);
       const caller = String(call.from?.id) === String(user?.id) ? call.to : call.from;
-
+      if (
+        call.category === 'request' &&
+        String(call.from?.id) === String(user.id)
+      ) {
+        handleCreateOffer(call.roomId as string);
+      }
       setFormModal({
         isOpen,
         caller: caller,
@@ -283,17 +289,6 @@ const GlobalSocketListener = () => {
     }
   }, [call, user]);
 
-  useEffect(() => {
-    if (call.isVideoCall) {
-      setIsScreenSharing(true);
-    }
-    console.log("🎥 Call isVideoCall changed:", call);
-    if (call.category === 'request' && call.from?.id === user?.id) {
-      const callerId = user?.id as unknown as string;
-      handleCreateOffer(call.roomId as string);
-    }
-  }, [call]);
-
   const onAcceptCall = () => {
     const userTo = call.to?.id !== user?.id ? call.to : call.from;
     dispatch(UserActions.call({
@@ -303,8 +298,6 @@ const GlobalSocketListener = () => {
       isVideoCall: call.isVideoCall,
       category: 'accept'
     }));
-    const calleeId = user?.id as unknown as string; // Người nhận cuộc gọi hiện tại
-    const callerId = userTo?.id as unknown as string; // Người gọi
     handleAcceptCall(call.roomId as string);
   };
 
@@ -342,8 +335,8 @@ const GlobalSocketListener = () => {
           localStream: localStream as MediaStream | null,
           remoteStream: remoteStream as MediaStream | null,
           connectState: connectState as 'idle' | 'connecting' | 'connected' | 'failed',
-          toggleVideo: (roomId: string) => toggleVideo(roomId),
-          toggleAudio: (roomId: string) => toggleAudio(roomId),
+          toggleVideo: () => toggleVideo(),
+          toggleAudio: () => toggleAudio(),
           isVideoEnabled,
           isAudioEnabled
         }}
