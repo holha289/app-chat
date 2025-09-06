@@ -22,7 +22,6 @@ import { useSelector } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TimeAgoVN } from "@app/components/TimeAgoVN";
 import { useSockerIo } from "@app/hooks/use-socketio";
-import MyComponent from "@app/components/chat/Test";
 
 export default function ChatListScreen() {
   const dispatch = useDispatch();

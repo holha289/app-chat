@@ -2,6 +2,7 @@ import React, {
   use,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -78,7 +79,7 @@ const ChatRoomScreen = () => {
       dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor }));
     }
   }, [cursor, status, dispatch, param.id]);
-  useEffect(() => {
+   useEffect(() => {
     dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor: null }));
   }, [dispatch, param.id]);
 
@@ -203,7 +204,7 @@ const ChatRoomScreen = () => {
           ListFooterComponent={ListFooter}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
-          roomdId={param.id}
+          roomId={param.id}
         />
         <InputBar
           value={inputText}

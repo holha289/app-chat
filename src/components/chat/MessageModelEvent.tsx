@@ -122,12 +122,18 @@ export const MsgMdEvent = ({
       onPress: onDelete,
       color: "#EF4444",
     },
-    {
-      icon: "menu",
-      label: "Xem thêm",
-      onPress: () => {},
-      color: "#3B82F6",
-    },
+    // {
+    //   icon: "menu",
+    //   label: "Xem thêm",
+    //   onPress: () => {},
+    //   color: "#3B82F6",
+    // },
+    //    {
+    //   icon: "reorder-four",
+    //   label: "Thu hồi",
+    //   onPress: () => {},
+    //   color: "#3B82F6",
+    // },
   ];
 
   const handleEmojiPress = (emoji: string) => {

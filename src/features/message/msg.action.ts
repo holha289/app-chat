@@ -35,6 +35,22 @@ const Room_ACTIONS_TYPES = {
   READMARK_FAILED: "READ_MARK_FAILED",
   INPUTTEXT: "INPUT_TEXT",
   REPLYTOMSG: "REPLAY_TO_MSG",
+
+  // readed
+
+  READ_SUCCESS: "READ_SUCCESS",
+  READ_FAILED: "READ_FAILED",
+
+  // dell
+  // del_only
+  DEL_ONLY: "DEL_ONLY",
+  DEL_ONLY_SUCCESS: "DEL_ONLY_SUCCESS",
+  DEL_ONLY_FAILED: "DEL_ONLY_FAILED",
+
+  // del everyone
+  DEL_EVERYONE: "DEL_EVERYONE",
+  DEL_EVERYONE_SUCCESS: "DEL_EVERYONE_SUCCESS",
+  DEL_EVERYONE_FAILED: "DEL_EVERYONE_FAILED",
 };
 
 const msgActions = {
@@ -111,5 +127,24 @@ const msgActions = {
   replyToMsg: createAction<{ roomId: string; message: MessageItem | null }>(
     Room_ACTIONS_TYPES.REPLYTOMSG
   ),
+  readedSuccess:createAction<{roomId:string,msgId:string}>(Room_ACTIONS_TYPES.READ_SUCCESS),
+  readedFailed:createAction<string>(Room_ACTIONS_TYPES.READ_FAILED),
+  // del only
+  delOnly: createAction<{ roomId: string; msgId: string }>(
+    Room_ACTIONS_TYPES.DEL_ONLY
+  ),
+  delOnlySuccess: createAction<{ roomId: string; msgId: string }>(
+    Room_ACTIONS_TYPES.DEL_ONLY_SUCCESS
+  ),
+  delOnlyFailed: createAction<string>(Room_ACTIONS_TYPES.DEL_ONLY_FAILED),
+
+  // del everyone
+  delEveryone: createAction<{ roomId: string; msgId: string }>(
+    Room_ACTIONS_TYPES.DEL_EVERYONE
+  ),
+  delEveryoneSuccess: createAction<{ roomId: string; msgId: string }>(
+    Room_ACTIONS_TYPES.DEL_EVERYONE_SUCCESS
+  ),
+  delEveryoneFailed: createAction<string>(Room_ACTIONS_TYPES.DEL_EVERYONE_FAILED)
 };
 export default msgActions;

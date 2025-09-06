@@ -7,7 +7,7 @@ type Props = {
   messages: MessageItem[];
   meId?: string | number;
   onScroll?: any;
-  roomdId?: string;
+  roomId?: string;
   isGroup?: boolean;
   onMomentumScrollBegin?: () => void;
   onEndReached?: () => void;
@@ -21,7 +21,7 @@ const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
   {
     isGroup,
     messages,
-    roomdId,
+    roomId,
     meId,
     onScroll,
     onMomentumScrollBegin,
@@ -34,11 +34,11 @@ const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
 
   ref
 ) {
-  console.log("🚀 ~ roomdId:", roomdId);
+  console.log("🚀 ~ roomId:", roomId);
   const renderItem = ({ item }: ListRenderItemInfo<MessageItem>) => (
     <MessageRow
       isGroupChat={isGroup}
-      roomdId={roomdId}
+      roomId={roomId}
       item={item}
       meId={meId}
     />

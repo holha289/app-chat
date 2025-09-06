@@ -19,6 +19,7 @@ export default function App() {
           <GestureHandlerRootView className="flex-1">
             <SafeAreaProvider>
               <AppInitializer />
+              
               <SocketInitializer />
               <GlobalSocketListener />
               <AppNavigator />

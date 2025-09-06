@@ -176,6 +176,77 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         });
       target.replyToMsg = message;
     })
+    .addCase(msgActions.readedSuccess, (state, { payload }) => {
+      const { roomId, msgId } = payload;
+      const target =
+        state.messages[roomId] ??
+        (state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
+        });
+      const m = target.items.find((x) => String(x.id) === String(msgId));
+      if (m) {
+        m.readCount++;
+      }
+    })
+
+    // del only
+    .addCase(msgActions.delOnlySuccess, (state, { payload }) => {
+      const { roomId, msgId } = payload;
+
+      // nếu room chưa tồn tại thì khởi tạo
+      if (!state.messages[roomId]) {
+        state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
+        };
+        return;
+      }
+
+      const target = state.messages[roomId];
+
+      // tìm tin nhắn theo id
+      const msg = target.items.find((m) => String(m.id) === String(msgId));
+      console.log("🚀 ~ msg:", msg);
+      if (msg) {
+        msg.content = "";
+        msg.isDeletedForMe = true;
+        msg.del_only = true;
+      }
+    })
+    // del everyone
+    .addCase(msgActions.delEveryone, (state, { payload }) => {
+      const { roomId, msgId } = payload;
+
+      // nếu room chưa tồn tại thì khởi tạo
+      if (!state.messages[roomId]) {
+        state.messages[roomId] = {
+          items: [],
+          nextCursor: null,
+          lastMsgId: null,
+          inputText: "",
+          replyToMsg: null,
+        };
+        return;
+      }
+
+      const target = state.messages[roomId];
+
+      // tìm tin nhắn theo id
+      const msg = target.items.find((m) => String(m.id) === String(msgId));
+      console.log("🚀 ~ msg:", msg);
+      if (msg) {
+        msg.content = "";
+        msg.isDeletedForMe = true;
+        msg.del_all = true;
+      }
+    })
     // ===== PENDING =====
     .addMatcher(
       isAnyOf(
@@ -199,7 +270,10 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomFailed,
         msgActions.sendMsgByRoomFailed,
         msgActions.reciverMsgFailed,
-        msgActions.readMarkFailed
+        msgActions.readMarkFailed,
+        msgActions.readedFailed,
+        msgActions.delOnlyFailed,
+        msgActions.delEveryoneFailed
       ),
       (state, { payload }) => {
         state.status = "failed";
@@ -214,7 +288,10 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomSuccess,
         msgActions.sendMsgByRoomSuccess,
         msgActions.reciverMsgSuccess,
-        msgActions.readMarkSuccess
+        msgActions.readMarkSuccess,
+        msgActions.readedSuccess,
+        msgActions.delOnlySuccess,
+        msgActions.delEveryoneSuccess
       ),
       (state) => {
         state.status = "success";

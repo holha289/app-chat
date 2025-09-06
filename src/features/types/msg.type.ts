@@ -17,14 +17,17 @@ export type MessageItem = {
   readCount: number;
   isReadByMe: boolean; // ms kể từ epoch
   replyTo?: MessageItem | null; // tin nhắn đang trả lời
+  isDeletedForMe?: boolean; // tin nhắn đã bị xoá với tôi
+  del_all?: boolean; // tin nhắn đã bị xoá với tất cả mọi người
+  del_only?: boolean; // tin nhắn đã bị xoá chỉ với tôi
 };
-type senderType={
+type senderType = {
   fullname: string;
   avatar: string;
   slug: string;
   status: string;
   id: string;
-}
+};
 export type LastMsg = {
   msg_id: string;
   createdAt: string;
@@ -53,10 +56,10 @@ export interface MsgState extends StateCore {
 export type roomTypes = MsgState["rooms"];
 export type msgTypes = MsgState["messages"];
 
-export interface SenderTypes  {
+export interface SenderTypes {
   fullname: string;
   avatar: string;
   slug: string;
   status: string;
   id: string;
-};
+}

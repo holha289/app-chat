@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, use } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSockerIo } from "@app/hooks/use-socketio";
 import msgActions from "@app/features/message/msg.action";
@@ -19,11 +19,10 @@ const GlobalSocketListener = () => {
       console.log("� Global: New message received:", payload);
       const m = payload?.metadata?.message;
 
-
       const checkEistRoom = rooms?.some(
         (r) => r.id === payload?.metadata?.roomId
       );
-      console.log("🚀 ~ GlobalSocketListener ~ checkEistRoom:", checkEistRoom)
+      console.log("🚀 ~ GlobalSocketListener ~ checkEistRoom:", checkEistRoom);
       const roomId = checkEistRoom
         ? payload?.metadata?.roomId
         : payload?.metadata?.sendRoomId;
@@ -42,6 +41,36 @@ const GlobalSocketListener = () => {
       console.log("✅ Dispatching message actions for room:", roomId);
       dispatch(msgActions.reciverMsg({ roomId, message: m }));
       dispatch(msgActions.updateLastMsg({ roomId, message: msg }));
+    },
+    [dispatch]
+  );
+
+  // msg readed
+  const onReaded = useCallback(
+    (payload: any) => {
+      const { roomId, msgId } = payload?.metadata;
+      console.log("✅ Dispatching readed actions for room:", roomId);
+      dispatch(msgActions.readedSuccess({ roomId, msgId }));
+    },
+    [dispatch]
+  );
+  // del msg only user
+
+  const onDelOnly = useCallback(
+    (payload: any) => {
+      const { roomId, msgId } = payload?.metadata;
+      console.log("✅ Dispatching delete actions for room:", roomId);
+      dispatch(msgActions.delOnlySuccess({ roomId, msgId }));
+    },
+    [dispatch]
+  );
+  // del msg everyone
+  
+  const onDelEveryone = useCallback(
+    (payload: any) => {
+      const { roomId, msgId } = payload?.metadata;
+      console.log("✅ Dispatching delete actions for room:", roomId);
+      dispatch(msgActions.delEveryoneSuccess({ roomId, msgId }));
     },
     [dispatch]
   );
@@ -196,6 +225,9 @@ const GlobalSocketListener = () => {
     socket.on("connect_error", onConnectError);
     socket.on("reconnect", onReconnect);
     socket.on("room:message:received", onNewMessage);
+    socket.on("room:readed:message", onReaded);
+    socket.on("room:deleted_only:message", onDelOnly);
+    socket.on("room:deleted_everyone:message", onDelEveryone);
 
     // Debug listener
     socket.onAny(debugListener);
@@ -213,6 +245,9 @@ const GlobalSocketListener = () => {
         socket.off("connect_error", onConnectError);
         socket.off("reconnect", onReconnect);
         socket.off("room:message:received", onNewMessage);
+        socket.off("room:readed:message", onReaded);
+        socket.off("room:deleted_only:message", onDelOnly);
+        socket.off("room:deleted_everyone:message", onDelEveryone);
         socket.offAny(debugListener);
 
         console.log("  - Cleaned up listeners for socket:", socket.id);

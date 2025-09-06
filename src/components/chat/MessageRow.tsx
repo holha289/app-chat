@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, use } from "react";
+import React, { memo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { MsgMdEvent } from "./MessageModelEvent";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import { MessageItem } from "@app/features/types/msg.type";
+import Clipboard from "@react-native-clipboard/clipboard";
 
 // Enable LayoutAnimation on Android
 if (
@@ -42,14 +43,14 @@ type Props = {
   showAvatar?: boolean;
   isGroupChat?: boolean;
   onLongPress?: () => void;
-  roomdId?: string;
+  roomId?: string;
 };
 
 //test
 
 const MessageRow = memo(
   ({
-    roomdId,
+    roomId,
     item,
     meId,
     showTimestamp = true,
@@ -142,14 +143,21 @@ const MessageRow = memo(
 
       return (
         <View className="flex-row items-center mt-1">
-          <Ionicons name="checkmark" size={12} color="#9CA3AF" />
+          <Ionicons name="checkmark" size={12} color="#c1cde6ff" />
         </View>
       );
     }, [isMe, item.readCount]);
-
+    const renderIsReadme = useCallback(() => {
+      if (!item.isReadByMe || isMe) return null;
+      return (
+        <View className="flex-row items-center mt-1">
+          <Ionicons name="checkmark-done" size={12} color="#3B82F6" />
+        </View>
+      );
+    }, [item.isReadByMe]);
     // Render reply preview
     const renderReplyPreview = useCallback(() => {
-      if (!item.replyTo) return null;
+      if (!item.replyTo?.id) return null;
       const replyIsMe = item?.replyTo?.sender?.id == meId;
       return (
         <View>
@@ -158,10 +166,10 @@ const MessageRow = memo(
             {replyIsMe ? " chính mình" : item.replyTo?.sender?.fullname || "Unknown"} */}
             {isMe ? "Bạn" : item.sender?.fullname || "Unknown"} đã trả lời
             {replyIsMe && isMe && <Text> chính mình</Text>}
-            {replyIsMe && !isMe && (
-              <Text> Bạn</Text>
+            {replyIsMe && !isMe && <Text> Bạn</Text>}
+            {!replyIsMe && isMe && (
+              <Text> {item.replyTo?.sender?.fullname || "Unknown"}</Text>
             )}
-            {!replyIsMe && isMe && <Text> {item.replyTo?.sender?.fullname || "Unknown"}</Text>}
           </Text>
           <View
             className={`bg-gray-200 rounded-2xl px-4 py-2 ${
@@ -196,7 +204,7 @@ const MessageRow = memo(
 
     const handleReply = () => {
       console.log("Reply to message:", item.id);
-      dispatch(msgActions.replyToMsg({ roomId: roomdId ?? "", message: item }));
+      dispatch(msgActions.replyToMsg({ roomId: roomId ?? "", message: item }));
     };
 
     const handleForward = () => {
@@ -205,31 +213,47 @@ const MessageRow = memo(
     };
 
     const handleCopy = async () => {
-      // try {
-      //   if (!item.content || item.content.trim() === "") {
-      //     Alert.alert("Lỗi", "Không có nội dung để sao chép");
-      //     return;
-      //   }
-      //   Clipboard.setString(item.content);
-      //   console.log("Copy message successful:", item.content);
-      //   Alert.alert("Sao chép", "Tin nhắn đã được sao chép vào clipboard");
-      // } catch (error) {
-      //   console.error("Failed to copy message:", error);
-      //   const errorMessage =
-      //     error instanceof Error ? error.message : "Unknown error";
-      //   Alert.alert("Lỗi", `Không thể sao chép tin nhắn: ${errorMessage}`);
-      // }
+      try {
+        Clipboard.setString(item.content);
+        console.log("Đã copy!");
+      } catch (err) {
+        console.error("Copy failed", err);
+      }
     };
 
     const handleDelete = () => {
-      console.log("Delete message:", item.id);
-      Alert.alert(
-        "Delete Message",
-        "Are you sure you want to delete this message?",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive" },
+      if (!roomId || !item?.id) return; // tránh dispatch rỗng
+
+      const actionArr: Array<{ text: string; style: "cancel" | "destructive"; onPress?: () => void }> = [
+          { text: "Huỷ", style: "cancel" },
+          {
+            text: "Xoá ở phía bạn",
+            style: "destructive",
+            onPress: () => {
+              setShowModal(false);
+              dispatch(
+                msgActions.delOnly({ roomId: roomId ?? "", msgId: item.id })
+              );
+            },
+          },
         ]
+        const deleteForEveryone={
+          text: "Xoá với mọi người",
+          style: "destructive" as const,
+          onPress: () => {
+            setShowModal(false);
+            dispatch(
+              msgActions.delEveryone({ roomId: roomId ?? "", msgId: item.id })
+            );
+          },
+        }
+        if(isMe && item?.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime())/1000/60<5){
+          actionArr.push(deleteForEveryone)
+        }
+      Alert.alert(
+        "Xoá tin nhắn",
+        "Bạn có chắc chắn muốn xoá tin nhắn này không?",
+        actionArr
       );
     };
 
@@ -280,95 +304,123 @@ const MessageRow = memo(
         }`}
       >
         {/* Avatar for non-me messages */}
-        {!isMe && showAvatar && (
+        {!item.isDeletedForMe && !isMe && showAvatar && (
           <View className="mr-5">
             <AvatarMini uri={avatarUri} side="left" />
           </View>
         )}
-
         {/* Message container */}
-        <View
-          className={`flex-1 relative ${isMe ? "items-end" : "items-start"}`}
-        >
-          {/* Sender name for group chats */}
-          {!isMe && isGroupChat && (
-            <Text className="text-xs text-gray-600 ml-3 mb-1">
-              {item.sender?.fullname || "Unknown"}
-            </Text>
-          )}
-          {renderReplyPreview()}
-          {/* Main message bubble */}
-          <TouchableOpacity
-            onLongPress={handleLongPress}
-            delayLongPress={500}
-            activeOpacity={0.8}
-            className={`rounded-2xl px-4 py-2 ${
-              isMe
-                ? "rounded-br-md bg-blue-400 shadow-sm mr-1 ml-6"
-                : "rounded-bl-md bg-white border border-gray-200 shadow-sm ml-1 mr-6"
-            }`}
+
+        {item.isDeletedForMe && (
+          <View
+            className={`flex-1 relative ${isMe ? "items-end" : "items-start"}`}
           >
-            {/* Message content */}
-            <Text
-              selectable={false}
-              className={`text-base leading-5 ${
-                isMe ? "text-white" : "text-gray-900"
+            <View
+              className={`rounded-2xl px-4 py-2 bg-white border border-gray-200 ${
+                isMe
+                  ? "rounded-br-md  shadow-sm mr-1 ml-6"
+                  : "rounded-bl-md  shadow-sm ml-1 mr-6"
               }`}
             >
-              {displayContent}
-            </Text>
-
-            {/* Show more/less button for long messages */}
-            {isLongMessage && (
-              <TouchableOpacity
-                onPress={toggleExpanded}
-                className="mt-2 self-start"
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                activeOpacity={0.7}
-              >
-                <View
-                  className={`flex-row items-center px-2 py-1 rounded-full ${
-                    isMe ? "bg-blue-400" : "bg-gray-100"
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-medium mr-1 ${
-                      isMe ? "text-white" : "text-blue-600"
-                    }`}
-                  >
-                    {isExpanded ? "Thu gọn" : "Xem thêm"}
-                  </Text>
-                  <Ionicons
-                    name={isExpanded ? "chevron-up" : "chevron-down"}
-                    size={12}
-                    color={isMe ? "#ffffff" : "#2563eb"}
-                  />
-                </View>
-              </TouchableOpacity>
-            )}
-
-            {/* Message metadata */}
-            <View
-              className={`flex-row items-center justify-between ${
-                isLongMessage ? "mt-2" : "mt-1"
-              } ${isMe ? "justify-end" : "justify-start"}`}
-            >
-              {showTimestamp && (
-                <Text
-                  className={`text-xs ${
-                    isMe ? "text-blue-100" : "text-gray-500"
-                  }`}
-                >
-                  {formatTime(item.createdAt)}
+              {item.del_only && (
+                <Text>
+                  Tin nhắn đã được bạn xoá 
                 </Text>
               )}
-              {renderMessageStatus()}
+              {item.del_all && (
+                <Text>
+                  Tin nhắn đã được {isMe?"xoá với mọi người":"thu hồi"}
+                </Text>
+              )}
             </View>
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+
+        {!item.isDeletedForMe && (
+          <View
+            className={`flex-1 relative ${isMe ? "items-end" : "items-start"}`}
+          >
+            {/* Sender name for group chats */}
+            {!isMe && isGroupChat && (
+              <Text className="text-xs text-gray-600 ml-3 mb-1">
+                {item.sender?.fullname || "Unknown"}
+              </Text>
+            )}
+            {renderReplyPreview()}
+            {/* Main message bubble */}
+            <TouchableOpacity
+              onLongPress={handleLongPress}
+              delayLongPress={500}
+              activeOpacity={0.8}
+              className={`rounded-2xl px-4 py-2 ${
+                isMe
+                  ? "rounded-br-md bg-blue-400 shadow-sm mr-1 ml-6"
+                  : "rounded-bl-md bg-white border border-gray-200 shadow-sm ml-1 mr-6"
+              }`}
+            >
+              {/* Message content */}
+              <Text
+                selectable={false}
+                className={`text-base leading-5 ${
+                  isMe ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {displayContent}
+              </Text>
+
+              {/* Show more/less button for long messages */}
+              {isLongMessage && (
+                <TouchableOpacity
+                  onPress={toggleExpanded}
+                  className="mt-2 self-start"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    className={`flex-row items-center px-2 py-1 rounded-full ${
+                      isMe ? "bg-blue-400" : "bg-gray-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-medium mr-1 ${
+                        isMe ? "text-white" : "text-blue-600"
+                      }`}
+                    >
+                      {isExpanded ? "Thu gọn" : "Xem thêm"}
+                    </Text>
+                    <Ionicons
+                      name={isExpanded ? "chevron-up" : "chevron-down"}
+                      size={12}
+                      color={isMe ? "#ffffff" : "#2563eb"}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Message metadata */}
+              <View
+                className={`flex-row items-center justify-between ${
+                  isLongMessage ? "mt-2" : "mt-1"
+                } ${isMe ? "justify-end" : "justify-start"}`}
+              >
+                {showTimestamp && (
+                  <Text
+                    className={`text-xs ${
+                      isMe ? "text-blue-100" : "text-gray-500"
+                    }`}
+                  >
+                    {formatTime(item.createdAt)}
+                  </Text>
+                )}
+                {renderMessageStatus()}
+                {renderIsReadme()}
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Avatar for me messages */}
-        {isMe && showAvatar && (
+        {!item.isDeletedForMe && isMe && showAvatar && (
           <View className="ml-5">
             <AvatarMini uri={avatarUri} side="right" />
           </View>

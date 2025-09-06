@@ -16,6 +16,8 @@ export const MsgListenerMiddleware = () => {
 
   HandleSocketSendMsgListener();
   HandleSoketReadMarMsgListener();
+  HandleSocketDelOnlyListener();
+  HandleSocketDelEveryoneListener();
 };
 
 const GetRoomsListener = () => {
@@ -153,6 +155,50 @@ const HandleSoketReadMarMsgListener = () => {
             ? (error as { message: string }).message
             : String(error);
         listenerApi.dispatch(msgActions.readMarkFailed(errorMessage));
+      }
+    },
+  });
+};
+
+const HandleSocketDelOnlyListener = () => {
+  startAppListening({
+    actionCreator: msgActions.delOnly,
+    effect: async (action, listenerApi) => {
+      try {
+        const { roomId, msgId } = action.payload;
+        console.log("room:delete_only:message ~ payload:", action.payload);
+        const socket = getSocket();
+        socket?.emit("room:delete_only:message", { roomId, msgId });
+        listenerApi.dispatch(msgActions.delOnlySuccess({ roomId, msgId }));
+      } catch (error) {
+        console.error("Delete message failed:", error);
+        const errorMessage =
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message: string }).message
+            : String(error);
+        listenerApi.dispatch(msgActions.delOnlyFailed(errorMessage));
+      }
+    },
+  });
+};
+
+const HandleSocketDelEveryoneListener = () => {
+  startAppListening({
+    actionCreator: msgActions.delEveryone,
+    effect: async (action, listenerApi) => {
+      try {
+        const { roomId, msgId } = action.payload;
+        console.log("room:delete_everyone:message ~ payload:", action.payload);
+        const socket = getSocket();
+        socket?.emit("room:delete_everyone:message", { roomId, msgId });
+        listenerApi.dispatch(msgActions.delEveryoneSuccess({ roomId, msgId }));
+      } catch (error) {
+        console.error("Delete message failed:", error);
+        const errorMessage =
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message: string }).message
+            : String(error);
+        listenerApi.dispatch(msgActions.delEveryoneFailed(errorMessage));
       }
     },
   });
