@@ -34,9 +34,9 @@ export const useWebRTC = () => {
   const [connectState, setConnectState] = useState('disconnected');
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const socketIo = getSocket();
   const localStreamRef = useRef<MediaStream | null>(null);
-  const pendingOffer = useRef<RTCSessionDescription | null>(null);
   const pendingCandidates = useRef<Map<string, RTCIceCandidate[]>>(new Map());
   const pcRef = useRef<RTCPeerConnection | null>(null);
 
@@ -185,6 +185,7 @@ export const useWebRTC = () => {
 
   const handleAcceptCall = async (roomId: string) => {
     try {
+      InCallManager.stopRingback(); // tắt tiếng đổ chuông
       const answerDesc = await pcRef.current?.createAnswer();
       await pcRef.current?.setLocalDescription(answerDesc);
       console.log("📤 Sending answer:", answerDesc);
@@ -230,6 +231,8 @@ export const useWebRTC = () => {
         if (type === "answer") {
           // caller nhận answer
           if (pcRef.current) {
+            // tắt tiếng đổ chuông
+            InCallManager.stopRingback();
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
             console.log("✅ Answer processed, remote description set");
 
@@ -285,6 +288,16 @@ export const useWebRTC = () => {
     }
   };
 
+  const switchCamera = () => {
+    setIsSwitchingCamera((prev) => !prev);
+    if (localStreamRef.current) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack._switchCamera();
+      }
+    }
+  };
+
   return {
     localStream,
     remoteStream,
@@ -296,8 +309,11 @@ export const useWebRTC = () => {
     hangOut,
     toggleVideo,
     toggleAudio,
+    switchCamera,
     isVideoEnabled,
     isAudioEnabled,
-    handleAcceptCall
+    isSwitchingCamera,
+    handleAcceptCall,
+    
   };
 };

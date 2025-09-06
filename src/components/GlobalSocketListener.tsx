@@ -36,8 +36,10 @@ const GlobalSocketListener = () => {
     hangOut,
     toggleVideo,
     toggleAudio,
+    switchCamera,
     isVideoEnabled,
-    isAudioEnabled
+    isAudioEnabled,
+    isSwitchingCamera
   } = useWebRTC();
 
 
@@ -337,8 +339,10 @@ const GlobalSocketListener = () => {
           connectState: connectState as 'idle' | 'connecting' | 'connected' | 'failed',
           toggleVideo: () => toggleVideo(),
           toggleAudio: () => toggleAudio(),
+          switchCamera: () => switchCamera(),
           isVideoEnabled,
-          isAudioEnabled
+          isAudioEnabled,
+          isSwitchingCamera
         }}
       />
     </>
