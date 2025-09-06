@@ -290,7 +290,7 @@ const GlobalSocketListener = () => {
     console.log("🎥 Call isVideoCall changed:", call);
     if (call.category === 'request' && call.from?.id === user?.id) {
       const callerId = user?.id as unknown as string;
-      handleCreateOffer(call.roomId as string, callerId);
+      handleCreateOffer(call.roomId as string);
     }
   }, [call]);
 
@@ -305,7 +305,7 @@ const GlobalSocketListener = () => {
     }));
     const calleeId = user?.id as unknown as string; // Người nhận cuộc gọi hiện tại
     const callerId = userTo?.id as unknown as string; // Người gọi
-    handleAcceptCall(call.roomId as string, calleeId, callerId);
+    handleAcceptCall(call.roomId as string);
   };
 
   const onDeclineCall = () => {
