@@ -27,9 +27,11 @@ interface CallModalProps {
         toggleVideo: () => void;
         toggleAudio: () => void;
         switchCamera: () => void;
+        toggleSpeakerphone: () => void;
         isVideoEnabled: boolean;
         isAudioEnabled: boolean;
         isSwitchingCamera: boolean;
+        isSpeakerOn: boolean;
     };
 }
 
@@ -204,6 +206,7 @@ const CallModal: React.FC<CallModalProps> = ({
                                 />
                             </TouchableOpacity>
                         )}
+
                         {isAccepted && (
                             <View className="flex-row gap-4">
                                 {/* Toggle Audio Button */}
@@ -218,11 +221,23 @@ const CallModal: React.FC<CallModalProps> = ({
                                         color="white"
                                     />
                                 </TouchableOpacity>
-                                {/* switch camera */}
 
                                 {/* Toggle Video Button */}
                                 {isVideoCall && (
                                     <>
+                                        {/* Toggle Speakerphone Button */}
+                                        <TouchableOpacity
+                                            onPress={() => webRTC.toggleSpeakerphone()}
+                                            className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isSpeakerOn ? "bg-green-500" : "bg-gray-500"}`}
+                                            activeOpacity={0.8}
+                                        >
+                                            <Ionicons
+                                                name={webRTC.isSpeakerOn ? "volume-high" : "volume-mute"}
+                                                size={32}
+                                                color="white"
+                                            />
+                                        </TouchableOpacity>
+                                        {/* Switch Camera Button */}
                                         <TouchableOpacity
                                             onPress={() => webRTC.switchCamera()}
                                             className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isSwitchingCamera ? "bg-green-500" : "bg-gray-500"}`}
@@ -234,6 +249,7 @@ const CallModal: React.FC<CallModalProps> = ({
                                                 color="white"
                                             />
                                         </TouchableOpacity>
+                                        {/* Video Toggle Button */}
                                         <TouchableOpacity
                                             onPress={() => webRTC.toggleVideo()}
                                             className={`w-16 h-16 rounded-full justify-center items-center shadow ${webRTC.isVideoEnabled ? "bg-green-500" : "bg-gray-500"}`}

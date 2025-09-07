@@ -35,6 +35,7 @@ export const useWebRTC = () => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const socketIo = getSocket();
   const localStreamRef = useRef<MediaStream | null>(null);
   const pendingCandidates = useRef<Map<string, RTCIceCandidate[]>>(new Map());
@@ -63,7 +64,8 @@ export const useWebRTC = () => {
     setRemoteStream(null);
 
     InCallManager.stop(); // dừng audio manager
-    InCallManager.setForceSpeakerphoneOn(false); // reset loa
+    InCallManager.setSpeakerphoneOn(false); // tắt loa ngoài
+    InCallManager.setForceSpeakerphoneOn(false); // tắt loa ngoài
     InCallManager.setMicrophoneMute(true); // mute mic
     console.log("✅ WebRTC cleanup completed");
   };
@@ -71,7 +73,8 @@ export const useWebRTC = () => {
   useEffect(() => {
     socketIo?.on('connect', () => console.log("✅ Socket.IO connected"));
     socketIo?.on('connect_error', (err) => console.error("❌ Socket.IO error:", err));
-    InCallManager.setSpeakerphoneOn(true);
+    InCallManager.setForceSpeakerphoneOn(true); // bật loa ngoài
+    InCallManager.setSpeakerphoneOn(true); // bật loa ngoài
     return () => {
       cleanUp();
     };
@@ -104,7 +107,7 @@ export const useWebRTC = () => {
 
       localStreamRef.current = stream;
       setLocalStream(stream);
-      InCallManager.start({ media: isVideoCall ? 'video' : 'audio', auto: true, ringback: '_DEFAULT_' });
+      InCallManager.start({ media: isVideoCall ? 'video' : 'audio', auto: true });
       return stream;
     } catch (err) {
       console.error("❌ Error init media:", err);
@@ -211,6 +214,8 @@ export const useWebRTC = () => {
           // callee nhận offer
           await initStream();
           await createPeerConnection(roomId);
+          // đổ chuông
+          InCallManager.startRingback('_DEFAULT_');
 
           if (pcRef.current) {
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(offer));
@@ -231,8 +236,6 @@ export const useWebRTC = () => {
         if (type === "answer") {
           // caller nhận answer
           if (pcRef.current) {
-            // tắt tiếng đổ chuông
-            InCallManager.stopRingback();
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
             console.log("✅ Answer processed, remote description set");
 
@@ -298,6 +301,12 @@ export const useWebRTC = () => {
     }
   };
 
+  const toggleSpeakerphone = () => {
+    setIsSpeakerOn(prev => !prev);
+    InCallManager.setSpeakerphoneOn(!isSpeakerOn);
+    InCallManager.setForceSpeakerphoneOn(!isSpeakerOn);
+  }
+
   return {
     localStream,
     remoteStream,
@@ -310,10 +319,11 @@ export const useWebRTC = () => {
     toggleVideo,
     toggleAudio,
     switchCamera,
+    toggleSpeakerphone,
     isVideoEnabled,
     isAudioEnabled,
     isSwitchingCamera,
+    isSpeakerOn,
     handleAcceptCall,
-    
   };
 };

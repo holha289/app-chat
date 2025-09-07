@@ -37,6 +37,8 @@ const GlobalSocketListener = () => {
     toggleVideo,
     toggleAudio,
     switchCamera,
+    toggleSpeakerphone,
+    isSpeakerOn,
     isVideoEnabled,
     isAudioEnabled,
     isSwitchingCamera
@@ -340,9 +342,11 @@ const GlobalSocketListener = () => {
           toggleVideo: () => toggleVideo(),
           toggleAudio: () => toggleAudio(),
           switchCamera: () => switchCamera(),
+          toggleSpeakerphone: () => toggleSpeakerphone(),
           isVideoEnabled,
           isAudioEnabled,
-          isSwitchingCamera
+          isSwitchingCamera,
+          isSpeakerOn
         }}
       />
     </>
