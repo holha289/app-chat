@@ -7,8 +7,6 @@ export const useSockerIo = () => {
   const isConnectingRef = useRef(false);
 
   const connectSocket = useCallback(() => { 
-    console.log('🎯 useSockerIo: Attempting to connect socket...');
-    
     if (isConnectingRef.current) {
       console.log('⏳ Already connecting, skipping...');
       return;
@@ -17,12 +15,8 @@ export const useSockerIo = () => {
     const token = getAccessToken();
     if (token) {
       isConnectingRef.current = true;
-      console.log('🚀 Initializing socket with token...');
-      
       try {
-        const newSocket = initSocket(token);
-        console.log('✅ Socket initialized:', !!newSocket);
-        
+        const newSocket = initSocket(token);        
         // Update socket state immediately if we got a socket
         if (newSocket) {
           setSocket(newSocket);
@@ -39,6 +33,11 @@ export const useSockerIo = () => {
       console.warn('⚠️ useSockerIo: No access token available');
     }
   }, []);
+
+  const reTryConnection = useCallback(() => {
+    console.log('🔄 useSockerIo: Retrying socket connection...');
+    connectSocket();
+  }, [connectSocket]);
 
   const disconnect = useCallback(() => {
     console.log('🔌 useSockerIo: Disconnecting socket...');
@@ -68,6 +67,7 @@ export const useSockerIo = () => {
     socket,
     connectSocket,
     disconnect,
+    reTryConnection
   };
 }
 

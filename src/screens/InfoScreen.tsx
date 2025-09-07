@@ -68,12 +68,12 @@ const InfoScreen = () => {
        {friendship === "blocked" ? (
           <View className={InfoClassStyle.boxBlocked}>
             <Avatar
-              uri={user?.avatar}
-              name={user?.fullname || "Unknown"}
+              uri={user.room_avatar ? user.room_avatar : (Array.isArray(user.avatar) ? user.avatar[0] : user.avatar) }
+              name={user?.fullname || user?.name || "Unknown"}
               size={128}
             />
             <Text className="mt-4 text-2xl font-bold text-gray-800">
-              {user?.fullname || "Không có tên"}
+              {user?.fullname || user?.name || "Không có tên"}
             </Text>
             <Text className="text-base text-gray-500 mt-1">
               @{user?.slug?.replace("usr_", "") || "unknown"}
@@ -103,7 +103,7 @@ const InfoScreen = () => {
               <View className="items-center px-4 -mt-16">
                 <View className="bg-white rounded-full p-1 shadow-lg">
                   <Avatar
-                    uri={user?.avatar}
+                    uri={user.room_avatar ? user.room_avatar : (Array.isArray(user.avatar) ? user.avatar[0] : user.avatar) }
                     name={user?.fullname || "Unknown"}
                     size={128}
                     showStatus
@@ -111,7 +111,7 @@ const InfoScreen = () => {
                   />
                 </View>
                 <Text className="mt-3 text-2xl font-bold text-gray-900">
-                  {user?.fullname || "Không có tên"}
+                  {user?.fullname || user?.name || "Không có tên"}
                 </Text>
                 <Text className="text-base text-gray-500 mt-1">
                   @{user?.slug?.replace("usr_", "") || "unknown"}
@@ -202,7 +202,7 @@ const InfoScreen = () => {
                   <InfoRow
                     icon="people-outline"
                     label="Số thành viên"
-                    value={user?.members || 0}
+                    value={user?.member_count || 0}
                   />
                 </InfoCard>
               ) : (

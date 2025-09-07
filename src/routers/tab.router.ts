@@ -37,7 +37,7 @@ const TabRoutes: TabNavigatorType = {
     }
   ],
   navigatorOptions: {
-    initialRouteName: 'ContactScreen',
+    initialRouteName: 'Chats',
   },
 };
 
