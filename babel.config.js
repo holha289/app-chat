@@ -1,5 +1,10 @@
 module.exports = {
   presets: ['babel-preset-expo', 'nativewind/babel'],
+  env: {
+    production: {
+      plugins: ['react-native-paper/babel'],
+    },
+  },
   plugins: [
     [
       'module-resolver',
@@ -18,17 +23,6 @@ module.exports = {
           '@app/core': './src/core',
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
-      },
-    ],
-    [
-      'module:react-native-dotenv',
-      {
-        moduleName: '@env',
-        path: '.env',
-        blocklist: null,
-        allowlist: null,
-        safe: false,
-        allowUndefined: true,
       },
     ],
     [

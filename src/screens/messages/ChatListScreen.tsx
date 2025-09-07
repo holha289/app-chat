@@ -15,7 +15,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import {
-  selectMessage,
   selectMsgStatus,
   selectRooms,
 } from "@app/features/message/msg.selectors";
@@ -105,6 +104,7 @@ export default function ChatListScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white px-4">
+      {/* <MyComponent /> */}
       <View className="flex-1 bg-gray-50 px-4">
         <View className="flex-row justify-between items-center  mb-4">
           <Text className="text-3xl font-extrabold text-blue-600">WChat</Text>

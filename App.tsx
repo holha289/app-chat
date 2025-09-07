@@ -10,23 +10,24 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppInitializer } from "@app/components/AppInitializer";
 import GlobalSocketListener from "@app/components/GlobalSocketListener";
 import SocketInitializer from "@app/components/SocketInitializer";
-import { ActionSheetProvider } from "@expo/react-native-action-sheet";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-
+import { PaperProvider } from "react-native-paper";
 export default function App() {
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <GestureHandlerRootView className="flex-1">
-          <SafeAreaProvider>
-            <AppInitializer />
-            <SocketInitializer />
-            <GlobalSocketListener />
+      <PaperProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <GestureHandlerRootView className="flex-1">
+            <SafeAreaProvider>
+              <AppInitializer />
+              
+              <SocketInitializer />
+              <GlobalSocketListener />
               <AppNavigator />
-            <StatusBar style="auto" />
-          </SafeAreaProvider>
-        </GestureHandlerRootView>
-      </PersistGate>
+              <StatusBar style="auto" />
+            </SafeAreaProvider>
+          </GestureHandlerRootView>
+        </PersistGate>
+      </PaperProvider>
     </Provider>
   );
 }
