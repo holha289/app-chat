@@ -90,7 +90,7 @@ const InfoScreen = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <ScrollView className="mt-10" showsVerticalScrollIndicator={false}>
+          <ScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
             {/* Hero Section */}
             <View className="mb-6">
               <ImageBackground
