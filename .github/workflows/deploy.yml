@@ -18,7 +18,7 @@ jobs:
   android:
     name: Build Android & Distribute
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.inputs.target == 'android'  # Chạy khi push hoặc khi chọn android trong workflow_dispatch
+    if: github.event.inputs.target == 'android'  # Chạy khi push hoặc khi chọn android trong workflow_dispatch
     environment: FIREBASE
 
     steps:
@@ -51,14 +51,6 @@ jobs:
       - name: Prebuild Android
         run: npx expo prebuild
 
-      # Cấu hình Gradle memory
-      - name: Configure Gradle memory
-        run: |
-          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> android/gradle.properties
-          echo "org.gradle.caching=true" >> android/gradle.properties
-          echo "org.gradle.parallel=true" >> android/gradle.properties
-        working-directory: android
-
       - name: Build release APK
         run: |
           cd android
@@ -80,7 +72,7 @@ jobs:
   ios:
     name: Build iOS & Distribute
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.inputs.target == 'ios'  # Chạy khi push hoặc khi chọn ios trong workflow_dispatch
+    if: github.event.inputs.target == 'ios'  # Chạy khi push hoặc khi chọn ios trong workflow_dispatch
     environment: FIREBASE
 
     steps:
