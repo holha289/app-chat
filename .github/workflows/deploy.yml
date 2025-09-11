@@ -68,6 +68,8 @@ jobs:
             --app ${{ secrets.FIREBASE_ANDROID_APP_ID }} \
             --release-notes "Android build từ GitHub Actions 🚀" \
             --groups "internal-testers"
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
 
   ios:
     name: Build iOS & Distribute
