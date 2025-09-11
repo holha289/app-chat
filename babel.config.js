@@ -1,5 +1,10 @@
 module.exports = {
   presets: ['babel-preset-expo', 'nativewind/babel'],
+  env: {
+    production: {
+      plugins: ['react-native-paper/babel'],
+    },
+  },
   plugins: [
     [
       'module-resolver',
@@ -21,14 +26,9 @@ module.exports = {
       },
     ],
     [
-      'module:react-native-dotenv',
+      "react-native-reanimated/plugin",
       {
-        moduleName: '@env',
-        path: '.env',
-        blocklist: null,
-        allowlist: null,
-        safe: false,
-        allowUndefined: true,
+        relativeSourcePath: "src",
       },
     ],
   ],

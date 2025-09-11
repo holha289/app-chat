@@ -4,7 +4,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import routers from "../routers/index.router";
 import TabNavigator from "./TabNavigator";
 import { TabNavigatorType } from "../types/navigator";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { navigationRef } from "./RootNavigation";
 import { selectIsAuthenticated } from "@app/features/auth/auth.selectors";
 import { useSelector } from "react-redux";
@@ -20,13 +19,12 @@ const AppNavigator = () => {
     }
   }, [isAuthenticated]);
   return (
-    <SafeAreaProvider>
-      <NavigationContainer ref={navigationRef}>
-        <Stack.Navigator
-          {...(routers.navigatorOptions as React.ComponentProps<
-            typeof Stack.Navigator
-          >)}
-        >
+    <NavigationContainer ref={navigationRef}>
+      <Stack.Navigator
+        {...(routers.navigatorOptions as React.ComponentProps<
+          typeof Stack.Navigator
+        >)}
+      >
           {routers.screens.map((screen, index) => {
             if (screen.name === "TabNavigator") {
               const tabNavigator =
@@ -55,7 +53,6 @@ const AppNavigator = () => {
           })}
         </Stack.Navigator>
       </NavigationContainer>
-    </SafeAreaProvider>
   );
 };
 
