@@ -3,14 +3,22 @@ name: Android & iOS CI/CD with Firebase (Cache npm)
 on:
   push:
     branches: [ main ]
-  workflow_dispatch_android:
-  workflow_dispatch_ios:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Chọn platform để build (ios/android)"
+        required: true
+        default: "ios"
+        type: choice
+        options:
+          - ios
+          - android
 
 jobs:
   android:
     name: Build Android & Distribute
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch_android'   # chỉ chạy thủ công
+    if: github.event_name == 'push' || github.event.inputs.target == 'android'  # Chạy khi push hoặc khi chọn android trong workflow_dispatch
     environment: FIREBASE
 
     steps:
@@ -51,7 +59,6 @@ jobs:
           echo "org.gradle.parallel=true" >> android/gradle.properties
         working-directory: android
 
-
       - name: Build release APK
         run: |
           cd android
@@ -73,7 +80,7 @@ jobs:
   ios:
     name: Build iOS & Distribute
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch_ios'   # chỉ chạy thủ công
+    if: github.event_name == 'push' || github.event.inputs.target == 'ios'  # Chạy khi push hoặc khi chọn ios trong workflow_dispatch
     environment: FIREBASE
 
     steps:
