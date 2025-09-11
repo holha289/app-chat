@@ -3,11 +3,14 @@ name: Android & iOS CI/CD with Firebase (Cache npm)
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   android:
     name: Build Android & Distribute
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'   # chỉ chạy thủ công
+    environment: FIREBASE
 
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +42,13 @@ jobs:
       - name: Prebuild Android
         run: npx expo prebuild
 
+      # Cấu hình Gradle memory
+      - name: Configure Gradle memory
+        run: |
+          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> android/gradle.properties
+          echo "org.gradle.caching=true" >> android/gradle.properties
+          echo "org.gradle.parallel=true" >> android/gradle.properties
+
       - name: Build release APK
         run: |
           cd android
@@ -60,6 +70,8 @@ jobs:
   ios:
     name: Build iOS & Distribute
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'   # chỉ chạy thủ công
+    environment: FIREBASE
 
     steps:
       - uses: actions/checkout@v4
@@ -86,9 +98,14 @@ jobs:
         run: npm install -g eas-cli
 
       - name: Run EAS Build (iOS)
-        run: eas build --platform ios --profile preview --non-interactive --output=AppChat.ipa
+        run: eas build --platform ios --profile preview --non-interactive --wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download iOS artifact
+        run: |
+          url=$(eas build:list --platform ios --status finished --limit 1 --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
+          curl -L -o AppChat.ipa "$url"
 
       - name: Authenticate with Firebase
         run: |
