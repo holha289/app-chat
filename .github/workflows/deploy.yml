@@ -1,4 +1,4 @@
-name: Android & iOS CI/CD with Firebase (Cache npm)
+name: Android & iOS CI/CD with Firebase Distribution
 
 on:
   push:
@@ -37,18 +37,18 @@ jobs:
         with:
           node-version: '20'
 
-      # - name: Cache dependencies
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       **/node_modules
-      #       $HOME/.npm
-      #     key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-npm-
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            $HOME/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm install
 
       - name: Prebuild Android
         run: npx expo prebuild
@@ -82,18 +82,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache dependencies
+      - name: Cache npm dependencies
         uses: actions/cache@v4
         with:
           path: |
-            **/node_modules
+            node_modules
             $HOME/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm install
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
