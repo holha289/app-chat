@@ -19,5 +19,5 @@ module.exports = (() => {
     platforms: ["ios", "android", "native", "web"], // Ensure Metro version compatibility
   };
 
-  return withNativeWind(config, { input: "./global.css" });
+  return withNativeWind(config, { input: "./global.css", experimental: { worklets: false } });
 })();
