@@ -37,7 +37,6 @@ jobs:
       - name: Rebuild lightningcss
         run: npm rebuild lightningcss
 
-
       - name: Prebuild Android
         run: npx expo prebuild
 
@@ -47,16 +46,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
-
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
-        with:
-          min-wrapper-count: 1
-          allow-snapshots: false
-          
-      - name: Fix Gradle wrapper permissions
-        run: |
-          chmod +x android/gradlew
 
       - name: Build release APK
         run: |
