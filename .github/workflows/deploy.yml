@@ -23,37 +23,38 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prebuild Android
+        run: npx expo prebuild
 
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
         with:
-          node-version: '20'
-
-      # - name: Cache npm
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.npm
-      #     key: ${{ runner.os }}-${{ runner.arch }}-node-${{ hashFiles('package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-${{ runner.arch }}-node-
-
-      - name: Install dependencies
-        run: npm install --force
-
-
-      - name: Prebuild Android
-        run: npx expo prebuild
+          min-wrapper-count: 1
+          allow-snapshots: false
+          
+      - name: Fix Gradle wrapper permissions
+        run: |
+          chmod +x android/gradlew
 
       - name: Build release APK
         run: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --no-daemon --warning-mode all
 
       - name: Upload artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
