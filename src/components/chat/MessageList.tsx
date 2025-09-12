@@ -1,11 +1,14 @@
 import React, { forwardRef } from "react";
 import { FlatList, ListRenderItemInfo, ViewStyle } from "react-native";
-import MessageRow, { Message } from "./MessageRow";
+import MessageRow from "./MessageRow";
+import { MessageItem } from "@app/features/types/msg.type";
 
 type Props = {
-  messages: Message[];
+  messages: MessageItem[];
   meId?: string | number;
   onScroll?: any;
+  roomId?: string;
+  isGroup?: boolean;
   onMomentumScrollBegin?: () => void;
   onEndReached?: () => void;
   ListFooterComponent?: React.ReactElement | null;
@@ -15,11 +18,30 @@ type Props = {
 };
 
 const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
-  { messages, meId, onScroll, onMomentumScrollBegin, onEndReached, ListFooterComponent, contentContainerStyle, onViewableItemsChanged, viewabilityConfig },
+  {
+    isGroup,
+    messages,
+    roomId,
+    meId,
+    onScroll,
+    onMomentumScrollBegin,
+    onEndReached,
+    ListFooterComponent,
+    contentContainerStyle,
+    onViewableItemsChanged,
+    viewabilityConfig,
+  },
+
   ref
 ) {
-  const renderItem = ({ item }: ListRenderItemInfo<Message>) => (
-    <MessageRow item={item} meId={meId} />
+  console.log("🚀 ~ roomId:", roomId);
+  const renderItem = ({ item }: ListRenderItemInfo<MessageItem>) => (
+    <MessageRow
+      isGroupChat={isGroup}
+      roomId={roomId}
+      item={item}
+      meId={meId}
+    />
   );
 
   return (
@@ -30,7 +52,9 @@ const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
       className="flex-1 px-4"
-      contentContainerStyle={contentContainerStyle ?? { paddingTop: 8, paddingBottom: 8 }}
+      contentContainerStyle={
+        contentContainerStyle ?? { paddingTop: 8, paddingBottom: 8 }
+      }
       maintainVisibleContentPosition={{ minIndexForVisible: 1 }}
       onMomentumScrollBegin={onMomentumScrollBegin}
       onEndReached={onEndReached}
@@ -43,7 +67,6 @@ const MessageList = forwardRef<FlatList<any>, Props>(function MessageList(
       removeClippedSubviews
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
-
     />
   );
 });

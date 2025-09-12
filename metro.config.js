@@ -16,6 +16,7 @@ module.exports = (() => {
     ...resolver,
     assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...resolver.sourceExts, "svg"],
+    platforms: ["ios", "android", "native", "web"], // Ensure Metro version compatibility
   };
 
   return withNativeWind(config, { input: "./global.css" });

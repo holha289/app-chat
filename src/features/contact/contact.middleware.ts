@@ -20,7 +20,7 @@ const getListFriendsRequest = () => {
         actionCreator: ContactActions.getListFriendsRequest,
         effect: async (action, api) => {
             try {
-                const response = await apiService.get<ApiResponse<ContactState['friends']>>("/profile/get-list-friends");
+                const response = await apiService.get<ApiResponse<ContactState['friends']>>("/profile/get-list-friends", action.payload);
                 api.dispatch(ContactActions.getListFriendsSuccess(response.metadata));
             } catch (error) {
                 api.dispatch(ContactActions.getListFriendsError(useErrorResponse(error)));
@@ -34,7 +34,7 @@ const getListGroupsRequest = () => {
         actionCreator: ContactActions.getListGroupsRequest,
         effect: async (action, api) => {
             try {
-                const response = await apiService.get<ApiResponse<ContactState['groups']>>("/profile/get-list-groups");
+                const response = await apiService.get<ApiResponse<ContactState['groups']>>("/profile/get-list-groups", action.payload);
                 api.dispatch(ContactActions.getListGroupsSuccess(response.metadata));
             } catch (error) {
                 api.dispatch(ContactActions.getListGroupsError(useErrorResponse(error)));
@@ -48,7 +48,7 @@ const getListPendingRequest = () => {
         actionCreator: ContactActions.getListPendingRequest,
         effect: async (action, api) => {
             try {
-                const response = await apiService.get<ApiResponse<ContactState['pending']>>("/profile/get-list-pending-friend-requests");
+                const response = await apiService.get<ApiResponse<ContactState['pending']>>("/profile/get-list-pending-friend-requests", action.payload);
                 api.dispatch(ContactActions.getListPendingSuccess(response.metadata));
             } catch (error) {
                 api.dispatch(ContactActions.getListPendingError(useErrorResponse(error)));
