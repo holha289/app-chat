@@ -35,19 +35,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-${{ runner.arch }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-node-
+      # - name: Cache npm
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-${{ runner.arch }}-node-${{ hashFiles('package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-${{ runner.arch }}-node-
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Rebuild lightningcss for Linux
-        run: npm rebuild lightningcss
+        run: npm install --force
 
 
       - name: Prebuild Android
