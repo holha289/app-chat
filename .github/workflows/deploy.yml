@@ -18,7 +18,7 @@ jobs:
   android:
     name: Build Android & Distribute
     runs-on: ubuntu-latest
-    if: github.event.inputs.target == 'android'
+    # if: github.event.inputs.target == 'android'
     environment: FIREBASE
     env:
       GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
@@ -37,15 +37,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            $HOME/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
+      # - name: Cache npm dependencies
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       node_modules
+      #       $HOME/.npm
+      #     key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-npm-
 
       - name: Install dependencies
         run: npm cache clean --force && npm install
