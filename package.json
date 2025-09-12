@@ -12,7 +12,8 @@
     "ios": "expo run:ios",
     "native:asset": "npx react-native-asset",
     "gradlew:clean": "cd android && gradlew clean && cd ..",
-    "build:release": "cd android && gradlew assembleRelease && cd .."
+    "build:release": "cd android && gradlew assembleRelease && cd ..",
+    "build:release:root": "cd android && gradlew assembleRelease && cd .. && copy android\\app\\build\\outputs\\apk\\release\\app-release.apk app-release.apk"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
