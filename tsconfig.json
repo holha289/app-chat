@@ -54,11 +54,8 @@
     "**/*.js",
     "**/*.jsx",
     "nativewind-env.d.ts",
-    "src/types/svg.d.ts", 
-    "ReactotronConfig.ts",
-    "webrtc.d.ts",
-    "env.d.ts"
-  ],
+    "src/types/svg.d.ts"
+, "ReactotronConfig.ts"  ],
   "exclude": [
     "node_modules"
   ],

@@ -6,7 +6,7 @@ import {
   RESULTS,
   openSettings,
 } from 'react-native-permissions';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 const requestPermission = async () => {
   let notificationGranted = false;
@@ -61,30 +61,4 @@ const requestPermission = async () => {
   };
 };
 
-const requestMediaPermissions = async () => {
-  if (Platform.OS === "android") {
-    try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-      ]);
-
-      const cameraGranted =
-        granted[PermissionsAndroid.PERMISSIONS.CAMERA] ===
-        PermissionsAndroid.RESULTS.GRANTED;
-      const audioGranted =
-        granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] ===
-        PermissionsAndroid.RESULTS.GRANTED;
-
-      return cameraGranted && audioGranted;
-    } catch (err) {
-      console.warn("Permission error:", err);
-      return false;
-    }
-  } else {
-    // iOS: tự động xin khi gọi getUserMedia
-    return true;
-  }
-}
-
-export { requestPermission, requestMediaPermissions };
+export { requestPermission };

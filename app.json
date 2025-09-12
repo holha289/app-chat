@@ -1,9 +1,5 @@
 {
   "expo": {
-    "notification": {
-      "icon": "./assets/adaptive-icon.png",
-      "color": "#ffffff"
-    },
     "name": "W_Chat",
     "slug": "W_Chat",
     "version": "1.0.0",
@@ -15,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "entitlements": {
@@ -26,9 +20,7 @@
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.appchat.firebase",
       "infoPlist": {
-        "NSUserNotificationUsageDescription": "Cho phép ứng dụng gửi thông báo để cập nhật thông tin mới nhất.",
-        "NSMicrophoneUsageDescription": "Cho phép truy cập micro để gọi thoại/video",
-        "NSCameraUsageDescription": "Cho phép truy cập camera để gọi video"
+        "NSUserNotificationUsageDescription": "Cho phép ứng dụng gửi thông báo để cập nhật thông tin mới nhất."
       }
     },
     "android": {
@@ -39,6 +31,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "package": "com.appchat.firebase",
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -49,13 +42,8 @@
         "CAMERA",
         "READ_MEDIA_IMAGES",
         "READ_EXTERNAL_STORAGE",
-        "RECORD_AUDIO",
-        "MODIFY_AUDIO_SETTINGS",
-        "BLUETOOTH_CONNECT",
-        "WAKE_LOCK",
-        "INTERNET"
-      ],
-      "package": "com.appchat.firebase"
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -69,9 +57,9 @@
         "expo-build-properties",
         {
           "android": {
-            "compileSdkVersion": 36,
-            "targetSdkVersion": 36,
-            "buildToolsVersion": "36.0.0"
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
           },
           "ios": {
             "useFrameworks": "static"

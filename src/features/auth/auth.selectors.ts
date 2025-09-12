@@ -5,7 +5,6 @@ const selectAuthState = (state: RootState) => state.auth;
 const selectIsAuthenticated = (state: RootState) => selectAuthState(state).isAuthenticated;
 
 const selectUser = (state: RootState) => selectAuthState(state).user;
-const selectUserId = (state: RootState) => selectUser(state)?.id || "0";
 
 const selectAuthStatus = (state: RootState) => selectAuthState(state).status;
 
@@ -29,6 +28,5 @@ export {
     selectAuthError,
     selectAuthAccessToken,
     selectAuthSuccess,
-    selectAuthFailed,
-    selectUserId
+    selectAuthFailed
 };

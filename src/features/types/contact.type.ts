@@ -18,9 +18,6 @@ export interface Friends {
     gender: string;
     id: number;
     dateOfBirth: string;
-    room: {
-      room_id: string;
-    };
 }
 
 export interface Groups {

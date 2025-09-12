@@ -25,16 +25,16 @@ const CONTACT_ACTIONS_TYPE = {
 };
 
 const ContactActions = {
-  getListFriendsRequest: createAction<{ offset?: number, limit?: number }>(CONTACT_ACTIONS_TYPE.FRIENDS_REQUEST),
+  getListFriendsRequest: createAction(CONTACT_ACTIONS_TYPE.FRIENDS_REQUEST),
   getListFriendsSuccess: createAction<Friends[]>(CONTACT_ACTIONS_TYPE.FRIENDS_SUCCESS),
   getListFriendsError: createAction<string>(CONTACT_ACTIONS_TYPE.FRIENDS_ERROR),
-  getListGroupsRequest: createAction<{ offset?: number, limit?: number }>(CONTACT_ACTIONS_TYPE.GROUPS_REQUEST),
+  getListGroupsRequest: createAction(CONTACT_ACTIONS_TYPE.GROUPS_REQUEST),
   getListGroupsSuccess: createAction<Groups[]>(CONTACT_ACTIONS_TYPE.GROUPS_SUCCESS),
   getListGroupsError: createAction<string>(CONTACT_ACTIONS_TYPE.GROUPS_ERROR),
   getListBlockedRequest: createAction(CONTACT_ACTIONS_TYPE.BLOCKED_REQUEST),
   getListBlockedSuccess: createAction<Blocked[]>(CONTACT_ACTIONS_TYPE.BLOCKED_SUCCESS),
   getListBlockedError: createAction<string>(CONTACT_ACTIONS_TYPE.BLOCKED_ERROR),
-  getListPendingRequest: createAction<{ offset?: number, limit?: number }>(CONTACT_ACTIONS_TYPE.PENDING_REQUEST),
+  getListPendingRequest: createAction(CONTACT_ACTIONS_TYPE.PENDING_REQUEST),
   getListPendingSuccess: createAction<Pending[]>(CONTACT_ACTIONS_TYPE.PENDING_SUCCESS),
   getListPendingError: createAction<string>(CONTACT_ACTIONS_TYPE.PENDING_ERROR),
   createGroup: createAction<{ name: string; userIds: number[], callback: (error?: string) => void }>(CONTACT_ACTIONS_TYPE.CREATE_GROUP),

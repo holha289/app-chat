@@ -6,8 +6,7 @@ import { ApiResponse } from "@app/types/response";
 import apiService from "@app/services/api.service";
 import { useSelector } from "react-redux";
 import { selectMessage } from "./msg.selectors";
-import { getSocket } from "@app/core/socketIo";
-import { create } from "axios";
+import { useSockerIo } from "@app/hooks/use-socketio";
 
 export const MsgListenerMiddleware = () => {
   GetRoomsListener();
@@ -15,9 +14,6 @@ export const MsgListenerMiddleware = () => {
   HandleSocketReciveMsgListener();
 
   HandleSocketSendMsgListener();
-  HandleSoketReadMarMsgListener();
-  HandleSocketDelOnlyListener();
-  HandleSocketDelEveryoneListener();
 };
 
 const GetRoomsListener = () => {
@@ -25,9 +21,10 @@ const GetRoomsListener = () => {
     actionCreator: msgActions.getRoom,
     effect: async (action, listenerApi) => {
       try {
-        const response = await apiService.get<ApiResponse<MsgState["rooms"]>>(
-          "/message/rooms"
-        );
+        const response =
+          await apiService.get<ApiResponse<MsgState["rooms"]>>(
+            "/message/rooms",
+          );
         console.log("🚀 ~ GetRoomsListener ~ response:", response);
         listenerApi.dispatch(msgActions.getRoomSuccess(response.metadata));
       } catch (error) {
@@ -58,7 +55,7 @@ const GetMsgByRoomListener = () => {
             roomId,
             cursor: cursor ?? "",
             message: response.metadata as unknown as MessagePage,
-          })
+          }),
         );
       } catch (error) {
         console.error("Get messages by room failed:", error);
@@ -77,34 +74,13 @@ const HandleSocketSendMsgListener = () => {
     actionCreator: msgActions.sendMsgByRoom,
     effect: async (action, listenerApi) => {
       try {
-        const socket = getSocket();
+        const { socket } = useSockerIo();
         const payload = action.payload;
-        // console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
-        socket?.emit("room:send:message", payload.message);
-
-        const message = {
-          id: payload.message.id,
-          content: payload.message.content,
-          type: payload.message.type,
-          isReadByMe: true,
-          readCount: 0,
-          updatedAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          sender: payload.sender,
-        };
-        const roomId = payload.message.roomId;
+        console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
+        socket?.emit("room:send:message", payload);
         listenerApi.dispatch(msgActions.sendMsgByRoomSuccess());
-        listenerApi.dispatch(
-          msgActions.reciverMsgSuccess({
-            roomId,
-            message,
-            replytoId: payload.message?.replytoId
-              ? payload.message.replytoId
-              : null,
-          })
-        );
       } catch (error) {
-        console.error("Send messages by room failed:", error);
+        console.error("Get messages by room failed:", error);
         const errorMessage =
           typeof error === "object" && error !== null && "message" in error
             ? (error as { message: string }).message
@@ -121,12 +97,7 @@ const HandleSocketReciveMsgListener = () => {
     effect: async (action, listenerApi) => {
       try {
         const payload = action.payload;
-        listenerApi.dispatch(
-          msgActions.reciverMsgSuccess({
-            ...payload,
-            replytoId: null,
-          })
-        );
+        listenerApi.dispatch(msgActions.reciverMsgSuccess(payload));
       } catch (error) {
         console.error("Get messages by room failed:", error);
         const errorMessage =
@@ -134,71 +105,6 @@ const HandleSocketReciveMsgListener = () => {
             ? (error as { message: string }).message
             : String(error);
         listenerApi.dispatch(msgActions.getMsgByRoomFailed(errorMessage));
-      }
-    },
-  });
-};
-
-const HandleSoketReadMarMsgListener = () => {
-  startAppListening({
-    actionCreator: msgActions.readMark,
-    effect: async (action, listenerApi) => {
-      try {
-        const { roomId, lastMsgId } = action.payload;
-        const socket = getSocket();
-        socket?.emit("room:read:message", { roomId, lastMsgId });
-        listenerApi.dispatch(msgActions.readMarkSuccess({ roomId, lastMsgId }));
-      } catch (error) {
-        console.error("Read mark failed:", error);
-        const errorMessage =
-          typeof error === "object" && error !== null && "message" in error
-            ? (error as { message: string }).message
-            : String(error);
-        listenerApi.dispatch(msgActions.readMarkFailed(errorMessage));
-      }
-    },
-  });
-};
-
-const HandleSocketDelOnlyListener = () => {
-  startAppListening({
-    actionCreator: msgActions.delOnly,
-    effect: async (action, listenerApi) => {
-      try {
-        const { roomId, msgId } = action.payload;
-        console.log("room:delete_only:message ~ payload:", action.payload);
-        const socket = getSocket();
-        socket?.emit("room:delete_only:message", { roomId, msgId });
-        listenerApi.dispatch(msgActions.delOnlySuccess({ roomId, msgId }));
-      } catch (error) {
-        console.error("Delete message failed:", error);
-        const errorMessage =
-          typeof error === "object" && error !== null && "message" in error
-            ? (error as { message: string }).message
-            : String(error);
-        listenerApi.dispatch(msgActions.delOnlyFailed(errorMessage));
-      }
-    },
-  });
-};
-
-const HandleSocketDelEveryoneListener = () => {
-  startAppListening({
-    actionCreator: msgActions.delEveryone,
-    effect: async (action, listenerApi) => {
-      try {
-        const { roomId, msgId } = action.payload;
-        console.log("room:delete_everyone:message ~ payload:", action.payload);
-        const socket = getSocket();
-        socket?.emit("room:delete_everyone:message", { roomId, msgId });
-        listenerApi.dispatch(msgActions.delEveryoneSuccess({ roomId, msgId }));
-      } catch (error) {
-        console.error("Delete message failed:", error);
-        const errorMessage =
-          typeof error === "object" && error !== null && "message" in error
-            ? (error as { message: string }).message
-            : String(error);
-        listenerApi.dispatch(msgActions.delEveryoneFailed(errorMessage));
       }
     },
   });

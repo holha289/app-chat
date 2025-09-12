@@ -4,41 +4,8 @@ import UserActions from "./user.action";
 import { useUpdateStatusPending, useUpdateStatusSuccess, useUpdateStatusFailed } from "@app/hooks/use-state";
 
 
-const resetReceiveState = (state: any) => {
-    state.call.receive = {
-        incoming: null,
-        accepted: null,
-        rejected: null
-    };
-    return state;
-};
-
-const resetSendState = (state: any) => {
-    state.call.send = {
-        calling: null,
-        accept: null,
-        reject: null
-    };
-    return state;
-};
-
 const userReducer = createReducer(UserState, (builder) => {
-    builder.addCase(UserActions.call, (state, action) => {
-        state.call = action.payload;
-        return state;
-    });
-    builder.addCase(UserActions.clearCall, (state) => {
-        state.call = {
-            roomId: "",
-            from: null,
-            to: null,
-            data: null,
-            isVideoCall: false,
-            category: 'idle'
-        };
-        return state;
-    });
-    builder.addMatcher(
+     builder.addMatcher(
         isAnyOf(
             UserActions.sendFriendRequest,
             UserActions.acceptFriendRequest,

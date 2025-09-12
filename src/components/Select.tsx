@@ -1,7 +1,7 @@
 import SelectStyle from "@app/styles/select.style";
 import React from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
-import { FontAwesome } from "@expo/vector-icons"; // ✅ Thay thế import
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 type OptionItem = {
   value: string;

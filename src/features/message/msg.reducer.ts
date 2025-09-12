@@ -24,13 +24,7 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       // đảm bảo mỗi room đều có slot messages
       for (const room of state.rooms) {
         if (!state.messages[room.id]) {
-          state.messages[room.id] = {
-            items: [],
-            nextCursor: null,
-            lastMsgId: null,
-            inputText: "",
-            replyToMsg: null,
-          };
+          state.messages[room.id] = { items: [], nextCursor: null };
         }
       }
       // status/error đã xử lý ở matchers
@@ -45,13 +39,7 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       // đảm bảo room tồn tại
       const target =
         state.messages[roomId] ??
-        (state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        });
+        (state.messages[roomId] = { items: [], nextCursor: null });
 
       const isReset = !cursor; // '', null, undefined => reset
       if (isReset) {
@@ -74,179 +62,18 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       target.nextCursor = nextCursor;
     })
     .addCase(msgActions.reciverMsgSuccess, (state, { payload }) => {
-      const { roomId, message, replytoId } = payload;
-
-      // console.log("🚀 ~ message:", message)
+      const { roomId, message } = payload;
       // đảm bảo room tồn tại
       const target =
         state.messages[roomId] ??
-        (state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        });
-      if (replytoId) {
-        const replyToMsg = target.items.find((m) => m.id === replytoId);
-        if (replyToMsg) {
-          message.replyTo = replyToMsg;
-        }
-      }
+        (state.messages[roomId] = { items: [], nextCursor: null });
 
       // chỉ thêm nếu chưa tồn tại id này
-      const exists = target.items.find(
-        (m) => m.id?.toString() === message.id?.toString()
-      );
-      if (!exists) {
+      if (!target.items.some((m) => m.id === message.id)) {
         target.items.unshift(message);
       }
-      target.lastMsgId = message.id;
-    })
-    .addCase(msgActions.readMarkSuccess, (state, { payload }) => {
-      const { roomId, lastMsgId } = payload;
-      // console.log("🚀 ~ payload:", payload);
-      // đảm bảo room tồn tại
-      const target =
-        state.messages[roomId] ??
-        (state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        });
-      target.lastMsgId = lastMsgId;
-      target.items.forEach((i) => {
-        if (i.id == lastMsgId) {
-          i.isReadByMe = true;
-        }
-      });
-      const room = state.rooms.find((r) => r.id == roomId);
-      // console.log("🚀 ~ room:", room)
-      if (room) {
-        // set tạm thời
-        room.is_read = true;
-      }
-    })
-    .addCase(msgActions.updateLastMsg, (state, { payload }) => {
-      const { roomId, message } = payload;
-      // console.log("🚀 ~ payload:", payload)
-      const room = state.rooms.find((r) => r.id == roomId);
-      // console.log("🚀 ~ room:", room)
-      if (room) {
-        // console.log("Before update:", room);
-        room.last_message = message;
-        room.is_read = state.messages[roomId]?.lastMsgId == message?.msg_id;
-        console.log(
-          "After update:",
-          state.messages[roomId]?.lastMsgId,
-          "  ",
-          message?.msg_id
-        );
-      } else {
-        console.warn("Room not found", roomId);
-      }
-    })
-    // input text
-    .addCase(msgActions.inputText, (state, { payload }) => {
-      const { roomId, text } = payload;
-      const target =
-        state.messages[roomId] ??
-        (state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        });
-      target.inputText = text;
-    })
-    .addCase(msgActions.replyToMsg, (state, { payload }) => {
-      const { roomId, message } = payload;
-      console.log("Replying to message:", message);
-      const target =
-        state.messages[roomId] ??
-        (state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        });
-      target.replyToMsg = message;
-    })
-    .addCase(msgActions.readedSuccess, (state, { payload }) => {
-      const { roomId, msgId } = payload;
-      const target =
-        state.messages[roomId] ??
-        (state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        });
-      const m = target.items.find((x) => String(x.id) === String(msgId));
-      if (m) {
-        m.readCount++;
-      }
     })
 
-    // del only
-    .addCase(msgActions.delOnlySuccess, (state, { payload }) => {
-      const { roomId, msgId } = payload;
-
-      // nếu room chưa tồn tại thì khởi tạo
-      if (!state.messages[roomId]) {
-        state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        };
-        return;
-      }
-
-      const target = state.messages[roomId];
-
-      // tìm tin nhắn theo id
-      const msg = target.items.find((m) => String(m.id) === String(msgId));
-      console.log("🚀 ~ msg:", msg);
-      if (msg) {
-        msg.content = "";
-        msg.isDeletedForMe = true;
-        msg.del_only = true;
-      }
-    })
-    // del everyone
-    .addCase(msgActions.delEveryone, (state, { payload }) => {
-      const { roomId, msgId } = payload;
-
-      // nếu room chưa tồn tại thì khởi tạo
-      if (!state.messages[roomId]) {
-        state.messages[roomId] = {
-          items: [],
-          nextCursor: null,
-          lastMsgId: null,
-          inputText: "",
-          replyToMsg: null,
-        };
-        return;
-      }
-
-      const target = state.messages[roomId];
-
-      // tìm tin nhắn theo id
-      const msg = target.items.find((m) => String(m.id) === String(msgId));
-      console.log("🚀 ~ msg:", msg);
-      if (msg) {
-        msg.content = "";
-        msg.isDeletedForMe = true;
-        msg.del_all = true;
-      }
-    })
     // ===== PENDING =====
     .addMatcher(
       isAnyOf(
@@ -254,13 +81,12 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoom,
         msgActions.sendMsgByRoom,
         msgActions.reciverMsg,
-        msgActions.readMark
       ),
       (state) => {
         state.status = "pending";
         state.error = null;
         state.message = "";
-      }
+      },
     )
 
     // ===== FAILED =====
@@ -270,15 +96,11 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomFailed,
         msgActions.sendMsgByRoomFailed,
         msgActions.reciverMsgFailed,
-        msgActions.readMarkFailed,
-        msgActions.readedFailed,
-        msgActions.delOnlyFailed,
-        msgActions.delEveryoneFailed
       ),
       (state, { payload }) => {
         state.status = "failed";
         state.error = payload;
-      }
+      },
     )
 
     // ===== SUCCESS =====
@@ -288,15 +110,11 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.getMsgByRoomSuccess,
         msgActions.sendMsgByRoomSuccess,
         msgActions.reciverMsgSuccess,
-        msgActions.readMarkSuccess,
-        msgActions.readedSuccess,
-        msgActions.delOnlySuccess,
-        msgActions.delEveryoneSuccess
       ),
       (state) => {
         state.status = "success";
         state.error = null;
-      }
+      },
     );
 });
 

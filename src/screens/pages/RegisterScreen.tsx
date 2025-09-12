@@ -1,4 +1,4 @@
-import { Text, View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { registerClassStyle, RegisterStyle } from "@app/styles/register.style";
@@ -7,7 +7,7 @@ import { classBtn } from "@app/styles/main.style";
 import clsx from "clsx";
 import InputOtp from "@app/components/InputOtp";
 import InputGroup from "@app/components/InputGroup";
-import { PhoneAuthProvider, signInWithCredential, signInWithPhoneNumber } from "@react-native-firebase/auth";
+import { PhoneAuthProvider } from "@react-native-firebase/auth";
 import { getAuth } from "@app/core/firebase";
 import { formatPhoneNumber, isValidPhoneNumber } from "@app/core/util";
 
@@ -43,8 +43,7 @@ const RegisterScreen = () => {
             return;
         }
         if (step === 1) {
-           const isValid = handleOtpChange();
-           if (!isValid) return;
+            handleOtpChange();
         } else if (step === 2) {
             confirmCode();
             return
@@ -63,23 +62,21 @@ const RegisterScreen = () => {
     const handleOtpChange = async () => {
         if (!form.phone) {
             alert("Vui lòng nhập số điện thoại");
-            return false;
+            return;
         }
         if (!isValidPhoneNumber(form.phone)) {
             alert("Số điện thoại không hợp lệ");
-            return false;
+            return;
         }
         
         try {
-            const auth = getAuth();
-            const confirmation = await signInWithPhoneNumber(auth, formatPhoneNumber(form.phone));
+            const confirmation = await getAuth().signInWithPhoneNumber(formatPhoneNumber(form.phone));
             setVerificationId(confirmation.verificationId ?? '');
             // Bạn cũng có thể lưu `confirmation` vào state nếu cần `confirm(code)` sau này
         } catch (error) {
             console.error("Lỗi gửi OTP:", error);
-            alert("Không thể gửi mã OTP, vui lòng thử lại sau.\n" + JSON.stringify(error));
+            alert("Không thể gửi mã OTP, vui lòng thử lại sau.");
         }
-        return true;
     }
 
     async function confirmCode() {
@@ -89,8 +86,7 @@ const RegisterScreen = () => {
         }
         try {
             const credential = PhoneAuthProvider.credential(verificationId, form.otp);
-            const auth = getAuth();
-            await signInWithCredential(auth, credential);
+            await getAuth().signInWithCredential(credential);
             console.log("Xác thực thành công");
             setStep(3); // Chuyển sang bước 3
         } catch (error) {
@@ -100,7 +96,7 @@ const RegisterScreen = () => {
     } 
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className={registerClassStyle.container}>
+        <ScrollView className={registerClassStyle.container}>
             <View className={registerClassStyle.header}>
                 <Text className={registerClassStyle.title}>
                     Đăng ký tài khoản
@@ -207,7 +203,7 @@ const RegisterScreen = () => {
                     )}
                 </View>
             </View>
-        </KeyboardAvoidingView>
+        </ScrollView>
     );
 };
 

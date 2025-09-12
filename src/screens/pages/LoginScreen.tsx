@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { use, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Input from "@app/components/Input";
@@ -35,7 +35,7 @@ const LoginScreen = () => {
     }, [errorLogin]);
 
     return (
-        <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-white">
+        <ScrollView className="flex-1 bg-white">
             <LoadingOverlay visible={isLoading} />
             <View className={loginClassStyle.container}>
                 <View className={loginClassStyle.header}>
@@ -93,7 +93,7 @@ const LoginScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-        </KeyboardAvoidingView>
+        </ScrollView>
     );
 };
 

@@ -12,7 +12,6 @@ import UserActions from '@app/features/user/user.action';
 import { useDispatch } from 'react-redux';
 import Input from '../Input';
 import clsx from 'clsx';
-import LoadingOverlay from '../LoadingOverlay';
 
 interface SendFriendRequestModalProps {
     visible: boolean;
@@ -29,7 +28,6 @@ const SendFriendRequestModal: React.FC<SendFriendRequestModalProps> = ({
     user,
 }) => {
     const [message, setMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -40,12 +38,10 @@ const SendFriendRequestModal: React.FC<SendFriendRequestModalProps> = ({
 
     const handleSend = () => {
         if (message.trim() && user) {
-            setIsLoading(true);
             dispatch(UserActions.sendFriendRequest({
                 receiveId: String(user.id),
                 message,
                 callback: (error) => {
-                    setIsLoading(false);
                     if (error) {
                         Alert.alert("Có lỗi xảy ra", error);
                     } else {
@@ -70,9 +66,8 @@ const SendFriendRequestModal: React.FC<SendFriendRequestModalProps> = ({
             animationType="slide"
             onRequestClose={handleClose}
         >
-            {isLoading && <LoadingOverlay visible={isLoading} />}
-            <View className="flex-1 bg-white w-full">
-                <View className="bg-white rounded-2xl p-5 w-full">
+            <View className="flex-1 bg-white">
+                <View className="bg-white mx-5 rounded-2xl p-5 w-full max-w-96">
                     <Text className="text-xl font-bold text-center mb-3 text-gray-800">
                         Gửi lời mời kết bạn
                     </Text>
