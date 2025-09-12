@@ -98,9 +98,9 @@ Thumbs.db
 *.temp
 
 # Loại bỏ lock file
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 app_chat.json
 android/*
