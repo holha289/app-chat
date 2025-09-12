@@ -29,7 +29,14 @@ jobs:
           node-version: '20.18.0'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+      
+      - name: Deduplicate deps
+        run: npm dedupe
+
+      - name: Rebuild lightningcss
+        run: npm rebuild lightningcss
+
 
       - name: Prebuild Android
         run: npx expo prebuild
