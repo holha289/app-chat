@@ -37,17 +37,6 @@ jobs:
         with:
           node-version: '20'
 
-       # Dọn sạch cache Metro + Node + Gradle
-      - name: Clean caches
-        run: |
-          rm -rf android/.gradle
-          rm -rf android/.cxx
-          rm -rf android/build
-          rm -rf node_modules
-          rm -f package-lock.json
-          npm cache clean --force
-          cd android && ./gradlew clean
-
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
