@@ -37,15 +37,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-            $HOME/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
+      # - name: Cache dependencies
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       **/node_modules
+      #       $HOME/.npm
+      #     key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-npm-
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
