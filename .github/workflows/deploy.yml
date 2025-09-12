@@ -18,10 +18,8 @@ jobs:
   android:
     name: Build Android & Distribute
     runs-on: ubuntu-latest
-    # if: github.event.inputs.target == 'android'
+    # if: github.event.inputs.target == 'android' --- IGNORE ---
     environment: FIREBASE
-    env:
-      GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
 
     steps:
       - uses: actions/checkout@v4
@@ -37,18 +35,16 @@ jobs:
         with:
           node-version: '20'
 
-      # - name: Cache npm dependencies
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: |
-      #       node_modules
-      #       $HOME/.npm
-      #     key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-npm-
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm cache clean --force && npm install
+        run: npm ci
 
       - name: Prebuild Android
         run: npx expo prebuild
@@ -61,7 +57,7 @@ jobs:
       - name: Upload artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
-          appId: ${{secrets.FIREBASE_ANDROID_APP_ID}}
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           groups: testers
           file: android/app/build/outputs/apk/release/app-release.apk
@@ -71,8 +67,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.inputs.target == 'ios'
     environment: FIREBASE
-    env:
-      GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
 
     steps:
       - uses: actions/checkout@v4
@@ -82,18 +76,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Cache npm dependencies
+      - name: Cache npm
         uses: actions/cache@v4
         with:
-          path: |
-            node_modules
-            $HOME/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-
+            ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install EAS CLI
         run: npm install -g eas-cli
@@ -111,7 +103,7 @@ jobs:
       - name: Upload artifact to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
-          appId: ${{secrets.FIREBASE_ANDROID_APP_ID}}
+          appId: ${{ secrets.FIREBASE_IOS_APP_ID }}   # ✅ sửa lại appId
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           groups: testers
           file: AppChat.ipa
