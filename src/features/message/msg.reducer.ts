@@ -254,12 +254,12 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         if (!Array.isArray(target.attachments)) {
           target.attachments = [];
         }
-        
+
         // Kiểm tra xem URL đã tồn tại chưa
         const existingAttachment = target.attachments.find(
           (att) => att.url === attachment.url
         );
-        
+
         // Chỉ thêm nếu chưa tồn tại
         if (!existingAttachment) {
           target.attachments.push(attachment);
@@ -281,8 +281,9 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
       }
     })
     .addCase(msgActions.uploadAttachmentsSuccess, (state, { payload }) => {
+      console.log("uploadAttachmentsSuccess payload:", payload);
       const { roomId, attachments, msgId } = payload;
-      const target = state.messages[roomId]?.items.find(m => m.id === msgId);
+      const target = state.messages[roomId]?.items.find((m) => m.id === msgId);
       if (target) {
         target.attachments = attachments;
       }

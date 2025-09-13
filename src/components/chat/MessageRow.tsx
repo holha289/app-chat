@@ -71,22 +71,22 @@ const AttachmentRenderer = memo(({ attachments, isMe }: {
   };
 
   return (
-    <View className="mt-2">
+    <View className={`mt-2${ isMe?' justify-end ml-10':' justify-start mr-10'} flex-1 flex-row flex-wrap gap-2`}>
       {attachments.map((attachment, index) => {
         // Photo/Image
         if (attachment.kind === 'photo' || attachment.kind === 'image') {
           return (
-            <View key={attachment.id || index} className="mb-2">
+            <View key={attachment.id || index} className="mb-2 ">
               <PreviewMedia
                 uri={attachment.url}
                 kind="image"
-                classButton="w-48 h-32 rounded-lg"
+                classButton="w-16 h-16 rounded-lg"
               />
-              {attachment.name && (
+              {/* {attachment.name && (
                 <Text className={`text-xs mt-1 ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
                   {attachment.name}
                 </Text>
-              )}
+              )} */}
             </View>
           );
         }
@@ -98,7 +98,7 @@ const AttachmentRenderer = memo(({ attachments, isMe }: {
               <PreviewMedia
                 uri={attachment.url}
                 kind="video"
-                classButton="w-48 h-32 rounded-lg"
+                classButton="w-16 h-16 rounded-lg"
               />
               {/* Video overlay info */}
               <View className="absolute bottom-2 left-2 bg-black/70 rounded px-2 py-1">
@@ -106,11 +106,11 @@ const AttachmentRenderer = memo(({ attachments, isMe }: {
                   {formatDuration(attachment.duration)} 🎥
                 </Text>
               </View>
-              {attachment.name && (
+              {/* {attachment.name && (
                 <Text className={`text-xs mt-1 ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
                   {attachment.name}
                 </Text>
-              )}
+              )} */}
             </View>
           );
         }
@@ -459,6 +459,10 @@ const MessageRow = memo(
               </Text>
             )}
             {renderReplyPreview()}
+             <AttachmentRenderer 
+                attachments={item.attachments || []} 
+                isMe={isMe} 
+              />
             {/* Main message bubble */}
             <TouchableOpacity
               onLongPress={handleLongPress}
@@ -483,10 +487,7 @@ const MessageRow = memo(
               )}
 
               {/* Attachments */}
-              <AttachmentRenderer 
-                attachments={item.attachments || []} 
-                isMe={isMe} 
-              />
+             
 
               {/* Show more/less button for long messages */}
               {isLongMessage && (
