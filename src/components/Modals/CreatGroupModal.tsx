@@ -21,6 +21,7 @@ import ContactActions from '@app/features/contact/contact.action';
 import { Friends } from '@app/features/types/contact.type';
 import LoadingOverlay from '../LoadingOverlay';
 import UploadService from '@app/services/upload.service';
+import { requestCameraPermissions, requestFilePermissions } from '@app/core/permissions';
 
 interface CreateGroupModalProps {
     isOpen: boolean;
@@ -85,7 +86,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         );
     };
 
-    const openCamera = () => {
+    const openCamera = async () => {
+        const permission = await requestCameraPermissions();
+        if (!permission) {
+            Alert.alert('Lỗi', 'Ứng dụng cần quyền truy cập camera để chụp ảnh.');
+            return;
+        }
         const options: CameraOptions = {
             mediaType: 'photo',
             quality: 0.8,
@@ -108,14 +114,19 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             if (response.assets && response.assets[0]) {
                 const imageUri = response.assets[0].uri;
                 if (imageUri) {
-                     const uploadedImageUri = await UploadService.uploadSingleFile(imageUri);
+                    const uploadedImageUri = await UploadService.uploadSingleFile(imageUri);
                     setForm({ ...form, avatar: uploadedImageUri });
                 }
             }
         });
     };
 
-    const openGallery = () => {
+    const openGallery = async () => {
+        const permission = await requestFilePermissions();
+        if (!permission) {
+            Alert.alert('Lỗi', 'Ứng dụng cần quyền truy cập bộ nhớ để chọn ảnh.');
+            return;
+        }
         const options: ImageLibraryOptions = {
             mediaType: 'photo',
             quality: 0.8,
