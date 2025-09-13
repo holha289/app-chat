@@ -15,6 +15,23 @@ const authReducer = createReducer(initialState, (builder) => {
         state.message = null;
         return state;
     });
+    builder.addCase(authActions.clearFcmToken, (state, action) => {
+        state.tokens.fcmToken = null;
+        state.error = null;
+        state.message = null;
+        return state;
+    });
+    builder.addCase(authActions.setTokens, (state, action) => {
+        state.tokens = {
+            ...state.tokens,
+            accessToken: action.payload.accessToken,
+            refreshToken: action.payload.refreshToken,
+            expiresIn: action.payload.expiresIn,
+        };
+        state.error = null;
+        state.message = null;
+        return state;
+    });
     builder.addMatcher(
         isAnyOf(
             authActions.registerSuccess, 
