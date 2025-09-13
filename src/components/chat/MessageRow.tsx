@@ -9,15 +9,18 @@ import {
   Alert,
   Image,
   ScrollView,
+  Modal,
+  Dimensions,
+  SafeAreaView,
 } from "react-native";
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from "react-native-vector-icons/Ionicons";
+import Video from "react-native-video";
 import AvatarMini from "./AvatarMini";
 import { MsgMdEvent } from "./MessageModelEvent";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import { MessageItem, Attachment } from "@app/features/types/msg.type";
 import Clipboard from "@react-native-clipboard/clipboard";
-import { PreviewMedia } from "../PreviewMedia";
 
 // Enable LayoutAnimation on Android
 if (
@@ -49,114 +52,534 @@ type Props = {
   roomId?: string;
 };
 
-// Component hiển thị attachments
-const AttachmentRenderer = memo(({ attachments, isMe }: { 
-  attachments: Attachment[], 
-  isMe: boolean 
-}) => {
-  if (!attachments || attachments.length === 0) return null;
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return '';
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
-  };
+// Component xem video fullscreen với trạng thái play/pause
+const VideoFullscreenViewer = memo(
+  ({ uri, onClose }: { uri: string; onClose: () => void }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [showControls, setShowControls] = useState(true);
 
-  const formatDuration = (duration?: number) => {
-    if (!duration) return '';
-    const minutes = Math.floor(duration / 60000);
-    const seconds = Math.floor((duration % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  return (
-    <View className={`mt-2${ isMe?' justify-end ml-10':' justify-start mr-10'} flex-1 flex-row flex-wrap gap-2`}>
-      {attachments.map((attachment, index) => {
-        // Photo/Image
-        if (attachment.kind === 'photo' || attachment.kind === 'image') {
-          return (
-            <View key={attachment.id || index} className="mb-2 ">
-              <PreviewMedia
-                uri={attachment.url}
-                kind="image"
-                classButton="w-16 h-16 rounded-lg"
-              />
-              {/* {attachment.name && (
-                <Text className={`text-xs mt-1 ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
-                  {attachment.name}
-                </Text>
-              )} */}
-            </View>
-          );
-        }
-
-        // Video
-        if (attachment.kind === 'video') {
-          return (
-            <View key={attachment.id || index} className="mb-2 relative">
-              <PreviewMedia
-                uri={attachment.url}
-                kind="video"
-                classButton="w-16 h-16 rounded-lg"
-              />
-              {/* Video overlay info */}
-              <View className="absolute bottom-2 left-2 bg-black/70 rounded px-2 py-1">
-                <Text className="text-white text-xs">
-                  {formatDuration(attachment.duration)} 🎥
-                </Text>
-              </View>
-              {/* {attachment.name && (
-                <Text className={`text-xs mt-1 ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
-                  {attachment.name}
-                </Text>
-              )} */}
-            </View>
-          );
-        }
-
-        // File (generic)
-        if (attachment.kind === 'file') {
-          return (
-            <TouchableOpacity 
-              key={attachment.id || index} 
-              className={`mb-2 p-3 rounded-lg border ${
-                isMe ? 'bg-white/20 border-white/30' : 'bg-gray-100 border-gray-300'
-              }`}
+    return (
+      <View
+        style={{
+          width: screenWidth,
+          height: screenHeight - 120,
+          maxHeight: screenHeight - 120,
+          backgroundColor: "black",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+        }}
+      >
+        {isPlaying ? (
+          <Video
+            source={{ uri }}
+            style={{
+              width: screenWidth,
+              height: screenHeight - 120,
+            }}
+            resizeMode="contain"
+            controls={showControls}
+            paused={false}
+            repeat={false}
+            playInBackground={false}
+            playWhenInactive={false}
+            onError={(error) => {
+              console.log("Video Error:", error);
+              setIsPlaying(false);
+            }}
+            onLoad={(data) => console.log("Video Loaded:", data)}
+            onEnd={() => setIsPlaying(false)}
+          />
+        ) : (
+          <TouchableOpacity
+            style={{
+              width: screenWidth,
+              height: screenHeight - 120,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "black",
+            }}
+            onPress={() => setIsPlaying(true)}
+          >
+            <Image
+              source={{ uri }}
+              style={{
+                width: screenWidth,
+                height: screenHeight - 120,
+              }}
+              resizeMode="contain"
+            />
+            <View
+              style={{
+                position: "absolute",
+                justifyContent: "center",
+                alignItems: "center",
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: "rgba(0,0,0,0.7)",
+              }}
             >
-              <View className="flex-row items-center">
-                <Ionicons 
-                  name="document-outline" 
-                  size={24} 
-                  color={isMe ? 'white' : '#374151'} 
-                />
-                <View className="flex-1 ml-3">
-                  <Text 
-                    className={`font-medium ${isMe ? 'text-white' : 'text-gray-900'}`}
-                    numberOfLines={1}
-                  >
-                    {attachment.name || 'Untitled File'}
-                  </Text>
-                  <Text className={`text-xs ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
-                    {formatFileSize(attachment.size)} • {attachment.mimetype || 'Unknown type'}
-                  </Text>
-                </View>
-                <Ionicons 
-                  name="download-outline" 
-                  size={20} 
-                  color={isMe ? 'white' : '#6B7280'} 
-                />
-              </View>
-            </TouchableOpacity>
-          );
-        }
+              <Ionicons name="play" size={40} color="white" />
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+);
 
-        return null;
-      })}
-    </View>
-  );
-  // return null
-});
+// Modal hiển thị toàn bộ attachments
+const AttachmentModal = memo(
+  ({
+    visible,
+    attachments,
+    onClose,
+    isMe,
+  }: {
+    visible: boolean;
+    attachments: Attachment[];
+    onClose: () => void;
+    isMe: boolean;
+  }) => {
+    const [selectedMedia, setSelectedMedia] = useState<{
+      uri: string;
+      kind: string;
+    } | null>(null);
+
+    const formatFileSize = (bytes?: number) => {
+      if (!bytes) return "";
+      const sizes = ["B", "KB", "MB", "GB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (
+        Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i]
+      );
+    };
+
+    const formatDuration = (duration?: number) => {
+      if (!duration) return "";
+      const minutes = Math.floor(duration / 60);
+      const seconds = Math.floor(duration % 60);
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    };
+
+    const calculateImageSize = (width?: number, height?: number) => {
+      if (!width || !height) return { width: 120, height: 120 };
+
+      const maxSize = 120;
+      const ratio = Math.min(maxSize / width, maxSize / height);
+
+      return {
+        width: width * ratio,
+        height: height * ratio,
+      };
+    };
+
+    return (
+      <>
+        {/* Modal hiển thị toàn bộ attachments */}
+        <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+          <View className="flex-1 bg-white overflow-hidden">
+            {/* Header */}
+            <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
+              <Text className="text-lg font-semibold">
+                Tất cả đính kèm ({attachments.length})
+              </Text>
+              <TouchableOpacity onPress={onClose}>
+                <Ionicons name="close" size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content */}
+            <ScrollView className="flex-1 p-4 overflow-hidden">
+              <View className="flex-row flex-wrap gap-2 overflow-hidden pt-2">
+                {attachments.map((attachment, index) => {
+                  // Image
+                  if (
+                    attachment.kind === "photo" ||
+                    attachment.kind === "image"
+                  ) {
+                    const imageSize = calculateImageSize(
+                      attachment.width,
+                      attachment.height
+                    );
+                    return (
+                      <TouchableOpacity
+                        key={attachment.id || index}
+                        style={imageSize}
+                        className="rounded-lg mb-2"
+                        onPress={() =>
+                          setSelectedMedia({
+                            uri: attachment.url,
+                            kind: "image",
+                          })
+                        }
+                      >
+                        <Image
+                          source={{ uri: attachment.url }}
+                          style={imageSize}
+                          className="rounded-lg"
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
+                    );
+                  }
+
+                  // Video
+                  if (attachment.kind === "video") {
+                    return (
+                      <TouchableOpacity
+                        key={attachment.id || index}
+                        style={{
+                          width: 120,
+                          height: 120,
+                          overflow: "hidden", // Quan trọng: ngăn video tràn
+                          borderRadius: 8,
+                        }}
+                        className="mb-2 border-2 border-red-500 bg-gray-200"
+                        onPress={() =>
+                          setSelectedMedia({
+                            uri: attachment.url,
+                            kind: "video",
+                          })
+                        }
+                      >
+                        <Video
+                          source={{ uri: attachment.url }}
+                          style={{
+                            width: 120,
+                            height: 120,
+                            // // position: "absolute",
+                            // top: 0,
+                            // left: 0,
+                          }}
+                          resizeMode="cover"
+                          paused={true}
+                          poster={attachment.url}
+                          // posterResizeMode="cover"
+                        />
+                        <View
+                          className="absolute inset-0 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+                        >
+                          <Ionicons
+                            name="play-circle"
+                            size={32}
+                            color="white"
+                          />
+                        </View>
+                        <View
+                          className="absolute bottom-2 left-2 rounded px-2 py-1"
+                          style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                        >
+                          <Text className="text-white text-xs">
+                            {formatDuration(attachment.duration)}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  }
+
+                  // File
+                  if (attachment.kind === "file") {
+                    return (
+                      <View
+                        key={attachment.id || index}
+                        className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 mb-2"
+                      >
+                        <View className="flex-row items-center">
+                          <Ionicons
+                            name="document-outline"
+                            size={24}
+                            color="#374151"
+                          />
+                          <View className="flex-1 ml-3">
+                            <Text
+                              className="font-medium text-gray-900"
+                              numberOfLines={1}
+                            >
+                              {attachment.name || "Untitled File"}
+                            </Text>
+                            <Text className="text-xs text-gray-600">
+                              {formatFileSize(attachment.size)} •{" "}
+                              {attachment.mimetype || "Unknown type"}
+                            </Text>
+                          </View>
+                          <Ionicons
+                            name="download-outline"
+                            size={20}
+                            color="#6B7280"
+                          />
+                        </View>
+                      </View>
+                    );
+                  }
+
+                  return null;
+                })}
+              </View>
+            </ScrollView>
+          </View>
+        </Modal>
+
+        {/* Modal xem media fullscreen */}
+        {selectedMedia && (
+          <Modal
+            visible={true}
+            animationType="fade"
+            onRequestClose={() => setSelectedMedia(null)}
+          >
+            <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+              <TouchableOpacity
+                style={{
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                  zIndex: 10,
+                  padding: 8,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  borderRadius: 20,
+                }}
+                onPress={() => setSelectedMedia(null)}
+              >
+                <Ionicons name="close" size={24} color="white" />
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingTop: 60,
+                  paddingBottom: 20,
+                  paddingHorizontal: 0,
+                }}
+              >
+                {selectedMedia.kind === "image" ? (
+                  <Image
+                    source={{ uri: selectedMedia.uri }}
+                    style={{
+                      width: screenWidth,
+                      height: screenHeight - 120,
+                      maxHeight: screenHeight - 120,
+                    }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <VideoFullscreenViewer
+                    uri={selectedMedia.uri}
+                    onClose={() => setSelectedMedia(null)}
+                  />
+                )}
+              </View>
+            </SafeAreaView>
+          </Modal>
+        )}
+      </>
+    );
+  }
+);
+
+// Component hiển thị attachments với preview giới hạn
+const AttachmentRenderer = memo(
+  ({ attachments, isMe }: { attachments: Attachment[]; isMe: boolean }) => {
+    const [showModal, setShowModal] = useState(false);
+
+    if (!attachments || attachments.length === 0) return null;
+
+    const previewLimit = 3;
+    const hasMore = attachments.length > previewLimit;
+    const previewAttachments = attachments.slice(0, previewLimit);
+    const remainingCount = attachments.length - previewLimit;
+
+    const formatFileSize = (bytes?: number) => {
+      if (!bytes) return "";
+      const sizes = ["B", "KB", "MB", "GB"];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (
+        Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i]
+      );
+    };
+
+    const formatDuration = (duration?: number) => {
+      if (!duration) return "";
+      const minutes = Math.floor(duration / 60);
+      const seconds = Math.floor(duration % 60);
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    };
+
+    const calculateImageSize = (width?: number, height?: number) => {
+      if (!width || !height) return { width: 64, height: 64 };
+
+      const maxSize = 64;
+      const ratio = Math.min(maxSize / width, maxSize / height);
+
+      return {
+        width: width * ratio,
+        height: height * ratio,
+      };
+    };
+
+    return (
+      <>
+        <View
+          className={`mt-2 ${
+            isMe ? "justify-end ml-10" : "justify-start mr-10"
+          } flex-1`}
+        >
+          <View className="flex-row flex-wrap gap-2">
+            {previewAttachments.map((attachment, index) => {
+              // Photo/Image
+              if (attachment.kind === "photo" || attachment.kind === "image") {
+                const imageSize = calculateImageSize(
+                  attachment.width,
+                  attachment.height
+                );
+                return (
+                  <TouchableOpacity
+                    key={attachment.id || index}
+                    style={imageSize}
+                    className="rounded-lg mb-2"
+                    onPress={() => setShowModal(true)}
+                  >
+                    <Image
+                      source={{ uri: attachment.url }}
+                      style={imageSize}
+                      className="rounded-lg"
+                      resizeMode="cover"
+                    />
+                  </TouchableOpacity>
+                );
+              }
+
+              // Video
+              if (attachment.kind === "video") {
+                return (
+                  <TouchableOpacity
+                    key={attachment.id || index}
+                    style={{
+                      width: 64,
+                      height: 64,
+                      overflow: "hidden",
+                      borderRadius: 8,
+                    }}
+                    className="mb-2 relative bg-gray-200"
+                    onPress={() => setShowModal(true)}
+                  >
+                    <View
+                      style={{
+                        width: 64,
+                        height: 64,
+                        overflow: "hidden",
+                        borderRadius: 8,
+                        position: "relative",
+                      }}
+                    >
+                      <Video
+                        source={{ uri: attachment.url }}
+                        style={{
+                          width: 64,
+                          height: 64,
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                        }}
+                        resizeMode="cover"
+                        paused={true}
+                        poster={attachment.url}
+                        posterResizeMode="cover"
+                      />
+                    </View>
+                    <View
+                      className="absolute inset-0 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+                    >
+                      <Ionicons name="play-circle" size={16} color="white" />
+                    </View>
+                    <View
+                      className="absolute bottom-1 left-1 rounded px-1"
+                      style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                    >
+                      <Text className="text-white text-xs">
+                        {formatDuration(attachment.duration)}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
+
+              // File (generic)
+              if (attachment.kind === "file") {
+                return (
+                  <TouchableOpacity
+                    key={attachment.id || index}
+                    className={`mb-2 p-3 rounded-lg border max-w-xs ${
+                      isMe
+                        ? "bg-white/20 border-white/30"
+                        : "bg-gray-100 border-gray-300"
+                    }`}
+                    onPress={() => setShowModal(true)}
+                  >
+                    <View className="flex-row items-center">
+                      <Ionicons
+                        name="document-outline"
+                        size={24}
+                        color={isMe ? "white" : "#374151"}
+                      />
+                      <View className="flex-1 ml-3">
+                        <Text
+                          className={`font-medium ${
+                            isMe ? "text-white" : "text-gray-900"
+                          }`}
+                          numberOfLines={1}
+                        >
+                          {attachment.name || "Untitled File"}
+                        </Text>
+                        <Text
+                          className={`text-xs ${
+                            isMe ? "text-white/80" : "text-gray-600"
+                          }`}
+                        >
+                          {formatFileSize(attachment.size)}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
+
+              return null;
+            })}
+
+            {hasMore && (
+              <TouchableOpacity
+                className={`w-16 h-16 rounded-lg border-2 border-dashed justify-center items-center mb-2 ${
+                  isMe ? "border-white/50" : "border-gray-400"
+                }`}
+                onPress={() => setShowModal(true)}
+              >
+                <Text className={`text-xs font-medium text-center }`}>
+                  +{remainingCount}
+                  {"\n"}khác
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Modal hiển thị toàn bộ attachments */}
+        <AttachmentModal
+          visible={showModal}
+          attachments={attachments}
+          onClose={() => setShowModal(false)}
+          isMe={isMe}
+        />
+      </>
+    );
+  }
+);
 
 //test
 
@@ -336,32 +759,43 @@ const MessageRow = memo(
     const handleDelete = () => {
       if (!roomId || !item?.id) return; // tránh dispatch rỗng
 
-      const actionArr: Array<{ text: string; style: "cancel" | "destructive"; onPress?: () => void }> = [
-          { text: "Huỷ", style: "cancel" },
-          {
-            text: "Xoá ở phía bạn",
-            style: "destructive",
-            onPress: () => {
-              setShowModal(false);
-              dispatch(
-                msgActions.delOnly({ roomId: roomId ?? "", msgId: item.id })
-              );
-            },
-          },
-        ]
-        const deleteForEveryone={
-          text: "Xoá với mọi người",
-          style: "destructive" as const,
+      const actionArr: Array<{
+        text: string;
+        style: "cancel" | "destructive";
+        onPress?: () => void;
+      }> = [
+        { text: "Huỷ", style: "cancel" },
+        {
+          text: "Xoá ở phía bạn",
+          style: "destructive",
           onPress: () => {
             setShowModal(false);
             dispatch(
-              msgActions.delEveryone({ roomId: roomId ?? "", msgId: item.id })
+              msgActions.delOnly({ roomId: roomId ?? "", msgId: item.id })
             );
           },
-        }
-        if(isMe && item?.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime())/1000/60<5){
-          actionArr.push(deleteForEveryone)
-        }
+        },
+      ];
+      const deleteForEveryone = {
+        text: "Xoá với mọi người",
+        style: "destructive" as const,
+        onPress: () => {
+          setShowModal(false);
+          dispatch(
+            msgActions.delEveryone({ roomId: roomId ?? "", msgId: item.id })
+          );
+        },
+      };
+      if (
+        isMe &&
+        item?.createdAt &&
+        (new Date().getTime() - new Date(item.createdAt).getTime()) /
+          1000 /
+          60 <
+          5
+      ) {
+        actionArr.push(deleteForEveryone);
+      }
       Alert.alert(
         "Xoá tin nhắn",
         "Bạn có chắc chắn muốn xoá tin nhắn này không?",
@@ -434,14 +868,10 @@ const MessageRow = memo(
                   : "rounded-bl-md  shadow-sm ml-1 mr-6"
               }`}
             >
-              {item.del_only && (
-                <Text>
-                  Tin nhắn đã được bạn xoá 
-                </Text>
-              )}
+              {item.del_only && <Text>Tin nhắn đã được bạn xoá</Text>}
               {item.del_all && (
                 <Text>
-                  Tin nhắn đã được {isMe?"xoá với mọi người":"thu hồi"}
+                  Tin nhắn đã được {isMe ? "xoá với mọi người" : "thu hồi"}
                 </Text>
               )}
             </View>
@@ -459,10 +889,10 @@ const MessageRow = memo(
               </Text>
             )}
             {renderReplyPreview()}
-             <AttachmentRenderer 
-                attachments={item.attachments || []} 
-                isMe={isMe} 
-              />
+            <AttachmentRenderer
+              attachments={item.attachments || []}
+              isMe={isMe}
+            />
             {/* Main message bubble */}
             <TouchableOpacity
               onLongPress={handleLongPress}
@@ -487,7 +917,6 @@ const MessageRow = memo(
               )}
 
               {/* Attachments */}
-             
 
               {/* Show more/less button for long messages */}
               {isLongMessage && (

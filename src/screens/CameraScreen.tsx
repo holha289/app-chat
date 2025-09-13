@@ -248,16 +248,18 @@ export default function CameraScreen2({ onClose, onMediaCaptured }: Props) {
     if (capturedMedia) {
       const persistentUri = await persistLocalFile(capturedMedia);
       console.log("🚀 ~ CameraScreen2 ~ persistentUri:", persistentUri);
-      
+
       // Get image dimensions for photos
       let width: number | undefined;
       let height: number | undefined;
-      
+
       if (capturedMedia.type === "photo") {
         try {
           await new Promise<void>((resolve, reject) => {
             Image.getSize(
-              persistentUri.startsWith("file://") ? persistentUri : `file://${persistentUri}`,
+              persistentUri.startsWith("file://")
+                ? persistentUri
+                : `file://${persistentUri}`,
               (w, h) => {
                 width = w;
                 height = h;
@@ -278,13 +280,23 @@ export default function CameraScreen2({ onClose, onMediaCaptured }: Props) {
         msgActions.addAttachmentToMsg({
           roomId: param.id,
           attachment: {
-            id: `attachment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            url: persistentUri.startsWith("file://") ? persistentUri : `file://${persistentUri}`,
+            id: `attachment_${Date.now()}_${Math.random()
+              .toString(36)
+              .substr(2, 9)}`,
+            url: persistentUri.startsWith("file://")
+              ? persistentUri
+              : `file://${persistentUri}`,
             kind: capturedMedia.type === "video" ? "video" : "image",
-            name: `camera_${capturedMedia.type}_${Date.now()}.${capturedMedia.type === "video" ? "mp4" : "jpg"}`,
-            status: 'processing' as const,
-            mimetype: capturedMedia.type === "video" ? "video/mp4" : "image/jpeg",
-            duration: capturedMedia.type === "video" ? capturedMedia.durationMs : undefined,
+            name: `camera_${capturedMedia.type}_${Date.now()}.${
+              capturedMedia.type === "video" ? "mp4" : "jpg"
+            }`,
+            status: "processing" as const,
+            mimetype:
+              capturedMedia.type === "video" ? "video/mp4" : "image/jpeg",
+            duration:
+              capturedMedia.type === "video"
+                ? capturedMedia.durationMs
+                : undefined,
             width,
             height,
           },
