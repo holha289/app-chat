@@ -13,7 +13,7 @@ const AppNavigator = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   useEffect(() => {
     if (!isAuthenticated) {
-      navigationRef.current?.navigate("Login");
+      navigationRef.current?.navigate("Splash");
     } else {
       navigationRef.current?.navigate("Main");
     }

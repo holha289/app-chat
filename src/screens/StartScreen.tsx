@@ -1,8 +1,9 @@
 import { colors } from "@app/styles/main.style";
 import { Text, TouchableOpacity, View, ScrollView, Dimensions } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
-import { useState, useRef } from "react";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useState, useRef, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get('window');
 
@@ -48,11 +49,13 @@ const StartScreen = () => {
                 animated: true
             });
         } else {
+            AsyncStorage.setItem('hasOnboarded', 'true');
             Navigate.navigate("Login");
         }
     };
 
     const handleSkip = () => {
+        AsyncStorage.setItem('hasOnboarded', 'true');
         Navigate.navigate("Login");
     };
 
@@ -60,6 +63,16 @@ const StartScreen = () => {
         const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width);
         setCurrentIndex(slideIndex);
     };
+
+    useEffect(() => {
+        const checkOnboardingStatus = async () => {
+            const hasOnboarded = await AsyncStorage.getItem('hasOnboarded');
+            if (hasOnboarded === 'true') {
+                Navigate.navigate("Login");
+            }
+        };
+        checkOnboardingStatus();
+    }, []);
 
     return (
         <View className={"flex-1 bg-white"}>

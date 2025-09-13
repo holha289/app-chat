@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MessageItem } from "@app/features/types/msg.type";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";

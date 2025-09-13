@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useDispatch, useSelector } from "react-redux";
 
 const ProfileScreen = () => {
