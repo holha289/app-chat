@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import ProfileScreen from '@app/screens/ProfileScreen';
 import { TabNavigatorType } from '@app/types/navigator';
 import ContactScreen from '@app/screens/ContactScreen';

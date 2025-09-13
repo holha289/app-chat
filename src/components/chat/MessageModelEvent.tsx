@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Modal, Dimensions } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 
 import AvatarMini from "./AvatarMini";
 import { MessageItem } from "@app/features/types/msg.type";

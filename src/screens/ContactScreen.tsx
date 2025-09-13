@@ -9,7 +9,8 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { classBtn, colors } from "@app/styles/main.style";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { ContactClassStyle } from "@app/styles/contact.style";
