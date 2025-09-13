@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 
 const AVATAR = (name: string) =>
   `https://ui-avatars.com/api/?background=random&size=64&name=${encodeURIComponent(

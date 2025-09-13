@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import InputGroup from '../InputGroup';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Input from '../Input';

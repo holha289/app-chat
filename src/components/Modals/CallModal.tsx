@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     Image,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '@app/styles/main.style';
 import { Friends } from '@app/features/types/contact.type';
 import { RTCView } from 'react-native-webrtc';

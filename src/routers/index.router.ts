@@ -18,7 +18,7 @@ import VideoCallScreen from "@app/screens/VideoCallScreen";
 
 const routers: RouterType = {
   navigatorOptions: {
-    initialRouteName: "Main",
+    initialRouteName: "Splash",
   },
   screens: [
     {
