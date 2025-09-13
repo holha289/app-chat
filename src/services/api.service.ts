@@ -254,24 +254,75 @@ class ApiService {
     this.axiosInstance.defaults.baseURL = url;
   }
 
-  public async get<T>(url: string, params?: Record<string, any>): Promise<T> {
+ public async get<T>(url: string, params?: Record<string, any>): Promise<T> {
     return await this.axiosInstance.get(url, { params });
   }
 
-  public async post<T>(url: string, data?: Record<string, any>): Promise<T> {
+  public async post<T>(url: string, data: Record<string, any>): Promise<T> {
     return await this.axiosInstance.post(url, data);
   }
 
-  public async put<T>(url: string, data?: Record<string, any>): Promise<T> {
+  public async put<T>(url: string, data: Record<string, any>): Promise<T> {
     return await this.axiosInstance.put(url, data);
   }
 
-  public async patch<T>(url: string, data?: Record<string, any>): Promise<T> {
+  public async patch<T>(url: string, data: Record<string, any>): Promise<T> {
     return await this.axiosInstance.patch(url, data);
   }
 
   public async delete<T>(url: string): Promise<T> {
     return await this.axiosInstance.delete(url);
+  }
+
+  // Convenience helpers for multipart requests
+  public async postForm<T>(url: string, form: FormData): Promise<T> {
+    // Interceptor will set multipart header when data is FormData
+    return await this.axiosInstance.post(url, form);
+  }
+
+  public async putForm<T>(url: string, form: FormData): Promise<T> {
+    return await this.axiosInstance.put(url, form);
+  }
+
+  public async patchForm<T>(url: string, form: FormData): Promise<T> {
+    return await this.axiosInstance.patch(url, form);
+  }
+
+  // Build FormData from plain object (supports arrays and RN file objects)
+  public static buildFormData(data: Record<string, any>): FormData {
+    const fd = new FormData();
+
+    const appendValue = (key: string, value: any) => {
+      if (value === undefined || value === null) return;
+
+      // React Native file-like object: { uri, name, type }
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        ("uri" in value) &&
+        ("name" in value) &&
+        ("type" in value)
+      ) {
+        fd.append(key, value as any);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach((v) => appendValue(`${key}[]`, v));
+        return;
+      }
+
+      if (typeof value === "object") {
+        // For nested objects, stringify to JSON (adjust to your backend expectation)
+        fd.append(key, JSON.stringify(value));
+        return;
+      }
+
+      fd.append(key, String(value));
+    };
+
+    Object.entries(data).forEach(([k, v]) => appendValue(k, v));
+    return fd;
   }
 }
 

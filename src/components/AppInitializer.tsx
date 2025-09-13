@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { initializeFirebase } from "@app/core/firebase";
-import { requestPermission } from "@app/core/permissions";
+import { requestMediaPermissions, requestPermission, requestStoragePermission } from "@app/core/permissions";
 import { registerAllListeners } from "@app/store";
 
 const EVENT_MSG_RECEIVED = "room:message:received";
@@ -18,6 +18,8 @@ export function AppInitializer() {
       try {
         await initializeFirebase(async () => {
           const permission = await requestPermission();
+          await requestMediaPermissions()
+          await requestStoragePermission()
           return !!permission;
         });
       } catch (err) {

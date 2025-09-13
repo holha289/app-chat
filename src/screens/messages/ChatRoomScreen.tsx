@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   replyToMsg,
+  selectAttachments,
   selectInputText,
   selectMessage,
   selectMsgStatus,
@@ -32,8 +33,10 @@ import { isBefore } from "@app/utils/compare";
 import { randomId } from "@app/utils/randomId";
 import { MessageItem } from "@app/features/types/msg.type";
 import { RootState } from "@app/store";
+import UserActions from "@app/features/user/user.action";
+import { Friends } from "@app/features/types/contact.type";
 
-type RouteParam = { id: string; name: string; avatar?: string; type?: string };
+type RouteParam = { id: string; name: string; avatar?: string; type?: string, roomId?: string };
 
 const ChatRoomScreen = () => {
   const navigation = useNavigation();
@@ -50,9 +53,15 @@ const ChatRoomScreen = () => {
   );
   const reply = useSelector((state: RootState) => replyToMsg(state, param.id));
   const replyIdRef = useRef<string | null>(null);
+  const attachments = useSelector((state: RootState) =>
+    selectAttachments(state, param.id)
+  );
+  const attachmentsRef = useRef(attachments);
   useEffect(() => {
     replyIdRef.current = reply?.id ?? null; // luôn sync giá trị mới nhất
-  }, [reply]);
+    attachmentsRef.current = attachments;
+  }, [reply, attachments]);
+
   const status = useSelector(selectMsgStatus);
 
   const messages = conversations?.items ?? [];
@@ -79,7 +88,7 @@ const ChatRoomScreen = () => {
       dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor }));
     }
   }, [cursor, status, dispatch, param.id]);
-   useEffect(() => {
+  useEffect(() => {
     dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor: null }));
   }, [dispatch, param.id]);
 
@@ -106,10 +115,12 @@ const ChatRoomScreen = () => {
           type: "text",
           replytoId: replytoId,
         },
+        attachments: attachmentsRef.current,
         sender: sender,
       })
     );
     dispatch(msgActions.replyToMsg({ roomId: param.id, message: null }));
+    dispatch(msgActions.removeAllAttachmentToMsg({ roomId: param.id }));
     setInputText("");
     scrollToBottom();
   }, [dispatch, inputText, param.id, scrollToBottom]);
@@ -178,6 +189,24 @@ const ChatRoomScreen = () => {
     },
     []
   );
+  const onPressCamera = useCallback(() => {
+    navigation.navigate("CameraScreen" as never, param as never);
+  }, [navigation]);
+
+  const handleCall = async (isVideoCall: boolean) => {
+    dispatch(UserActions.call({
+      from: userInfo as unknown as Friends,
+      to: {
+        id: param.id,
+        fullname: param.name,
+        avatar: param.avatar,
+      } as unknown as Friends,
+      roomId: param.roomId || '',
+      isVideoCall: isVideoCall,
+      category: 'request'
+    }));
+  }
+
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -191,7 +220,9 @@ const ChatRoomScreen = () => {
         <ChatHeader
           name={param.name}
           avatar={param.avatar}
+          type={param.type as string}
           onBack={() => navigation.goBack()}
+          onHandleCall={(isVideoCall) => handleCall(isVideoCall)}
         />
         <MessageList
           isGroup={isGroup}
@@ -213,6 +244,8 @@ const ChatRoomScreen = () => {
           replyToMsg={reply || undefined}
           roomdId={param.id}
           isMe={meId === reply?.sender.id}
+          onPressCamera={onPressCamera}
+          attachments={attachments}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

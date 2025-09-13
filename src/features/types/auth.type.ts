@@ -23,6 +23,7 @@ export interface AuthState extends StateCore {
 export interface LoginPayload {
   phone: string;
   password: string;
+  callback?: (error?: any) => void;
 }
 
 export interface RegisterPayload {

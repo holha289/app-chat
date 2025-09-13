@@ -11,10 +11,12 @@ const AVATAR = (name: string) =>
 type Props = {
   name: string;
   avatar?: string;
+  type: string; // 'private' | 'group'
   onBack: () => void;
+  onHandleCall: (isVideoCall: boolean) => void;
 };
 
-export default function ChatHeader({ name, avatar, onBack }: Props) {
+export default function ChatHeader({ name, avatar, type, onBack, onHandleCall }: Props) {
   return (
     <View className=" flex-row items-center border-b border-gray-200 px-4 py-3">
       <TouchableOpacity className="h-10 w-10" onPress={onBack}>
@@ -25,9 +27,16 @@ export default function ChatHeader({ name, avatar, onBack }: Props) {
         className="mr-3 h-10 w-10 rounded-full"
       />
       <Text className="flex-1 text-lg font-semibold">{name}</Text>
-      <TouchableOpacity>
-        <Ionicons name="call-outline" size={24} color="#10B981" />
-      </TouchableOpacity>
+      {type !== 'group' && (
+        <>
+          <TouchableOpacity onPress={() => onHandleCall(false)} className="h-10 w-10 items-center justify-center">
+            <Ionicons name="call-outline" size={24} color="#10B981" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onHandleCall(true)} className="h-10 w-10 items-center justify-center">
+            <Ionicons name="videocam" size={24} color="#10B981" />
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 }
