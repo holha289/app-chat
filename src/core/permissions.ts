@@ -113,9 +113,55 @@ async function requestStoragePermission() {
     }
   } catch (err) {
     console.warn('Permission error:', err);
+  }
+}
+
+const requestCameraPermissions = async () => {
+  if (Platform.OS !== "android") return true;
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      {
+        title: "Quyền truy cập camera",
+        message: "Ứng dụng cần quyền truy cập camera để chụp ảnh.",
+        buttonPositive: "Đồng ý"
+      }
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  } catch (err) {
     return false;
   }
 }
 
 
-export { requestPermission, requestMediaPermissions,requestStoragePermission };
+const requestFilePermissions = async () => {
+    if (Platform.OS !== "android") return true;
+  try {
+    if (Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        {
+          title: "Quyền truy cập ảnh",
+          message: "Ứng dụng cần quyền truy cập ảnh để chọn ảnh.",
+          buttonPositive: "Đồng ý"
+        }
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } else {
+      // Android < 13 dùng READ_EXTERNAL_STORAGE
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        {
+          title: "Quyền truy cập bộ nhớ",
+          message: "Ứng dụng cần quyền truy cập bộ nhớ để chọn ảnh.",
+          buttonPositive: "Đồng ý"
+        }
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    }
+  } catch (err) {
+    return false;
+  }
+}
+
+export { requestPermission, requestMediaPermissions, requestFilePermissions, requestCameraPermissions, requestStoragePermission };

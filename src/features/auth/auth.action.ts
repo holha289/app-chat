@@ -19,15 +19,20 @@ const authActions = {
     login: createAction<LoginPayload>(AUTH_ACTIONS_TYPE.LOGIN),
     loginSuccess: createAction<{ tokens: tokensType, user: userType, isAuthenticated: boolean }>(AUTH_ACTIONS_TYPE.LOGIN_SUCCESS),
     loginFailed: createAction<string>(AUTH_ACTIONS_TYPE.LOGIN_FAILED),
-    logout: createAction(AUTH_ACTIONS_TYPE.LOGOUT),
+    logout: createAction<{ callback?: () => void }>(AUTH_ACTIONS_TYPE.LOGOUT),
     register: createAction<RegisterPayload>(AUTH_ACTIONS_TYPE.REGISTER),
     registerSuccess: createAction<{ tokens: tokensType, user: userType, isAuthenticated: boolean }>(AUTH_ACTIONS_TYPE.REGISTER_SUCCESS),
     registerFailed: createAction<string>(AUTH_ACTIONS_TYPE.REGISTER_FAILED),
     setFcmToken: createAction<string>(AUTH_ACTIONS_TYPE.SET_FCM_TOKEN),
     clearFcmToken: createAction(AUTH_ACTIONS_TYPE.CLEAR_FCM_TOKEN),
-    updateProfile: createAction<{ user: Omit<userType, 'id' | 'avatar' | 'slug' | 'dateOfBirth'>, callback: () => void }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE),
+    updateProfile: createAction<{ user: Omit<userType, 'id' | 'avatar' | 'slug' | 'dateOfBirth'>, callback: (error?: string) => void }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE),
     updateProfileSuccess: createAction<{ user: userType }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE_SUCCESS),
     updateProfileFailed: createAction<string>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE_FAILED),
+    setTokens: createAction<{
+        accessToken: string | null;
+        refreshToken: string | null;
+        expiresIn: number;
+    }>('AUTH_SET_TOKEN'),
 };
 
 export default authActions;

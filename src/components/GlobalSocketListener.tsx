@@ -1,8 +1,13 @@
-import { useEffect, useRef, useCallback, use } from "react";
+import { useEffect, useRef, useCallback, useState, use } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSockerIo } from "@app/hooks/use-socketio";
 import msgActions from "@app/features/message/msg.action";
 import { selectUser } from "@app/features";
+import IncomingCallModal from "./Modals/CallModal";
+import { selectCall } from "@app/features/user/user.selecter";
+import UserActions from "@app/features/user/user.action";
+import { Friends } from "@app/features/types/contact.type";
+import { useWebRTC } from "@app/hooks/use-webrtc";
 import { selectRooms } from "@app/features/message/msg.selectors";
 
 const GlobalSocketListener = () => {
@@ -11,6 +16,37 @@ const GlobalSocketListener = () => {
   const user = useSelector(selectUser);
   const listenersRegistered = useRef(false);
   const reconnectTimeout = useRef<NodeJS.Timeout | null>(null);
+  const call = useSelector(selectCall);
+  const [formModal, setFormModal] = useState({
+    isOpen: false,
+    caller: null as Friends | null,
+    isTo: false,
+    isVideoCall: false,
+    isAccepted: false,
+    roomId: null as string | null
+  });
+  // Luôn gọi hook ở cấp cao nhất của component, không phụ thuộc vào điều kiện
+  const {
+    localStream,
+    remoteStream,
+    connectState,
+    setIsVideoCall,
+    handleAcceptCall,
+    handleCreateOffer,
+    listenCall,
+    hangOut,
+    toggleVideo,
+    toggleAudio,
+    switchCamera,
+    toggleSpeakerphone,
+    isSpeakerOn,
+    isVideoEnabled,
+    isAudioEnabled,
+    isSwitchingCamera
+  } = useWebRTC();
+
+
+  // Memoize callbacks để tránh tạo lại function
   const rooms = useSelector(selectRooms);
 
   // Memoize callbacks để tránh tạo lại function
@@ -247,6 +283,11 @@ const GlobalSocketListener = () => {
     socket.off("room:readed:message");
     socket.off("room:deleted_only:message");
     socket.off("room:deleted_everyone:message");
+    socket.off("call:incoming");
+    socket.off("call:rejected");
+    socket.off("call:accepted");
+    socket.off("call:signal");
+    socket.off("client:signal");
     socket.offAny(debugListener);
 
     // Đăng ký các listeners
@@ -255,6 +296,34 @@ const GlobalSocketListener = () => {
     socket.on("connect_error", onConnectError);
     socket.on("reconnect", onReconnect);
     socket.on("room:message:received", onNewMessage);
+
+    socket.on("call:incoming", (data) => {
+      console.log("📞 Incoming call:", data);
+      const metadata = data?.metadata || {};
+      const userTo = metadata.to && metadata.to.id === user?.id;
+      if (userTo) {
+        dispatch(UserActions.call(metadata));
+      }
+    });
+
+    socket.on("call:rejected", (data) => {
+      const metadata = data?.metadata || {};
+      const userTo = metadata.to && metadata.to.id === user?.id;
+      if (userTo) {
+        hangOut();
+        dispatch(UserActions.call(metadata));
+      }
+    });
+
+    socket.on("call:accepted", (data) => {
+      const metadata = data?.metadata || {};
+      const userTo = metadata.to && metadata.to.id === user?.id;
+      if (userTo) {
+        dispatch(UserActions.call(metadata));
+      }
+    });
+
+    listenCall();
     socket.on("room:readed:message", onReaded);
     socket.on("room:deleted_only:message", onDelOnly);
     socket.on("room:deleted_everyone:message", onDelEveryone);
@@ -276,6 +345,12 @@ const GlobalSocketListener = () => {
         socket.off("connect_error", onConnectError);
         socket.off("reconnect", onReconnect);
         socket.off("room:message:received", onNewMessage);
+        socket.off("call:incoming");
+        socket.off("call:rejected");
+        socket.off("call:accepted");
+        socket.off("call:signal");
+        socket.off("client:signal");
+        socket.offAny(debugListener);
         socket.off("room:readed:message", onReaded);
         socket.off("room:deleted_only:message", onDelOnly);
         socket.off("room:deleted_everyone:message", onDelEveryone);
@@ -304,9 +379,89 @@ const GlobalSocketListener = () => {
     debugListener,
   ]);
 
-  return null;
+
+  useEffect(() => {
+    setIsVideoCall(call?.isVideoCall || false);
+    if (call && user) {
+      const isOpen = String(call.from?.id) === String(user.id) || String(call.to?.id) === String(user?.id);
+      const caller = String(call.from?.id) === String(user?.id) ? call.to : call.from;
+      if (
+        call.category === 'request' &&
+        String(call.from?.id) === String(user.id)
+      ) {
+        handleCreateOffer(call.roomId as string);
+      }
+      setFormModal({
+        isOpen,
+        caller: caller,
+        isVideoCall: call.isVideoCall,
+        isAccepted: call.category === 'accept',
+        isTo: String(call.to?.id) === String(user?.id),
+        roomId: call.roomId as string | null
+      });
+    }
+  }, [call, user]);
+
+  const onAcceptCall = () => {
+    const userTo = call.to?.id !== user?.id ? call.to : call.from;
+    dispatch(UserActions.call({
+      roomId: call.roomId as string,
+      from: user as unknown as Friends,
+      to: userTo as Friends,
+      isVideoCall: call.isVideoCall,
+      category: 'accept'
+    }));
+    handleAcceptCall(call.roomId as string);
+  };
+
+  const onDeclineCall = () => {
+    const userTo = call.to?.id !== user?.id ? call.to : call.from;
+    dispatch(UserActions.call({
+      roomId: call.roomId as string,
+      from: user as unknown as Friends,
+      to: userTo as Friends,
+      isVideoCall: call.isVideoCall,
+      category: 'reject'
+    }));
+    hangOut();
+  };
+
+  useEffect(() => {
+    console.log("🌐 WebRTC State Changed:");
+    console.log("  - Local Stream:", localStream);
+    console.log("  - Remote Stream:", remoteStream);
+    console.log("  - Connection State:", connectState);
+  }, [localStream, remoteStream, connectState])
+
+  return (
+    <>
+      <IncomingCallModal
+        visible={formModal.isOpen}
+        onAccept={() => onAcceptCall()}
+        onDecline={() => onDeclineCall()}
+        userInfo={formModal.caller}
+        isVideoCall={formModal.isVideoCall}
+        isTo={formModal.isTo}
+        isAccepted={formModal.isAccepted}
+        roomId={formModal.roomId}
+        webRTC={{
+          localStream: localStream as MediaStream | null,
+          remoteStream: remoteStream as MediaStream | null,
+          connectState: connectState as 'idle' | 'connecting' | 'connected' | 'failed',
+          toggleVideo: () => toggleVideo(),
+          toggleAudio: () => toggleAudio(),
+          switchCamera: () => switchCamera(),
+          toggleSpeakerphone: () => toggleSpeakerphone(),
+          isVideoEnabled,
+          isAudioEnabled,
+          isSwitchingCamera,
+          isSpeakerOn
+        }}
+      />
+    </>
+  );
 };
 
-//
+
 
 export default GlobalSocketListener;

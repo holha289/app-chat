@@ -6,13 +6,13 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { use, useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Input from "@app/components/Input";
 import { loginClassStyle } from "@app/styles/login.style";
 import { classBtn } from "@app/styles/main.style";
 import authActions from "@app/features/auth/auth.action";
-import { selectAuthLoading, selectAuthError } from "@app/features";
+import { selectAuthLoading, selectAuthError, selectIsAuthenticated } from "@app/features";
 import { useSelector, useDispatch } from "react-redux";
 import clsx from "clsx";
 import LoadingOverlay from "@app/components/LoadingOverlay";
@@ -30,10 +30,7 @@ const LoginScreen = () => {
   function handleLogin() {
       dispatch(authActions.login(form));
   }
-  // const handleLogin = useCallback(() => {
-  //   console.log("Logging in with", form);
-  //   dispatch(authActions.login(form));
-  // }, [dispatch]);
+ 
   const handleCreateAccount = () => {
     navigation.navigate("Register");
   };

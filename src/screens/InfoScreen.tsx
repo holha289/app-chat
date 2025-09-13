@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Avatar } from "@app/components"; // Giả sử bạn có component này
 import { selectUser } from "@app/features"; // Giả sử bạn có feature này
 import { store } from "@app/store"; // Giả sử bạn có store này
@@ -68,12 +68,12 @@ const InfoScreen = () => {
        {friendship === "blocked" ? (
           <View className={InfoClassStyle.boxBlocked}>
             <Avatar
-              uri={user?.avatar}
-              name={user?.fullname || "Unknown"}
+              uri={user.room_avatar ? user.room_avatar : (Array.isArray(user.avatar) ? user.avatar[0] : user.avatar) }
+              name={user?.fullname || user?.name || "Unknown"}
               size={128}
             />
             <Text className="mt-4 text-2xl font-bold text-gray-800">
-              {user?.fullname || "Không có tên"}
+              {user?.fullname || user?.name || "Không có tên"}
             </Text>
             <Text className="text-base text-gray-500 mt-1">
               @{user?.slug?.replace("usr_", "") || "unknown"}
@@ -90,7 +90,7 @@ const InfoScreen = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <ScrollView className="mt-10" showsVerticalScrollIndicator={false}>
+          <ScrollView className="flex-1 w-full" showsVerticalScrollIndicator={false}>
             {/* Hero Section */}
             <View className="mb-6">
               <ImageBackground
@@ -103,7 +103,7 @@ const InfoScreen = () => {
               <View className="items-center px-4 -mt-16">
                 <View className="bg-white rounded-full p-1 shadow-lg">
                   <Avatar
-                    uri={user?.avatar}
+                    uri={user.room_avatar ? user.room_avatar : (Array.isArray(user.avatar) ? user.avatar[0] : user.avatar) }
                     name={user?.fullname || "Unknown"}
                     size={128}
                     showStatus
@@ -111,7 +111,7 @@ const InfoScreen = () => {
                   />
                 </View>
                 <Text className="mt-3 text-2xl font-bold text-gray-900">
-                  {user?.fullname || "Không có tên"}
+                  {user?.fullname || user?.name || "Không có tên"}
                 </Text>
                 <Text className="text-base text-gray-500 mt-1">
                   @{user?.slug?.replace("usr_", "") || "unknown"}
@@ -202,7 +202,7 @@ const InfoScreen = () => {
                   <InfoRow
                     icon="people-outline"
                     label="Số thành viên"
-                    value={user?.members || 0}
+                    value={user?.member_count || 0}
                   />
                 </InfoCard>
               ) : (

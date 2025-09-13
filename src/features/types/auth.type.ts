@@ -28,11 +28,10 @@ export interface LoginPayload {
 export interface RegisterPayload {
   fullname: string;
   username: string;
-  phone: string;
   password: string;
-  email?: string;
   gender?: string;
   avatar?: string;
+  callback?: (error?: any) => void;
 }
 
 export type tokensType = AuthState["tokens"];

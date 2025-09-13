@@ -11,7 +11,7 @@ import {
     FlatList,
     SafeAreaView
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '@app/styles/main.style';
 import { launchImageLibrary, launchCamera, ImagePickerResponse, MediaType, CameraOptions, ImageLibraryOptions } from 'react-native-image-picker';
 import Input from '../Input';
@@ -19,6 +19,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectListFriends } from '@app/features/contact/contact.selectors';
 import ContactActions from '@app/features/contact/contact.action';
 import { Friends } from '@app/features/types/contact.type';
+import LoadingOverlay from '../LoadingOverlay';
+import UploadService from '@app/services/upload.service';
+import { requestCameraPermissions, requestFilePermissions } from '@app/core/permissions';
 
 interface CreateGroupModalProps {
     isOpen: boolean;
@@ -33,12 +36,18 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     const [searchFriend, setSearchFriend] = useState('');
     const listFriends = useSelector(selectListFriends);
     const dispatch = useDispatch();
+    const [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
         // Reset search when the modal opens
         if (isOpen) {
             setSearchFriend('');
             setForm({ name: '', avatar: '', friends: [] as number[] });
-            dispatch(ContactActions.getListFriendsRequest());
+            if (listFriends.length === 0) {
+                dispatch(ContactActions.getListFriendsRequest({
+                    offset: 0,
+                    limit: 20
+                }));
+            }
         }
     }, [isOpen]);
     // Filter friends based on search
@@ -51,7 +60,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             const friends = prev.friends.includes(friendId)
                 ? prev.friends.filter(id => id !== friendId)
                 : [...prev.friends, friendId];
-            console.log('Updated friends list:', friends);
             return { ...prev, friends };
         });
     };
@@ -78,7 +86,12 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         );
     };
 
-    const openCamera = () => {
+    const openCamera = async () => {
+        const permission = await requestCameraPermissions();
+        if (!permission) {
+            Alert.alert('Lỗi', 'Ứng dụng cần quyền truy cập camera để chụp ảnh.');
+            return;
+        }
         const options: CameraOptions = {
             mediaType: 'photo',
             quality: 0.8,
@@ -87,7 +100,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             includeBase64: false,
         };
 
-        launchCamera(options, (response: ImagePickerResponse) => {
+        launchCamera(options, async (response: ImagePickerResponse) => {
             if (response.didCancel) {
                 console.log('User cancelled camera');
                 return;
@@ -101,13 +114,19 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             if (response.assets && response.assets[0]) {
                 const imageUri = response.assets[0].uri;
                 if (imageUri) {
-                    setForm({ ...form, avatar: imageUri });
+                    const uploadedImageUri = await UploadService.uploadSingleFile(imageUri);
+                    setForm({ ...form, avatar: uploadedImageUri });
                 }
             }
         });
     };
 
-    const openGallery = () => {
+    const openGallery = async () => {
+        const permission = await requestFilePermissions();
+        if (!permission) {
+            Alert.alert('Lỗi', 'Ứng dụng cần quyền truy cập bộ nhớ để chọn ảnh.');
+            return;
+        }
         const options: ImageLibraryOptions = {
             mediaType: 'photo',
             quality: 0.8,
@@ -117,7 +136,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             selectionLimit: 1,
         };
 
-        launchImageLibrary(options, (response: ImagePickerResponse) => {
+        launchImageLibrary(options, async (response: ImagePickerResponse) => {
             if (response.didCancel) {
                 console.log('User cancelled gallery');
                 return;
@@ -131,7 +150,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             if (response.assets && response.assets[0]) {
                 const imageUri = response.assets[0].uri;
                 if (imageUri) {
-                    setForm({ ...form, avatar: imageUri });
+                    const uploadedImageUri = await UploadService.uploadSingleFile(imageUri);
+                    setForm({ ...form, avatar: uploadedImageUri });
                 }
             }
         });
@@ -149,15 +169,17 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             Alert.alert('Lỗi', 'Vui lòng chọn ít nhất một thành viên');
             return;
         }
+        setIsLoading(true);
         dispatch(ContactActions.createGroup(
             {
-                name: form.name.trim(), userIds: form.friends, callback: (error) => {
+                name: form.name.trim(), userIds: form.friends, avatar: form.avatar, callback: (error) => {
+                    setIsLoading(false);
                     if (error) {
                         Alert.alert('Error creating group: ' + error);
                     } else {
                         setForm({ name: '', avatar: '', friends: [] as number[] });
                         setSearchFriend('');
-                        onClose();
+                        handleClose();
                     }
                 }
             }
@@ -177,6 +199,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             transparent
             onRequestClose={handleClose}
         >
+            {isLoading && <LoadingOverlay visible={isLoading} />}
             <SafeAreaView className="flex-1 bg-white">
                 {/* Header */}
                 <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
@@ -196,9 +219,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
                 <View className="flex-1">
                     {/* Group Info Section */}
-                    <View className="px-4 py-6 border-b border-gray-100">
+                    <View className="px-4 border-b border-gray-100">
                         {/* Group Image Upload */}
-                        <View className="mb-6 items-center">
+                        <View className="items-center">
                             <TouchableOpacity
                                 onPress={handleImagePicker}
                                 className="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 items-center justify-center bg-gray-50"
@@ -227,7 +250,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                         </View>
 
                         {/* Group Name Input */}
-                        <View className="mb-4">
+                        <View>
                             <Text className="text-base font-medium text-gray-700 mb-3">
                                 Tên nhóm *
                             </Text>
@@ -243,6 +266,38 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                             />
                         </View>
                     </View>
+
+                    {/* Selected Friends Summary */}
+                    {form.friends.length > 0 && (
+                        <View className="px-4 py-4">
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                                <View className="flex-row space-x-4">
+                                    {form.friends.map(friendId => {
+                                        const friend = listFriends.find((f: Friends) => f.id == friendId);
+                                        return friend ? (
+                                            <View key={friendId} className="items-center">
+                                                <View className="relative">
+                                                    <Image
+                                                        source={{ uri: friend.avatar }}
+                                                        className="w-12 h-12 rounded-full"
+                                                    />
+                                                    <TouchableOpacity
+                                                        onPress={() => toggleFriendSelection(friendId)}
+                                                        className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full items-center justify-center"
+                                                    >
+                                                        <Ionicons name="close" size={12} color="white" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                                <Text className="text-xs text-gray-600 mt-1 max-w-16" numberOfLines={1}>
+                                                    {friend.fullname}
+                                                </Text>
+                                            </View>
+                                        ) : null;
+                                    })}
+                                </View>
+                            </ScrollView>
+                        </View>
+                    )}
 
                     {/* Friends Selection Section */}
                     <View className="flex-1 px-4 py-6">
@@ -267,38 +322,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
                                 rounded={16}
                             />
                         </View>
-
-                        {/* Selected Friends Summary */}
-                        {form.friends.length > 0 && (
-                            <View className="mb-4">
-                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    <View className="flex-row space-x-2 py-2">
-                                        {form.friends.map(friendId => {
-                                            const friend = listFriends.find((f: Friends) => f.id == friendId);
-                                            return friend ? (
-                                                <View key={friendId} className="items-center">
-                                                    <View className="relative">
-                                                        <Image
-                                                            source={{ uri: friend.avatar }}
-                                                            className="w-12 h-12 rounded-full"
-                                                        />
-                                                        <TouchableOpacity
-                                                            onPress={() => toggleFriendSelection(friendId)}
-                                                            className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full items-center justify-center"
-                                                        >
-                                                            <Ionicons name="close" size={12} color="white" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                    <Text className="text-xs text-gray-600 mt-1 max-w-16" numberOfLines={1}>
-                                                        {friend.fullname}
-                                                    </Text>
-                                                </View>
-                                            ) : null;
-                                        })}
-                                    </View>
-                                </ScrollView>
-                            </View>
-                        )}
 
                         {/* Friends List */}
                         <FlatList

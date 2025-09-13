@@ -4,11 +4,10 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
-  Image,
   ScrollView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { Attachment, MessageItem } from "@app/features/types/msg.type";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import { colors } from "@app/styles/main.style";

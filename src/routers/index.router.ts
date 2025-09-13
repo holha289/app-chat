@@ -15,10 +15,11 @@ import ChatRoomScreen from "@app/screens/messages/ChatRoomScreen";
 import InfoScreen from "@app/screens/InfoScreen";
 import ProfileEditScreen from "@app/screens/ProfileEditScreen";
 import CameraScreen from "@app/screens/CameraScreen";
+import VideoCallScreen from "@app/screens/VideoCallScreen";
 
 const routers: RouterType = {
   navigatorOptions: {
-    initialRouteName: "Main",
+    initialRouteName: "Splash",
   },
   screens: [
     {
@@ -66,6 +67,12 @@ const routers: RouterType = {
       name: "CameraScreen",
       component: CameraScreen,
       options: { headerShown: true, title: "Camera" },
+    },
+
+    {
+      name: "VideoCall",
+      component: VideoCallScreen,
+      options: { headerShown: false },
     },
 
     {

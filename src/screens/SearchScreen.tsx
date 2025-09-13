@@ -7,7 +7,7 @@ import {
   Image,
   Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "@app/styles/main.style";
 import HeaderSearch from "@app/components/headers/HeaderSearch";
