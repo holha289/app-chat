@@ -23,7 +23,7 @@ const GlobalSocketListener = () => {
     isTo: false,
     isVideoCall: false,
     isAccepted: false,
-    roomId: null as string | null
+    roomId: null as string | null,
   });
   // Luôn gọi hook ở cấp cao nhất của component, không phụ thuộc vào điều kiện
   const {
@@ -42,9 +42,8 @@ const GlobalSocketListener = () => {
     isSpeakerOn,
     isVideoEnabled,
     isAudioEnabled,
-    isSwitchingCamera
+    isSwitchingCamera,
   } = useWebRTC();
-
 
   // Memoize callbacks để tránh tạo lại function
   const rooms = useSelector(selectRooms);
@@ -58,7 +57,7 @@ const GlobalSocketListener = () => {
       const checkEistRoom = rooms?.some(
         (r) => r.id === payload?.metadata?.roomId
       );
-      console.log("🚀 ~ GlobalSocketListener ~ checkEistRoom:", checkEistRoom);
+      console.log("🚀 ~ GlobalSocketListener  checkEistRoom:", checkEistRoom);
       const roomId = checkEistRoom
         ? payload?.metadata?.roomId
         : payload?.metadata?.sendRoomId;
@@ -115,17 +114,16 @@ const GlobalSocketListener = () => {
   const onUpdateAttachment = useCallback(
     (payload: any) => {
       console.log("⚠️ Invalid attachment payload:", payload);
-      const m = payload?.metadata;
+      const m = payload;
 
-      const checkEistRoom = rooms?.some(
-        (r) => r.id === payload?.metadata?.roomId
-      );
-      const roomId = checkEistRoom
-        ? payload?.metadata?.roomId
-        : payload?.metadata?.sendRoomId;
+      const checkEistRoom = rooms?.some((r) => r.id === payload?.roomId);
+      console.log("🚀 ~ GlobalSocketListener ~ rooms:", rooms);
+      console.log("🚀 ~ GlobalSocketListener ~ checkEistRoom:", checkEistRoom);
+      const roomId = checkEistRoom ? payload?.roomId : payload?.sendRoomId;
+      console.log("🚀 ~ GlobalSocketListener att ~ roomId:", roomId);
 
       if (!m || !roomId) {
-        console.warn("⚠️ errror attachment payload:", payload);
+        console.warn("⚠️ error attachment payload:", payload);
         return;
       }
 
@@ -378,14 +376,16 @@ const GlobalSocketListener = () => {
     debugListener,
   ]);
 
-
   useEffect(() => {
     setIsVideoCall(call?.isVideoCall || false);
     if (call && user) {
-      const isOpen = String(call.from?.id) === String(user.id) || String(call.to?.id) === String(user?.id);
-      const caller = String(call.from?.id) === String(user?.id) ? call.to : call.from;
+      const isOpen =
+        String(call.from?.id) === String(user.id) ||
+        String(call.to?.id) === String(user?.id);
+      const caller =
+        String(call.from?.id) === String(user?.id) ? call.to : call.from;
       if (
-        call.category === 'request' &&
+        call.category === "request" &&
         String(call.from?.id) === String(user.id)
       ) {
         handleCreateOffer(call.roomId as string);
@@ -394,34 +394,38 @@ const GlobalSocketListener = () => {
         isOpen,
         caller: caller,
         isVideoCall: call.isVideoCall,
-        isAccepted: call.category === 'accept',
+        isAccepted: call.category === "accept",
         isTo: String(call.to?.id) === String(user?.id),
-        roomId: call.roomId as string | null
+        roomId: call.roomId as string | null,
       });
     }
   }, [call, user]);
 
   const onAcceptCall = () => {
     const userTo = call.to?.id !== user?.id ? call.to : call.from;
-    dispatch(UserActions.call({
-      roomId: call.roomId as string,
-      from: user as unknown as Friends,
-      to: userTo as Friends,
-      isVideoCall: call.isVideoCall,
-      category: 'accept'
-    }));
+    dispatch(
+      UserActions.call({
+        roomId: call.roomId as string,
+        from: user as unknown as Friends,
+        to: userTo as Friends,
+        isVideoCall: call.isVideoCall,
+        category: "accept",
+      })
+    );
     handleAcceptCall(call.roomId as string);
   };
 
   const onDeclineCall = () => {
     const userTo = call.to?.id !== user?.id ? call.to : call.from;
-    dispatch(UserActions.call({
-      roomId: call.roomId as string,
-      from: user as unknown as Friends,
-      to: userTo as Friends,
-      isVideoCall: call.isVideoCall,
-      category: 'reject'
-    }));
+    dispatch(
+      UserActions.call({
+        roomId: call.roomId as string,
+        from: user as unknown as Friends,
+        to: userTo as Friends,
+        isVideoCall: call.isVideoCall,
+        category: "reject",
+      })
+    );
     hangOut();
   };
 
@@ -430,7 +434,7 @@ const GlobalSocketListener = () => {
     console.log("  - Local Stream:", localStream);
     console.log("  - Remote Stream:", remoteStream);
     console.log("  - Connection State:", connectState);
-  }, [localStream, remoteStream, connectState])
+  }, [localStream, remoteStream, connectState]);
 
   return (
     <>
@@ -446,7 +450,11 @@ const GlobalSocketListener = () => {
         webRTC={{
           localStream: localStream as MediaStream | null,
           remoteStream: remoteStream as MediaStream | null,
-          connectState: connectState as 'idle' | 'connecting' | 'connected' | 'failed',
+          connectState: connectState as
+            | "idle"
+            | "connecting"
+            | "connected"
+            | "failed",
           toggleVideo: () => toggleVideo(),
           toggleAudio: () => toggleAudio(),
           switchCamera: () => switchCamera(),
@@ -454,13 +462,11 @@ const GlobalSocketListener = () => {
           isVideoEnabled,
           isAudioEnabled,
           isSwitchingCamera,
-          isSpeakerOn
+          isSpeakerOn,
         }}
       />
     </>
   );
 };
-
-
 
 export default GlobalSocketListener;
