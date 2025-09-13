@@ -53,7 +53,8 @@
         "MODIFY_AUDIO_SETTINGS",
         "BLUETOOTH_CONNECT",
         "WAKE_LOCK",
-        "INTERNET"
+        "INTERNET",
+        "WRITE_EXTERNAL_STORAGE"
       ],
       "package": "com.appchat.firebase"
     },
