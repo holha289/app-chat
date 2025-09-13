@@ -33,8 +33,10 @@ import { isBefore } from "@app/utils/compare";
 import { randomId } from "@app/utils/randomId";
 import { MessageItem } from "@app/features/types/msg.type";
 import { RootState } from "@app/store";
+import UserActions from "@app/features/user/user.action";
+import { Friends } from "@app/features/types/contact.type";
 
-type RouteParam = { id: string; name: string; avatar?: string; type?: string };
+type RouteParam = { id: string; name: string; avatar?: string; type?: string, roomId?: string };
 
 const ChatRoomScreen = () => {
   const navigation = useNavigation();
@@ -190,6 +192,21 @@ const ChatRoomScreen = () => {
   const onPressCamera = useCallback(() => {
     navigation.navigate("CameraScreen" as never, param as never);
   }, [navigation]);
+
+  const handleCall = async (isVideoCall: boolean) => {
+    dispatch(UserActions.call({
+      from: userInfo as unknown as Friends,
+      to: {
+        id: param.id,
+        fullname: param.name,
+        avatar: param.avatar,
+      } as unknown as Friends,
+      roomId: param.roomId || '',
+      isVideoCall: isVideoCall,
+      category: 'request'
+    }));
+  }
+
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -203,7 +220,9 @@ const ChatRoomScreen = () => {
         <ChatHeader
           name={param.name}
           avatar={param.avatar}
+          type={param.type as string}
           onBack={() => navigation.goBack()}
+          onHandleCall={(isVideoCall) => handleCall(isVideoCall)}
         />
         <MessageList
           isGroup={isGroup}
