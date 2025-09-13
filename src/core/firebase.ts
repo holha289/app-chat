@@ -101,6 +101,7 @@ function setupTokenRefreshListener() {
 export async function getFCMToken() {
   try {
     // Lấy token từ bộ nhớ nếu có
+    console.log("get FCM Token");
     const storedToken = await AsyncStorage.getItem("fcmToken");
     if (storedToken) {
       return storedToken;

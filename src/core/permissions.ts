@@ -87,6 +87,35 @@ const requestMediaPermissions = async () => {
   }
 }
 
+async function requestStoragePermission() {
+  if (Platform.OS !== 'android') return true;
+  try {
+    if (Platform.Version >= 33) {
+      // Android 13+ (API 33)
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+      ]);
+      return (
+        granted['android.permission.READ_MEDIA_IMAGES'] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.READ_MEDIA_VIDEO'] === PermissionsAndroid.RESULTS.GRANTED
+      );
+    } else {
+      // Android <= 12
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      ]);
+      return (
+        granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+      );
+    }
+  } catch (err) {
+    console.warn('Permission error:', err);
+  }
+}
+
 const requestCameraPermissions = async () => {
   if (Platform.OS !== "android") return true;
   try {
@@ -103,6 +132,7 @@ const requestCameraPermissions = async () => {
     return false;
   }
 }
+
 
 const requestFilePermissions = async () => {
     if (Platform.OS !== "android") return true;
@@ -134,4 +164,4 @@ const requestFilePermissions = async () => {
   }
 }
 
-export { requestPermission, requestMediaPermissions, requestFilePermissions, requestCameraPermissions };
+export { requestPermission, requestMediaPermissions, requestFilePermissions, requestCameraPermissions, requestStoragePermission };

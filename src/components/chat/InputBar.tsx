@@ -1,10 +1,19 @@
-import React from "react";
-import { View, TextInput, TouchableOpacity, Text } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  ScrollView,
+} from "react-native";
+import { Attachment, MessageItem } from "@app/features/types/msg.type";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { MessageItem } from "@app/features/types/msg.type";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import { colors } from "@app/styles/main.style";
+import { Video } from "react-native-video";
+import { PreviewMedia } from "../PreviewMedia";
+import { MediaSelect } from "./MediaSelect";
 type Props = {
   value: string;
   onChangeText: (t: string) => void;
@@ -12,6 +21,9 @@ type Props = {
   replyToMsg?: MessageItem;
   isMe?: boolean;
   roomdId?: string;
+  onPressCamera?: () => void;
+  onPressLibrary?: () => void;
+  attachments?: Attachment[];
 };
 
 export default function InputBar({
@@ -21,7 +33,11 @@ export default function InputBar({
   replyToMsg,
   isMe,
   roomdId,
+  attachments,
+  onPressCamera,
+  onPressLibrary,
 }: Props) {
+  console.log("🚀 ~ InputBar ~ attachments:", attachments);
   const dispatch = useDispatch();
   const [typing, setTyping] = React.useState(false);
   const Ontyping = () => {
@@ -36,25 +52,15 @@ export default function InputBar({
     console.log("Pressed!");
     dispatch(msgActions.replyToMsg({ roomId: roomdId || "", message: null }));
   };
-  const onPressCamera = async () => {
-    // const result = await launchCamera({ mediaType: 'mixed',   // ✅ cho phép cả ảnh & video
-    // videoQuality: 'high', // tùy chọn: 'low', 'medium', 'high'
-    // durationLimit: 60,    // tùy chọn: giới hạn 60 giây cho video
-    // saveToPhotos: true,   // lưu vào gallery }, (response) => {
-    //   // handle response if needed
-    //   // Example: setImages(response.assets || []);
-    // });
-    // setResultMedia([...(result.assets || [])]);
-    // console.log("🚀 ~ onPressCamera ~ result:", resultMedia);
-  };
-  const onPressLibrary = async () => {
-    // const result = await launchImageLibrary({ mediaType: "mixed" }, (response) => {
-    //   // handle response if needed
-    //   // Example: setImages(response.assets || []);
-    // });
-    // setResultMedia([...(result.assets || [])]);
-    // console.log("🚀 ~ onPressLibrary ~ result:", resultMedia);
-  };
+  const onPressRemoveAtt = useCallback(
+    (index: number) => {
+      dispatch(
+        msgActions.removeAttachmentToMsg({ roomId: roomdId || "", index })
+      );
+    },
+    [dispatch]
+  );
+  const [showMediaSelect, setShowMediaSelect] = useState<boolean>(false);
   return (
     <View className="flex items-center w-full  border-t border-gray-100">
       {replyToMsg?.id && (
@@ -75,11 +81,40 @@ export default function InputBar({
           </View>
         </View>
       )}
+      {attachments && attachments.length > 0 && (
+        <View className="w-full max-h-20  bg-gray-200 flex-row items-start px-2">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ alignItems: "center", paddingVertical: 4 }}
+          >
+            {attachments.map((att, index) => (
+              <View
+                key={att.url}
+                className="mr-2 border border-gray-400 rounded"
+              >
+                {att.url && (
+                  <PreviewMedia
+                    uri={att.url}
+                    kind={att.kind}
+                    classButton="w-16 h-16 rounded"
+                    isRemove={true}
+                    onRemove={() => onPressRemoveAtt(index)}
+                  />
+                )}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       <View className="flex-row items-center gap-2   bg-white px-4 py-2">
         <TouchableOpacity onPress={onPressCamera}>
           <Ionicons name="camera" size={24} color={colors.color1} />
         </TouchableOpacity>
-        <Ionicons name="image" size={24} color={colors.color1} />
+        <TouchableOpacity onPress={() => setShowMediaSelect(true)}>
+          <Ionicons name="image" size={24} color={colors.color1} />
+        </TouchableOpacity>
         <TextInput
           value={value}
           onChangeText={onChangeText}
@@ -95,6 +130,11 @@ export default function InputBar({
           <Ionicons name="send" size={24} color={colors.color1} />
         </TouchableOpacity>
       </View>
+      <MediaSelect
+        roomId={roomdId || ""}
+        isShow={showMediaSelect}
+        onClose={() => setShowMediaSelect(false)}
+      />
     </View>
   );
 }

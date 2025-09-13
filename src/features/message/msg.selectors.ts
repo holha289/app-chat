@@ -9,3 +9,7 @@ export const replyToMsg = (state: RootState, roomId: string) =>
   state.msg.messages[roomId]?.replyToMsg;
 export const selectInputText = (state: RootState, roomId: string) =>
   state.msg.messages[roomId]?.inputText || "";
+
+
+export const selectAttachments = (state: RootState, roomId: string) =>
+  state.msg.messages[roomId]?.attachments || [];

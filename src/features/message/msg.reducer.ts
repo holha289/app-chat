@@ -247,6 +247,46 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msg.del_all = true;
       }
     })
+    .addCase(msgActions.addAttachmentToMsg, (state, { payload }) => {
+      const { roomId, attachment } = payload;
+      const target = state.messages[roomId];
+      if (target) {
+        if (!Array.isArray(target.attachments)) {
+          target.attachments = [];
+        }
+        
+        // Kiểm tra xem URL đã tồn tại chưa
+        const existingAttachment = target.attachments.find(
+          (att) => att.url === attachment.url
+        );
+        
+        // Chỉ thêm nếu chưa tồn tại
+        if (!existingAttachment) {
+          target.attachments.push(attachment);
+        }
+      }
+    })
+    .addCase(msgActions.removeAttachmentToMsg, (state, { payload }) => {
+      const { roomId, index } = payload;
+      const target = state.messages[roomId];
+      if (target && Array.isArray(target.attachments)) {
+        target.attachments.splice(index, 1);
+      }
+    })
+    .addCase(msgActions.removeAllAttachmentToMsg, (state, { payload }) => {
+      const { roomId } = payload;
+      const target = state.messages[roomId];
+      if (target && Array.isArray(target.attachments)) {
+        target.attachments = [];
+      }
+    })
+    .addCase(msgActions.uploadAttachmentsSuccess, (state, { payload }) => {
+      const { roomId, attachments, msgId } = payload;
+      const target = state.messages[roomId]?.items.find(m => m.id === msgId);
+      if (target) {
+        target.attachments = attachments;
+      }
+    })
     // ===== PENDING =====
     .addMatcher(
       isAnyOf(
@@ -273,7 +313,8 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.readMarkFailed,
         msgActions.readedFailed,
         msgActions.delOnlyFailed,
-        msgActions.delEveryoneFailed
+        msgActions.delEveryoneFailed,
+        msgActions.uploadAttachmentsFailed
       ),
       (state, { payload }) => {
         state.status = "failed";
@@ -291,7 +332,8 @@ const msgReducer = createReducer(initialMsgState, (builder) => {
         msgActions.readMarkSuccess,
         msgActions.readedSuccess,
         msgActions.delOnlySuccess,
-        msgActions.delEveryoneSuccess
+        msgActions.delEveryoneSuccess,
+        msgActions.uploadAttachmentsSuccess
       ),
       (state) => {
         state.status = "success";
