@@ -28,6 +28,11 @@ const authActions = {
     updateProfile: createAction<{ user: Omit<userType, 'id' | 'avatar' | 'slug' | 'dateOfBirth'>, callback: (error?: string) => void }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE),
     updateProfileSuccess: createAction<{ user: userType }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE_SUCCESS),
     updateProfileFailed: createAction<string>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE_FAILED),
+    setTokens: createAction<{
+        accessToken: string | null;
+        refreshToken: string | null;
+        expiresIn: number;
+    }>('AUTH_SET_TOKEN'),
 };
 
 export default authActions;
