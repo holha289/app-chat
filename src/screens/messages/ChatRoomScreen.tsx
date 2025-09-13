@@ -36,7 +36,13 @@ import { RootState } from "@app/store";
 import UserActions from "@app/features/user/user.action";
 import { Friends } from "@app/features/types/contact.type";
 
-type RouteParam = { id: string; name: string; avatar?: string; type?: string, roomId?: string };
+type RouteParam = {
+  id: string;
+  name: string;
+  avatar?: string;
+  type?: string;
+  roomId?: string;
+};
 
 const ChatRoomScreen = () => {
   const navigation = useNavigation();
@@ -95,7 +101,7 @@ const ChatRoomScreen = () => {
   const [inputText, setInputText] = useState(getinputText || "");
   const sendMsg = useCallback(() => {
     const content = inputText.trim();
-    if (!content) return;
+    if (attachmentsRef.current.length == 0 ? !content : false) return;
     const sender = {
       fullname: userInfo?.fullname || "",
       avatar: userInfo?.avatar || "",
@@ -194,18 +200,20 @@ const ChatRoomScreen = () => {
   }, [navigation]);
 
   const handleCall = async (isVideoCall: boolean) => {
-    dispatch(UserActions.call({
-      from: userInfo as unknown as Friends,
-      to: {
-        id: param.id,
-        fullname: param.name,
-        avatar: param.avatar,
-      } as unknown as Friends,
-      roomId: param.roomId || '',
-      isVideoCall: isVideoCall,
-      category: 'request'
-    }));
-  }
+    dispatch(
+      UserActions.call({
+        from: userInfo as unknown as Friends,
+        to: {
+          id: param.id,
+          fullname: param.name,
+          avatar: param.avatar,
+        } as unknown as Friends,
+        roomId: param.roomId || "",
+        isVideoCall: isVideoCall,
+        category: "request",
+      })
+    );
+  };
 
   return (
     <SafeAreaView
