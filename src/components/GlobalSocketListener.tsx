@@ -350,7 +350,6 @@ const GlobalSocketListener = () => {
         socket.off("call:accepted");
         socket.off("call:signal");
         socket.off("client:signal");
-        socket.offAny(debugListener);
         socket.off("room:readed:message", onReaded);
         socket.off("room:deleted_only:message", onDelOnly);
         socket.off("room:deleted_everyone:message", onDelEveryone);
