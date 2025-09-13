@@ -114,8 +114,8 @@ const GlobalSocketListener = () => {
 
   const onUpdateAttachment = useCallback(
     (payload: any) => {
-      console.log("� Global: New message received:", payload);
-      const m = payload?.metadata?.message;
+      console.log("⚠️ Invalid attachment payload:", payload);
+      const m = payload?.metadata;
 
       const checkEistRoom = rooms?.some(
         (r) => r.id === payload?.metadata?.roomId
@@ -125,14 +125,14 @@ const GlobalSocketListener = () => {
         : payload?.metadata?.sendRoomId;
 
       if (!m || !roomId) {
-        console.warn("⚠️ Invalid attachment payload:", payload);
+        console.warn("⚠️ errror attachment payload:", payload);
         return;
       }
 
       const attachmentPayload = {
         roomId,
         attachments: m?.attachments,
-        msgId: m?.id,
+        msgId: m?.msgId,
       };
       dispatch(msgActions.uploadAttachmentsSuccess(attachmentPayload));
     },
