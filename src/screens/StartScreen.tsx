@@ -65,7 +65,7 @@ const StartScreen = () => {
     };
 
     return (
-        <View className={"flex-1 bg-white"}>
+        <View className={"flex-1 bg-white py-4"}>
             <View className={"absolute top-12 right-6 z-10"}>
                 <TouchableOpacity
                     className={"px-4 py-2 rounded-full"}
