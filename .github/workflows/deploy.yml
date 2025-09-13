@@ -34,6 +34,11 @@ jobs:
       - name: Prebuild Android
         run: npx expo prebuild
 
+      #link react-native-vector-icons
+      - name: Link react-native-vector-icons
+        run: npm run native:asset
+
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
