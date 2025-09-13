@@ -2,7 +2,7 @@ import { startAppListening } from "@app/store";
 import ContactActions from "./contact.action";
 import apiService from "@app/services/api.service";
 import { ApiResponse } from "@app/types/response";
-import { ContactState } from "../types/contact.type";
+import { ContactState, Groups } from "../types/contact.type";
 import { useErrorResponse } from "@app/hooks/use-error";
 
 
@@ -61,13 +61,15 @@ const createGroup = () => {
     startAppListening({
         actionCreator: ContactActions.createGroup,
         effect: async (action, api) => {
+            const payload = action.payload;
             try {
-                const response = await apiService.post<ApiResponse<ContactState['groups']>>("/profile/create-group", action.payload);
-                api.dispatch(ContactActions.createGroupSuccess());
-                action.payload.callback();
+                const response = await apiService.post<ApiResponse<ContactState['groups']>>("/profile/create-group", payload);
+                api.dispatch(ContactActions.createGroupSuccess(response.metadata as unknown as Groups));
+                api.dispatch(ContactActions.getListGroupsRequest({ offset: 0, limit: 20 }));
+                payload.callback();
             } catch (error) {
                 api.dispatch(ContactActions.createGroupError(error instanceof Error ? error.message : String(error)));
-                action.payload.callback(error instanceof Error ? error.message : String(error));
+                payload.callback(error instanceof Error ? error.message : String(error));
             }
         }
     })

@@ -10,14 +10,14 @@ import { useSelector } from "react-redux";
 const Stack = createStackNavigator();
 // contact
 const AppNavigator = () => {
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigationRef.current?.navigate("Splash");
-    } else {
-      navigationRef.current?.navigate("Main");
-    }
-  }, [isAuthenticated]);
+  // const isAuthenticated = useSelector(selectIsAuthenticated);
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     navigationRef.current?.navigate("Login");
+  //   } else {
+  //     navigationRef.current?.navigate("Main");
+  //   }
+  // }, [isAuthenticated]);
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator

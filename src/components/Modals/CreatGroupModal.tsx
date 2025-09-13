@@ -20,6 +20,7 @@ import { selectListFriends } from '@app/features/contact/contact.selectors';
 import ContactActions from '@app/features/contact/contact.action';
 import { Friends } from '@app/features/types/contact.type';
 import LoadingOverlay from '../LoadingOverlay';
+import UploadService from '@app/services/upload.service';
 
 interface CreateGroupModalProps {
     isOpen: boolean;
@@ -93,7 +94,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             includeBase64: false,
         };
 
-        launchCamera(options, (response: ImagePickerResponse) => {
+        launchCamera(options, async (response: ImagePickerResponse) => {
             if (response.didCancel) {
                 console.log('User cancelled camera');
                 return;
@@ -107,7 +108,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             if (response.assets && response.assets[0]) {
                 const imageUri = response.assets[0].uri;
                 if (imageUri) {
-                    setForm({ ...form, avatar: imageUri });
+                     const uploadedImageUri = await UploadService.uploadSingleFile(imageUri);
+                    setForm({ ...form, avatar: uploadedImageUri });
                 }
             }
         });
@@ -123,7 +125,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             selectionLimit: 1,
         };
 
-        launchImageLibrary(options, (response: ImagePickerResponse) => {
+        launchImageLibrary(options, async (response: ImagePickerResponse) => {
             if (response.didCancel) {
                 console.log('User cancelled gallery');
                 return;
@@ -137,7 +139,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             if (response.assets && response.assets[0]) {
                 const imageUri = response.assets[0].uri;
                 if (imageUri) {
-                    setForm({ ...form, avatar: imageUri });
+                    const uploadedImageUri = await UploadService.uploadSingleFile(imageUri);
+                    setForm({ ...form, avatar: uploadedImageUri });
                 }
             }
         });
@@ -158,7 +161,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         setIsLoading(true);
         dispatch(ContactActions.createGroup(
             {
-                name: form.name.trim(), userIds: form.friends, callback: (error) => {
+                name: form.name.trim(), userIds: form.friends, avatar: form.avatar, callback: (error) => {
                     setIsLoading(false);
                     if (error) {
                         Alert.alert('Error creating group: ' + error);

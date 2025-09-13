@@ -64,16 +64,6 @@ const StartScreen = () => {
         setCurrentIndex(slideIndex);
     };
 
-    useEffect(() => {
-        const checkOnboardingStatus = async () => {
-            const hasOnboarded = await AsyncStorage.getItem('hasOnboarded');
-            if (hasOnboarded === 'true') {
-                Navigate.navigate("Login");
-            }
-        };
-        checkOnboardingStatus();
-    }, []);
-
     return (
         <View className={"flex-1 bg-white"}>
             <View className={"absolute top-12 right-6 z-10"}>
