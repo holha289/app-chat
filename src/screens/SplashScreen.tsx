@@ -4,7 +4,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRef, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
-import { selectAuthState } from "@app/features/auth/auth.selectors";
+import { selectAuthState, selectIsAuthenticated } from "@app/features/auth/auth.selectors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SplashScreen = () => {
     const navigation = useNavigation();
@@ -12,7 +13,7 @@ const SplashScreen = () => {
     const logoOpacity = useRef(new Animated.Value(0)).current;
     const textOpacity = useRef(new Animated.Value(0)).current;
     const pulse = useRef(new Animated.Value(0)).current;
-    const users = useSelector(selectAuthState);
+    const isAuthenticated = useSelector(selectIsAuthenticated);
 
     useEffect(() => {
         Animated.loop(
@@ -44,18 +45,10 @@ const SplashScreen = () => {
                 useNativeDriver: true,
             }),
         ]).start();
-
-        if (users.isAuthenticated) {
-            navigation.navigate("Main");
-        } else {
-           setTimeout(()=>{
-             navigation.navigate("Start" as never);
-           }, 2000)
-        }
-    }, [users.isAuthenticated]);
+    }, []);
 
     return (
-        <View 
+        <View
             className="flex-1 items-center justify-center"
             style={{ backgroundColor: colors.color1 }}
         >
@@ -82,7 +75,7 @@ const SplashScreen = () => {
             {/* Logo */}
             <Animated.View
                 className="w-40 h-40 rounded-full items-center justify-center mb-8"
-                style={{ 
+                style={{
                     backgroundColor: colors.color1,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 5 },
@@ -100,7 +93,7 @@ const SplashScreen = () => {
             <Animated.View
                 style={{ opacity: textOpacity }}
             >
-                <Text 
+                <Text
                     className="text-white text-4xl font-bold tracking-wider mb-2"
                     style={{
                         textShadowColor: 'rgba(255, 255, 255, 0.5)',
@@ -116,7 +109,7 @@ const SplashScreen = () => {
             </Animated.View>
 
             {/* Loading Dots */}
-            <Animated.View 
+            <Animated.View
                 className="flex-row mt-8"
                 style={{ opacity: textOpacity }}
             >

@@ -21,7 +21,7 @@ class ApiService {
         if (tokens) {
           config.headers["Authorization"] = `Bearer ${tokens}`;
         }
-        console.log('Request URL:', config.url)
+        console.log('Request URL:', API_URL, config.url)
         // config.headers['path']
         // kiểm tra formData
         if (config.data instanceof FormData) {

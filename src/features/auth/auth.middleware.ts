@@ -5,6 +5,7 @@ import apiService from "@app/services/api.service";
 import { persistor, startAppListening } from "@app/store";
 import { ApiResponse } from "@app/types/response";
 import { useErrorResponse } from "@app/hooks/use-error";
+import { getSocket } from "@app/core/socketIo";
 
 /**
  *  call api mới dùng ListenerMiddleware
@@ -56,8 +57,8 @@ export const registerAuthListener = () => {
   startAppListening({
     actionCreator: authActions.register,
     effect: async (action, listenerApi) => {
+      const payload = action.payload;
       try {
-        const payload = action.payload;
         const fcmToken = await getFCMToken();
         const response = await apiService.post<ApiResponse<AuthState>>(
           "/auth/register",
@@ -73,8 +74,10 @@ export const registerAuthListener = () => {
         if (fcmToken) {
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
         }
+        payload.callback && payload.callback();
       } catch (error) {
         console.error("Registration failed:", error);
+        payload.callback && payload.callback(error);
         listenerApi.dispatch(
           authActions.registerFailed(useErrorResponse(error))
         );
@@ -106,7 +109,10 @@ export const logoutAuthListener = () => {
     effect: async (action, listenerApi) => {
       await deleteFCMToken();
       persistor.purge();
-      // listenerApi.dispatch(authActions.logout());
+      const socket = getSocket();
+      if (socket && socket.connected) {
+        socket.disconnect();
+      }
     },
   });
 };
@@ -119,7 +125,7 @@ export const updateProfileListener = () => {
         const payload = action.payload;
         const response = await apiService.patch<ApiResponse<AuthState["user"]>>(
           "/profile/update",
-          payload
+          payload.user
         );
         listenerApi.dispatch(
           authActions.updateProfileSuccess({
@@ -132,6 +138,7 @@ export const updateProfileListener = () => {
         listenerApi.dispatch(
           authActions.updateProfileFailed(useErrorResponse(error))
         );
+        action.payload.callback(useErrorResponse(error));
       }
     },
   });

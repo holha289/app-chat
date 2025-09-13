@@ -25,7 +25,7 @@ const authActions = {
     registerFailed: createAction<string>(AUTH_ACTIONS_TYPE.REGISTER_FAILED),
     setFcmToken: createAction<string>(AUTH_ACTIONS_TYPE.SET_FCM_TOKEN),
     clearFcmToken: createAction(AUTH_ACTIONS_TYPE.CLEAR_FCM_TOKEN),
-    updateProfile: createAction<{ user: Omit<userType, 'id' | 'avatar' | 'slug' | 'dateOfBirth'>, callback: () => void }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE),
+    updateProfile: createAction<{ user: Omit<userType, 'id' | 'avatar' | 'slug' | 'dateOfBirth'>, callback: (error?: string) => void }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE),
     updateProfileSuccess: createAction<{ user: userType }>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE_SUCCESS),
     updateProfileFailed: createAction<string>(AUTH_ACTIONS_TYPE.UPDATE_PROFILE_FAILED),
 };

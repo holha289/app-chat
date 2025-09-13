@@ -7,11 +7,11 @@ import React from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   Image,
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useDispatch, useSelector } from "react-redux";
 
@@ -25,20 +25,19 @@ const ProfileScreen = () => {
     dispatch(authActions.logout());
   };
   return (
-    <SafeAreaView className={ProfileClassStyle.container}>
+    <SafeAreaView className={ProfileClassStyle.container} edges={['top']}>
       <ScrollView className="w-full flex-1">
         {/* Ảnh đại diện */}
-        <Image
-          source={{ uri: user?.avatar || "" }}
-          className={ProfileClassStyle.avatar}
-        />
-
-        {/* Tên người dùng */}
-        <Text className={ProfileClassStyle.title}>
-          {user?.fullname || "Người dùng"}
-        </Text>
-
-        {/* Mô tả */}
+        <View style={{ position: 'relative', marginBottom: 24, alignItems: 'center', flex: 1 }}>
+          <Image
+            source={{ uri: user?.avatar || "" }}
+            className={ProfileClassStyle.avatar}
+          />
+          {/* Tên người dùng */}
+          <Text className={ProfileClassStyle.title}>
+            {user?.fullname || "Người dùng"}
+          </Text>
+        </View>
 
         {/* Các nút hành động */}
         <View className={ProfileClassStyle.actionBtn1}>
