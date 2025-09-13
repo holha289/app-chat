@@ -34,8 +34,8 @@ const HeaderSearch = ({ navigation, onchange }: CustomHeaderProps) => {
                 {/* Search box */}
                 <View className="flex-1 ml-4">
                     <View className="flex-row items-center py-2">
-                        <Input
-                            // iconLeft={<Ionicons name="search" size={20} color="gray" />}
+                        <InputGroup
+                            iconLeft={<Ionicons name="search" size={20} color="gray" />}
                             placeholder="Tìm kiếm"
                             rounded={20}
                             height={40}

@@ -8,7 +8,7 @@ const initialState: AuthState = {
         expiresIn: 0,
     },
     user: {
-        id: 0,
+        id: "",
         slug: '',
         fullname: '',
         email: '',

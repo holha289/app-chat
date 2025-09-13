@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -20,11 +20,12 @@ import { useDispatch } from "react-redux";
 import ContactActions from "@app/features/contact/contact.action";
 import { useSelector } from "react-redux";
 import { selectContactLoading, selectListFriends, selectListGroups, selectListPending } from "@app/features/contact/contact.selectors";
-import { Input, InputGroup, LoadingOverlay } from "@app/components";
+import { Input, InputGroup, InputOtp, LoadingOverlay } from "@app/components";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import UserActions from "@app/features/user/user.action";
 import { selectUser } from "@app/features";
 import { Friends } from "@app/features/types/contact.type";
+import { API_URL } from "@app/config";
 
 const tabs = [
   { id: "friends", name: "Bạn bè" },
@@ -43,7 +44,8 @@ const ContactScreen = () => {
   const insets = useSafeAreaInsets();
   const user = useSelector(selectUser);
   const [isLoading, setIsLoading] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // mounted
   useEffect(() => {
@@ -61,10 +63,19 @@ const ContactScreen = () => {
 
 
   const handleNavigateByTab = (tab: string, item: any) => {
-    navigation.navigate("InfoScreen", {
-      user: item,
-      friendshipStatus: tab === "friends" ? "friends" : tab === "groups" ? "groups" : "pending"
-    });
+    if (tab === "friends" || tab === "groups") {
+      navigation.navigate("ChatRoom", {
+        id: item.room_id || item.id,
+        name: item.fullname || item.name,
+        avatar: item.room_avatar || (Array.isArray(item.avatar) ? item.avatar[0] : item.avatar),
+        type: tab === "friends" ? "private" : "group",
+      });
+    } else {
+      navigation.navigate("InfoScreen", {
+        user: item,
+        friendshipStatus: tab === "friends" ? "friends" : tab === "groups" ? "groups" : "pending"
+      });
+    }
   };
 
   const handleTabPress = (tab: string) => {
@@ -123,11 +134,38 @@ const ContactScreen = () => {
     }));
   };
 
+  // search
+  const handleSearch = (val: string, tab: string) => {
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+    searchTimeout.current = setTimeout(() => {
+      if (tab === "friends") {
+        dispatch(ContactActions.getListFriendsRequest({ offset: 0, limit: 20, q: val }));
+      } else if (tab === "groups") {
+        dispatch(ContactActions.getListGroupsRequest({ offset: 0, limit: 20, q: val }));
+      } else if (tab === "requests") {
+        dispatch(ContactActions.getListPendingRequest({ offset: 0, limit: 20, q: val }));
+      }
+    }, 400); // 400ms debounce
+  };
+
+  const getAvatarUrl = (avatar: string) => {
+    if (!avatar) return "";
+    if (/^https?:\/\//.test(avatar)) {
+      return avatar;
+    }
+    const normalizedAvatar = avatar.replace(/\\/g, "/");
+    const url = `${API_URL}${normalizedAvatar.startsWith("/") ? "" : "/"}${normalizedAvatar}`;
+    console.log('Avatar URL:', url);
+    return url;
+  };
+
   const renderItem = (item: any, tab: string) => {
     return (
       <TouchableOpacity className={ContactClassStyle.renderItem} onPress={() => handleNavigateByTab(tab, item)}>
         <Image
-          source={{ uri: item.room_avatar ? item.room_avatar : (Array.isArray(item.avatar) ? item.avatar[0] : item.avatar) }}
+          source={{ uri: getAvatarUrl(item.room_avatar ? item.room_avatar : (Array.isArray(item.avatar) ? item.avatar[0] : item.avatar)) }}
           className="w-12 h-12 rounded-full mr-4"
         />
         <View className="flex-1">
@@ -137,7 +175,7 @@ const ContactScreen = () => {
           </Text>
         </View>
         <View className="flex-row items-center space-x-4">
-          {tab === "friends" || tab === "groups" ? (
+          {tab === "friends" ? (
             <>
               <TouchableOpacity className="p-2" onPress={() => handleCall(item)}>
                 <Ionicons name="call" size={20} color={colors.color1} />
@@ -146,7 +184,7 @@ const ContactScreen = () => {
                 <Ionicons name="videocam" size={20} color={colors.color1} />
               </TouchableOpacity>
             </>
-          ) : (
+          ) : tab === "groups" ? null : (
             <>
               <TouchableOpacity className="p-2" onPress={() => handleRejectFriendRequest(item.id)}>
                 <Ionicons name="close" size={25} color="red" />
@@ -168,12 +206,13 @@ const ContactScreen = () => {
       <View className={ContactClassStyle.searchInput}>
         <TouchableOpacity className="flex-1 mr-3">
           <View className="flex-row items-center py-2 w-full">
-            <Input
-              // iconLeft={<Ionicons name="search" size={20} color="gray" />}
+            <InputGroup
+              iconLeft={<Ionicons name="search" size={20} color="gray" />}
               placeholder={activeTab === "friends" ? "Tìm kiếm bạn bè" :
                 activeTab === "groups" ? "Tìm kiếm nhóm" : "Tìm kiếm yêu cầu"}
               rounded={20}
               height={40}
+              onChangeText={(val) => handleSearch(val, activeTab)}
             />
 
           </View>

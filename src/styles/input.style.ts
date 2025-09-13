@@ -68,7 +68,7 @@ const InputOtpStyles = StyleSheet.create({
 });
 
 const InputGroupClassStyle = {
-    container: 'flex-row items-center border border-gray-300 bg-white rounded-lg px-3',
+    container: 'flex-row items-center border border-gray-300 bg-white rounded-lg px-3 flex-1',
     label: 'text-base font-medium mb-2',
     inputContainer: 'relative',
     input: 'rounded-lg p-3 text-base',

@@ -18,8 +18,7 @@ export default function App() {
         <PersistGate loading={null} persistor={persistor}>
           <GestureHandlerRootView className="flex-1">
             <SafeAreaProvider>
-              <AppInitializer />
-              
+              <AppInitializer /> 
               <SocketInitializer />
               <GlobalSocketListener />
               <AppNavigator />
