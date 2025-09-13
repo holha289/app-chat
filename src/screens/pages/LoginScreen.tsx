@@ -22,24 +22,22 @@ const LoginScreen = () => {
     const isAuthenticated = useSelector(selectIsAuthenticated);
 
     function handleLogin() {
-        dispatch(authActions.login(form));
+        dispatch(authActions.login({
+            phone: form.phone,
+            password: form.password,
+            callback: (error) => {
+                if (error) {
+                    Alert.alert("Đăng nhập thất bại", error);
+                } else {
+                    navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+                }
+            },
+        }));
     }
 
     const handleCreateAccount = () => {
         navigation.navigate("Register");
     };
-
-    useEffect(() => {
-        if (errorLogin) {
-            Alert.alert("Đăng nhập thất bại", errorLogin);
-        }
-    }, [errorLogin]);
-
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigation.reset({ index: 0, routes: [{ name: "Main" }] });
-        }
-    }, [isAuthenticated, navigation]);
 
     return (
         <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-white">
