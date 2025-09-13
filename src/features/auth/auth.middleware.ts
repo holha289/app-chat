@@ -46,9 +46,11 @@ const LoginListener = () => {
         if (fcmToken) {
           listenerApi.dispatch(authActions.setFcmToken(fcmToken));
         }
+        payload.callback && payload.callback();
       } catch (error) {
         console.error("Login failed:", error);
         listenerApi.dispatch(authActions.loginFailed(useErrorResponse(error)));
+        action.payload.callback && action.payload.callback(useErrorResponse(error));
       }
     },
   });
