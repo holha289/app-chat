@@ -5,7 +5,7 @@ import Input from "@app/components/Input";
 import { loginClassStyle } from "@app/styles/login.style";
 import { classBtn } from "@app/styles/main.style";
 import authActions from "@app/features/auth/auth.action";
-import { selectAuthLoading, selectAuthError } from "@app/features";
+import { selectAuthLoading, selectAuthError, selectIsAuthenticated } from "@app/features";
 import { useSelector, useDispatch } from "react-redux";
 import clsx from "clsx";
 import LoadingOverlay from "@app/components/LoadingOverlay";
@@ -19,6 +19,7 @@ const LoginScreen = () => {
     const dispatch = useDispatch();
     const errorLogin = useSelector(selectAuthError);
     const isLoading: boolean = useSelector(selectAuthLoading);
+    const isAuthenticated = useSelector(selectIsAuthenticated);
 
     function handleLogin() {
         dispatch(authActions.login(form));
@@ -33,6 +34,12 @@ const LoginScreen = () => {
             Alert.alert("Đăng nhập thất bại", errorLogin);
         }
     }, [errorLogin]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+        }
+    }, [isAuthenticated, navigation]);
 
     return (
         <KeyboardAvoidingView  behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-white">

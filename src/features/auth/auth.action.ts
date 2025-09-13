@@ -19,7 +19,7 @@ const authActions = {
     login: createAction<LoginPayload>(AUTH_ACTIONS_TYPE.LOGIN),
     loginSuccess: createAction<{ tokens: tokensType, user: userType, isAuthenticated: boolean }>(AUTH_ACTIONS_TYPE.LOGIN_SUCCESS),
     loginFailed: createAction<string>(AUTH_ACTIONS_TYPE.LOGIN_FAILED),
-    logout: createAction(AUTH_ACTIONS_TYPE.LOGOUT),
+    logout: createAction<{ callback?: () => void }>(AUTH_ACTIONS_TYPE.LOGOUT),
     register: createAction<RegisterPayload>(AUTH_ACTIONS_TYPE.REGISTER),
     registerSuccess: createAction<{ tokens: tokensType, user: userType, isAuthenticated: boolean }>(AUTH_ACTIONS_TYPE.REGISTER_SUCCESS),
     registerFailed: createAction<string>(AUTH_ACTIONS_TYPE.REGISTER_FAILED),

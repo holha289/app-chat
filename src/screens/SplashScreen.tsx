@@ -4,16 +4,33 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRef, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
-import { selectAuthState, selectIsAuthenticated } from "@app/features/auth/auth.selectors";
+import { selectIsAuthenticated } from "@app/features";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SplashScreen = () => {
-    const navigation = useNavigation();
+    const navigation = useNavigation()
     const logoScale = useRef(new Animated.Value(0)).current;
     const logoOpacity = useRef(new Animated.Value(0)).current;
     const textOpacity = useRef(new Animated.Value(0)).current;
     const pulse = useRef(new Animated.Value(0)).current;
     const isAuthenticated = useSelector(selectIsAuthenticated);
+
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (isAuthenticated) {
+                navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+            } else {
+                const hasOnboarded = await AsyncStorage.getItem('hasOnboarded');
+                if (!hasOnboarded) {
+                    navigation.reset({ index: 0, routes: [{ name: "Start" }] });
+                    return;
+                }
+                navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+            }
+        }, 2000); // chờ animation 2s
+
+        return () => clearTimeout(timer);
+    }, [isAuthenticated, navigation]);
 
     useEffect(() => {
         Animated.loop(

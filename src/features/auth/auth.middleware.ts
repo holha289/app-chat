@@ -113,6 +113,7 @@ export const logoutAuthListener = () => {
       if (socket && socket.connected) {
         socket.disconnect();
       }
+      action.payload?.callback && action.payload.callback();
     },
   });
 };

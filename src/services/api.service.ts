@@ -1,5 +1,6 @@
 import { API_URL } from "@app/config";
 import authActions from "@app/features/auth/auth.action";
+import { navigationRef } from "@app/navigation/RootNavigation";
 import { RootState, store } from "@app/store";
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 class ApiService {
@@ -97,10 +98,21 @@ class ApiService {
            const refreshToken = state.auth.tokens?.refreshToken;
            if (refreshToken) {
               // TODO: Gọi API refresh token
-               store.dispatch(authActions.logout());
+               store.dispatch(authActions.logout({ callback: () => {
+                  // navigationRef.navigate("Login");
+                  const navigation = navigationRef.current;
+                  if (navigation) {
+                    navigation.navigate("Login");
+                  }
+               } }));
            } else {
               // Không có refresh token, dispatch logout action
-              store.dispatch(authActions.logout());
+              store.dispatch(authActions.logout({ callback: () => {
+                  const navigation = navigationRef.current;
+                  if (navigation) {
+                    navigation.navigate("Login");
+                  }
+              } }));
            }
         }
 
