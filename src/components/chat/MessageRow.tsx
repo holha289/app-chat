@@ -7,14 +7,17 @@ import {
   Platform,
   UIManager,
   Alert,
+  Image,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AvatarMini from "./AvatarMini";
 import { MsgMdEvent } from "./MessageModelEvent";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
-import { MessageItem } from "@app/features/types/msg.type";
+import { MessageItem, Attachment } from "@app/features/types/msg.type";
 import Clipboard from "@react-native-clipboard/clipboard";
+import { PreviewMedia } from "../PreviewMedia";
 
 // Enable LayoutAnimation on Android
 if (
@@ -45,6 +48,115 @@ type Props = {
   onLongPress?: () => void;
   roomId?: string;
 };
+
+// Component hiển thị attachments
+const AttachmentRenderer = memo(({ attachments, isMe }: { 
+  attachments: Attachment[], 
+  isMe: boolean 
+}) => {
+  if (!attachments || attachments.length === 0) return null;
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return '';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const formatDuration = (duration?: number) => {
+    if (!duration) return '';
+    const minutes = Math.floor(duration / 60000);
+    const seconds = Math.floor((duration % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <View className="mt-2">
+      {attachments.map((attachment, index) => {
+        // Photo/Image
+        if (attachment.kind === 'photo' || attachment.kind === 'image') {
+          return (
+            <View key={attachment.id || index} className="mb-2">
+              <PreviewMedia
+                uri={attachment.url}
+                kind="image"
+                classButton="w-48 h-32 rounded-lg"
+              />
+              {attachment.name && (
+                <Text className={`text-xs mt-1 ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
+                  {attachment.name}
+                </Text>
+              )}
+            </View>
+          );
+        }
+
+        // Video
+        if (attachment.kind === 'video') {
+          return (
+            <View key={attachment.id || index} className="mb-2 relative">
+              <PreviewMedia
+                uri={attachment.url}
+                kind="video"
+                classButton="w-48 h-32 rounded-lg"
+              />
+              {/* Video overlay info */}
+              <View className="absolute bottom-2 left-2 bg-black/70 rounded px-2 py-1">
+                <Text className="text-white text-xs">
+                  {formatDuration(attachment.duration)} 🎥
+                </Text>
+              </View>
+              {attachment.name && (
+                <Text className={`text-xs mt-1 ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
+                  {attachment.name}
+                </Text>
+              )}
+            </View>
+          );
+        }
+
+        // File (generic)
+        if (attachment.kind === 'file') {
+          return (
+            <TouchableOpacity 
+              key={attachment.id || index} 
+              className={`mb-2 p-3 rounded-lg border ${
+                isMe ? 'bg-white/20 border-white/30' : 'bg-gray-100 border-gray-300'
+              }`}
+            >
+              <View className="flex-row items-center">
+                <Ionicons 
+                  name="document-outline" 
+                  size={24} 
+                  color={isMe ? 'white' : '#374151'} 
+                />
+                <View className="flex-1 ml-3">
+                  <Text 
+                    className={`font-medium ${isMe ? 'text-white' : 'text-gray-900'}`}
+                    numberOfLines={1}
+                  >
+                    {attachment.name || 'Untitled File'}
+                  </Text>
+                  <Text className={`text-xs ${isMe ? 'text-white/80' : 'text-gray-600'}`}>
+                    {formatFileSize(attachment.size)} • {attachment.mimetype || 'Unknown type'}
+                  </Text>
+                </View>
+                <Ionicons 
+                  name="download-outline" 
+                  size={20} 
+                  color={isMe ? 'white' : '#6B7280'} 
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        }
+
+        return null;
+      })}
+    </View>
+  );
+  // return null
+});
 
 //test
 
@@ -359,14 +471,22 @@ const MessageRow = memo(
               }`}
             >
               {/* Message content */}
-              <Text
-                selectable={false}
-                className={`text-base leading-5 ${
-                  isMe ? "text-white" : "text-gray-900"
-                }`}
-              >
-                {displayContent}
-              </Text>
+              {displayContent && (
+                <Text
+                  selectable={false}
+                  className={`text-base leading-5 ${
+                    isMe ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  {displayContent}
+                </Text>
+              )}
+
+              {/* Attachments */}
+              <AttachmentRenderer 
+                attachments={item.attachments || []} 
+                isMe={isMe} 
+              />
 
               {/* Show more/less button for long messages */}
               {isLongMessage && (

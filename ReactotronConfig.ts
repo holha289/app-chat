@@ -6,6 +6,7 @@ const reactotron = Reactotron.setAsyncStorageHandler(AsyncStorage)
   .configure({
     name: "React Native Demo",
     host: "localhost",
+    port: 9090,
   })
   .use(reactotronRedux())
   .useReactNative({

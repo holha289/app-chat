@@ -1,5 +1,6 @@
 import { createAction } from "@reduxjs/toolkit";
 import {
+  Attachment,
   LastMsg,
   MessageItem,
   MessagePage,
@@ -51,6 +52,17 @@ const Room_ACTIONS_TYPES = {
   DEL_EVERYONE: "DEL_EVERYONE",
   DEL_EVERYONE_SUCCESS: "DEL_EVERYONE_SUCCESS",
   DEL_EVERYONE_FAILED: "DEL_EVERYONE_FAILED",
+  // attachment
+
+  //upload attachment
+  UPLOAD_ATTACHMENT: "UPLOAD_ATTACHMENT",
+  UPLOAD_ATTACHMENT_SUCCESS: "UPLOAD_ATTACHMENT_SUCCESS",
+  UPLOAD_ATTACHMENT_FAILED: "UPLOAD_ATTACHMENT_FAILED",
+
+  // add attachment to message
+  ADD_ATTACHMENT_TO_MSG: "ADD_ATTACHMENT_TO_MSG",
+  REMOVE_ATTACHMENT_TO_MSG: "REMOVE_ATTACHMENT_TO_MSG",
+  REMOVE_ALL_ATTACHMENT_TO_MSG: "REMOVE_ALL_ATTACHMENT_TO_MSG",
 };
 
 const msgActions = {
@@ -82,8 +94,9 @@ const msgActions = {
       content: string;
       type: string;
       id: string;
-      replytoId: string | null;
+      replytoId?: string | null;
     };
+    attachments?: Attachment[];
     sender: {
       fullname: string;
       avatar: string;
@@ -99,12 +112,14 @@ const msgActions = {
 
   // recive message
 
-  reciverMsg: createAction<{ roomId: string; message: MessageItem,}>(
+  reciverMsg: createAction<{ roomId: string; message: MessageItem }>(
     Room_ACTIONS_TYPES.RECEIVEMSG
   ),
-  reciverMsgSuccess: createAction<{ roomId: string; message: MessageItem, replytoId:string |null}>(
-    Room_ACTIONS_TYPES.RECEIVEMSG_SUCCESS
-  ),
+  reciverMsgSuccess: createAction<{
+    roomId: string;
+    message: MessageItem;
+    replytoId: string | null;
+  }>(Room_ACTIONS_TYPES.RECEIVEMSG_SUCCESS),
   reciverMsgFailed: createAction<string>(Room_ACTIONS_TYPES.RECEIVEMSG_FAILED),
   updateLastMsg: createAction<{ roomId: string; message: LastMsg }>(
     Room_ACTIONS_TYPES.UPDATELASTMSG
@@ -127,8 +142,10 @@ const msgActions = {
   replyToMsg: createAction<{ roomId: string; message: MessageItem | null }>(
     Room_ACTIONS_TYPES.REPLYTOMSG
   ),
-  readedSuccess:createAction<{roomId:string,msgId:string}>(Room_ACTIONS_TYPES.READ_SUCCESS),
-  readedFailed:createAction<string>(Room_ACTIONS_TYPES.READ_FAILED),
+  readedSuccess: createAction<{ roomId: string; msgId: string }>(
+    Room_ACTIONS_TYPES.READ_SUCCESS
+  ),
+  readedFailed: createAction<string>(Room_ACTIONS_TYPES.READ_FAILED),
   // del only
   delOnly: createAction<{ roomId: string; msgId: string }>(
     Room_ACTIONS_TYPES.DEL_ONLY
@@ -145,6 +162,35 @@ const msgActions = {
   delEveryoneSuccess: createAction<{ roomId: string; msgId: string }>(
     Room_ACTIONS_TYPES.DEL_EVERYONE_SUCCESS
   ),
-  delEveryoneFailed: createAction<string>(Room_ACTIONS_TYPES.DEL_EVERYONE_FAILED)
+  delEveryoneFailed: createAction<string>(
+    Room_ACTIONS_TYPES.DEL_EVERYONE_FAILED
+  ),
+
+  // attachment
+  uploadAttachments: createAction<{
+    roomId: string;
+    msgId: string;
+    attachments: Attachment[];
+  }>(Room_ACTIONS_TYPES.UPLOAD_ATTACHMENT),
+
+  uploadAttachmentsSuccess: createAction<{
+    roomId: string;
+    msgId: string;
+    attachments: Attachment[];
+  }>(Room_ACTIONS_TYPES.UPLOAD_ATTACHMENT_SUCCESS),
+  uploadAttachmentsFailed: createAction<string>(
+    Room_ACTIONS_TYPES.UPLOAD_ATTACHMENT_FAILED
+  ),
+  addAttachmentToMsg: createAction<{
+    roomId: string;
+    attachment: Attachment;
+  }>(Room_ACTIONS_TYPES.ADD_ATTACHMENT_TO_MSG),
+  removeAttachmentToMsg: createAction<{
+    index: number;
+    roomId: string;
+  }>(Room_ACTIONS_TYPES.REMOVE_ATTACHMENT_TO_MSG),
+  removeAllAttachmentToMsg: createAction<{
+    roomId: string;
+  }>(Room_ACTIONS_TYPES.REMOVE_ALL_ATTACHMENT_TO_MSG),
 };
 export default msgActions;

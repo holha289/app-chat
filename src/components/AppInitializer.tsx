@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import { initializeFirebase } from "@app/core/firebase";
-import { requestPermission } from "@app/core/permissions";
+import { requestMediaPermissions, requestPermission, requestStoragePermission } from "@app/core/permissions";
 import { registerAllListeners } from "@app/store";
 import { useSockerIo } from "@app/hooks/use-socketio";
 
@@ -37,6 +37,8 @@ export function AppInitializer() {
       try {
         await initializeFirebase(async () => {
           const permission = await requestPermission();
+          await requestMediaPermissions()
+          await requestStoragePermission()
           return !!permission;
         });
       } catch (err) {

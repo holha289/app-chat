@@ -65,7 +65,7 @@ const GlobalSocketListener = () => {
     [dispatch]
   );
   // del msg everyone
-  
+
   const onDelEveryone = useCallback(
     (payload: any) => {
       const { roomId, msgId } = payload?.metadata;
@@ -74,7 +74,34 @@ const GlobalSocketListener = () => {
     },
     [dispatch]
   );
+  // handle socket update attachment
 
+  const onUpdateAttachment = useCallback(
+    (payload: any) => {
+      console.log("� Global: New message received:", payload);
+      const m = payload?.metadata?.message;
+
+      const checkEistRoom = rooms?.some(
+        (r) => r.id === payload?.metadata?.roomId
+      );
+      const roomId = checkEistRoom
+        ? payload?.metadata?.roomId
+        : payload?.metadata?.sendRoomId;
+
+      if (!m || !roomId) {
+        console.warn("⚠️ Invalid attachment payload:", payload);
+        return;
+      }
+
+      const attachmentPayload = {
+        roomId,
+        attachments: m?.attachments,
+        msgId: m?.id,
+      };
+      dispatch(msgActions.uploadAttachmentsSuccess(attachmentPayload));
+    },
+    [dispatch]
+  );
   const onConnect = useCallback(() => {
     console.log("✅ Socket connected successfully!");
     console.log("  - Socket ID:", socket?.id);
@@ -217,6 +244,9 @@ const GlobalSocketListener = () => {
     socket.off("connect_error");
     socket.off("reconnect");
     socket.off("room:message:received");
+    socket.off("room:readed:message");
+    socket.off("room:deleted_only:message");
+    socket.off("room:deleted_everyone:message");
     socket.offAny(debugListener);
 
     // Đăng ký các listeners
@@ -228,6 +258,7 @@ const GlobalSocketListener = () => {
     socket.on("room:readed:message", onReaded);
     socket.on("room:deleted_only:message", onDelOnly);
     socket.on("room:deleted_everyone:message", onDelEveryone);
+    socket.on("updated:attachments", onUpdateAttachment);
 
     // Debug listener
     socket.onAny(debugListener);
@@ -248,6 +279,7 @@ const GlobalSocketListener = () => {
         socket.off("room:readed:message", onReaded);
         socket.off("room:deleted_only:message", onDelOnly);
         socket.off("room:deleted_everyone:message", onDelEveryone);
+        socket.off("updated:attachments", onUpdateAttachment);
         socket.offAny(debugListener);
 
         console.log("  - Cleaned up listeners for socket:", socket.id);

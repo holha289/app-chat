@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   replyToMsg,
+  selectAttachments,
   selectInputText,
   selectMessage,
   selectMsgStatus,
@@ -50,9 +51,15 @@ const ChatRoomScreen = () => {
   );
   const reply = useSelector((state: RootState) => replyToMsg(state, param.id));
   const replyIdRef = useRef<string | null>(null);
+  const attachments = useSelector((state: RootState) =>
+    selectAttachments(state, param.id)
+  );
+  const attachmentsRef = useRef(attachments);
   useEffect(() => {
     replyIdRef.current = reply?.id ?? null; // luôn sync giá trị mới nhất
-  }, [reply]);
+    attachmentsRef.current = attachments;
+  }, [reply, attachments]);
+
   const status = useSelector(selectMsgStatus);
 
   const messages = conversations?.items ?? [];
@@ -79,7 +86,7 @@ const ChatRoomScreen = () => {
       dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor }));
     }
   }, [cursor, status, dispatch, param.id]);
-   useEffect(() => {
+  useEffect(() => {
     dispatch(msgActions.getMsgByRoom({ roomId: param.id, cursor: null }));
   }, [dispatch, param.id]);
 
@@ -106,10 +113,12 @@ const ChatRoomScreen = () => {
           type: "text",
           replytoId: replytoId,
         },
+        attachments: attachmentsRef.current,
         sender: sender,
       })
     );
     dispatch(msgActions.replyToMsg({ roomId: param.id, message: null }));
+    dispatch(msgActions.removeAllAttachmentToMsg({ roomId: param.id }));
     setInputText("");
     scrollToBottom();
   }, [dispatch, inputText, param.id, scrollToBottom]);
@@ -178,6 +187,9 @@ const ChatRoomScreen = () => {
     },
     []
   );
+  const onPressCamera = useCallback(() => {
+    navigation.navigate("CameraScreen" as never, param as never);
+  }, [navigation]);
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -213,6 +225,8 @@ const ChatRoomScreen = () => {
           replyToMsg={reply || undefined}
           roomdId={param.id}
           isMe={meId === reply?.sender.id}
+          onPressCamera={onPressCamera}
+          attachments={attachments}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

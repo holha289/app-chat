@@ -1,7 +1,7 @@
 import { use, useEffect } from "react";
 import { startAppListening } from "@app/store";
 import msgActions from "./msg.action";
-import { MessagePage, MsgState } from "../types/msg.type";
+import { Attachment, MessagePage, MsgState } from "../types/msg.type";
 import { ApiResponse } from "@app/types/response";
 import apiService from "@app/services/api.service";
 import { useSelector } from "react-redux";
@@ -18,6 +18,7 @@ export const MsgListenerMiddleware = () => {
   HandleSoketReadMarMsgListener();
   HandleSocketDelOnlyListener();
   HandleSocketDelEveryoneListener();
+  HandleUpLoadFile();
 };
 
 const GetRoomsListener = () => {
@@ -79,13 +80,14 @@ const HandleSocketSendMsgListener = () => {
       try {
         const socket = getSocket();
         const payload = action.payload;
-        // console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
+        console.log("🚀 ~ HandleSocketSendMsgListener ~ payload:", payload);
         socket?.emit("room:send:message", payload.message);
-
+        const msgId = payload.message.id;
         const message = {
           id: payload.message.id,
           content: payload.message.content,
           type: payload.message.type,
+          attachments: payload.attachments,
           isReadByMe: true,
           readCount: 0,
           updatedAt: new Date().toISOString(),
@@ -103,6 +105,17 @@ const HandleSocketSendMsgListener = () => {
               : null,
           })
         );
+
+        // upload file
+        if (payload.attachments && payload.attachments.length > 0) {
+          listenerApi.dispatch(
+            msgActions.uploadAttachments({
+              roomId,
+              msgId,
+              attachments: payload.attachments,
+            })
+          );
+        }
       } catch (error) {
         console.error("Send messages by room failed:", error);
         const errorMessage =
@@ -199,6 +212,44 @@ const HandleSocketDelEveryoneListener = () => {
             ? (error as { message: string }).message
             : String(error);
         listenerApi.dispatch(msgActions.delEveryoneFailed(errorMessage));
+      }
+    },
+  });
+};
+
+const HandleUpLoadFile = () => {
+  startAppListening({
+    actionCreator: msgActions.uploadAttachments,
+    effect: async (action, listenerApi) => {
+      try {
+        const { roomId, msgId, attachments } = action.payload;
+        const formDatta = new FormData();
+        formDatta.append("roomId", roomId);
+        formDatta.append("msgId", msgId);
+        attachments.forEach((att, index) => {
+          formDatta.append("files", {
+            uri: att.url,
+            name: att.name,
+            type: att.mimetype,
+          } as any);
+        });
+        console.log("🚀 ~ HandleUpLoadFile ~ attachments:", attachments);
+        const result = await apiService.postForm<ApiResponse<{ result: { attachments: Attachment[] } }>>("/upload/msg", formDatta);
+        console.log("🚀 ~ HandleUpLoadFile ~ result:", result);
+        listenerApi.dispatch(
+          msgActions.uploadAttachmentsSuccess({
+            roomId,
+            msgId,
+            attachments: result?.metadata?.result.attachments as Attachment[],
+          })
+        );
+      } catch (error) {
+        console.error("Upload attachments failed:", error);
+        const errorMessage =
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message: string }).message
+            : String(error);
+        listenerApi.dispatch(msgActions.uploadAttachmentsFailed(errorMessage));
       }
     },
   });

@@ -15,6 +15,7 @@ export type MessageItem = {
   updatedAt: string;
   createdAt: string;
   readCount: number;
+  attachments?: Attachment[]; // đường dẫn tệp đính kèm (nếu có)
   isReadByMe: boolean; // ms kể từ epoch
   replyTo?: MessageItem | null; // tin nhắn đang trả lời
   isDeletedForMe?: boolean; // tin nhắn đã bị xoá với tôi
@@ -39,8 +40,22 @@ export type MessagePage = {
   lastMsgId: string | null; // id của tin nhắn mới đã đọc
   inputText: string; // text đang nhập
   replyToMsg?: MessageItem | null; // tin nhắn đang trả lời (optional)
+  attachments?: Attachment[]; // đường dẫn tệp đính kèm (nếu có)
 };
-
+export type Attachment = {
+  url: string;
+  kind?: string;
+  name?: string;
+  size?: number;
+  id?: string;
+  mimetype?: string;
+  thumbUrl?: string;
+  status?: "uploaded" | "processing" | "failed";
+  width?: number;
+  height?: number;
+  duration?: number;
+  // localUrl?: string; // đường dẫn tệp cục bộ (nếu có)
+};
 export type MessagesByRoom = Record<string, MessagePage>;
 export interface MsgState extends StateCore {
   rooms: Room[];

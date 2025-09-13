@@ -14,6 +14,7 @@ import SearchScreen from "@app/screens/SearchScreen";
 import ChatRoomScreen from "@app/screens/messages/ChatRoomScreen";
 import InfoScreen from "@app/screens/InfoScreen";
 import ProfileEditScreen from "@app/screens/ProfileEditScreen";
+import CameraScreen from "@app/screens/CameraScreen";
 
 const routers: RouterType = {
   navigatorOptions: {
@@ -60,6 +61,11 @@ const routers: RouterType = {
       name: "ProfileEdit",
       component: ProfileEditScreen,
       options: { headerShown: true, title: "Chỉnh sửa hồ sơ" },
+    },
+    {
+      name: "CameraScreen",
+      component: CameraScreen,
+      options: { headerShown: true, title: "Camera" },
     },
 
     {

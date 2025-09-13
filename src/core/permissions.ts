@@ -6,7 +6,7 @@ import {
   RESULTS,
   openSettings,
 } from 'react-native-permissions';
-import { Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 const requestPermission = async () => {
   let notificationGranted = false;
@@ -61,4 +61,61 @@ const requestPermission = async () => {
   };
 };
 
-export { requestPermission };
+const requestMediaPermissions = async () => {
+  if (Platform.OS === "android") {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      ]);
+
+      const cameraGranted =
+        granted[PermissionsAndroid.PERMISSIONS.CAMERA] ===
+        PermissionsAndroid.RESULTS.GRANTED;
+      const audioGranted =
+        granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] ===
+        PermissionsAndroid.RESULTS.GRANTED;
+
+      return cameraGranted && audioGranted;
+    } catch (err) {
+      console.warn("Permission error:", err);
+      return false;
+    }
+  } else {
+    // iOS: tự động xin khi gọi getUserMedia
+    return true;
+  }
+}
+
+async function requestStoragePermission() {
+  if (Platform.OS !== 'android') return true;
+  try {
+    if (Platform.Version >= 33) {
+      // Android 13+ (API 33)
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+      ]);
+      return (
+        granted['android.permission.READ_MEDIA_IMAGES'] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.READ_MEDIA_VIDEO'] === PermissionsAndroid.RESULTS.GRANTED
+      );
+    } else {
+      // Android <= 12
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      ]);
+      return (
+        granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+      );
+    }
+  } catch (err) {
+    console.warn('Permission error:', err);
+    return false;
+  }
+}
+
+
+export { requestPermission, requestMediaPermissions,requestStoragePermission };
