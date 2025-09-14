@@ -63,14 +63,16 @@ const RegisterScreen = () => {
         setLoading(true);
         dispatch(authActions.register({
             fullname: form.name,
-            username: formatPhoneNumber(form.phone),
+            username: form.phone,
             password: form.password,
             gender: form.gender,
             callback: (error) => {
+                setLoading(false);
                 if (error) {
                     alert("Đăng ký không thành công");
+                    return;
                 }
-                setLoading(false);
+                navigation.goBack();
             }
         }));
     };
