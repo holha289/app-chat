@@ -12,15 +12,23 @@ import useMedia from "@app/utils/useMeida";
 import { FlatList } from "react-native-gesture-handler";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
+import { Attachment } from "@app/features/types/msg.type";
+import { randomId } from "@app/utils/randomId";
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 type Props = {
   isShow: boolean;
   onClose: () => void;
   roomId: string;
+  attachments?: Attachment[];
 };
 
-export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
+export const MediaSelect = ({
+  isShow,
+  onClose,
+  roomId,
+  attachments,
+}: Props) => {
   const dispatch = useDispatch();
   const rawMedia = useMedia();
   const [selectedUris, setSelectedUris] = useState<Set<string>>(new Set());
@@ -28,6 +36,9 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
   // Kiểm tra có ảnh nào được chọn không
   const hasSelected = selectedUris.size > 0;
   const selectedCount = selectedUris.size;
+  const currentAttachmentCount = attachments?.length || 0;
+  const totalAfterSelection = currentAttachmentCount + selectedCount;
+  const isOverLimit = totalAfterSelection > 30;
 
   const media = rawMedia.map((m) => {
     const uri = m.node.image.uri;
@@ -49,9 +60,14 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
     setSelectedUris((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(uri)) {
+        // Luôn cho phép bỏ chọn
         newSet.delete(uri);
       } else {
-        newSet.add(uri);
+        // Chỉ cho phép chọn thêm nếu chưa vượt quá giới hạn
+        const wouldExceedLimit = currentAttachmentCount + newSet.size + 1 > 30;
+        if (!wouldExceedLimit) {
+          newSet.add(uri);
+        }
       }
       return newSet;
     });
@@ -83,9 +99,19 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
             <View>
               <Text className="text-lg font-semibold">Chọn ảnh/video</Text>
               {hasSelected && (
-                <Text className="text-sm text-gray-500 mt-1">
-                  Đã chọn {selectedCount} mục
-                </Text>
+                <View>
+                  <Text className="text-sm text-gray-500 mt-1">
+                    Đã chọn {selectedCount} mục
+                  </Text>
+                  {/* <Text className="text-xs mt-1">
+                    Tổng: {currentAttachmentCount} + {selectedCount} = {totalAfterSelection}/30
+                  </Text> */}
+                  {isOverLimit && (
+                    <Text className="text-xs text-red-500 mt-1">
+                      ⚠️ Vượt quá giới hạn 30 file
+                    </Text>
+                  )}
+                </View>
               )}
             </View>
             <TouchableOpacity onPress={handleClose}>
@@ -104,6 +130,11 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
               renderItem={({ item, index }) => {
                 const itemWidth = screenWidth / 3 - 8; // Responsive width
 
+                const canSelect =
+                  item.isSelected ||
+                  currentAttachmentCount + selectedUris.size < 30;
+                const isDisabled = !canSelect;
+
                 return (
                   <TouchableOpacity
                     style={{
@@ -113,10 +144,18 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
                       borderRadius: 8,
                       borderWidth: item.isSelected ? 4 : 0,
                       borderColor: item.isSelected ? "red" : "transparent",
+                      opacity: isDisabled ? 0.5 : 1,
                     }}
                     onPress={() => {
-                      toggleSelect(item.uri);
-                      console.log("Selected:", item.uri, !item.isSelected);
+                      const canSelect =
+                        item.isSelected ||
+                        currentAttachmentCount + selectedUris.size < 30;
+                      if (canSelect) {
+                        toggleSelect(item.uri);
+                        console.log("Selected:", item.uri, !item.isSelected);
+                      } else {
+                        console.log("Cannot select more items - limit reached");
+                      }
                     }}
                   >
                     <View className="relative">
@@ -126,7 +165,7 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
                           width: "100%",
                           height: "100%",
                           borderRadius: 8,
-                          opacity: item.isSelected ? 0.7 : 1,
+                          opacity: item.isSelected ? 0.7 : isDisabled ? 0.3 : 1,
                         }}
                         resizeMode="cover"
                       />
@@ -173,6 +212,33 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
                           </Text>
                         </View>
                       )}
+                      {/* Disabled overlay khi không thể chọn */}
+                      {isDisabled && !item.isSelected && (
+                        <View
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: "rgba(0,0,0,0.6)",
+                            borderRadius: 8,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "white",
+                              fontSize: 12,
+                              fontWeight: "bold",
+                              textAlign: "center",
+                            }}
+                          >
+                            Đã đạt{"\n"}giới hạn
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </TouchableOpacity>
                 );
@@ -184,7 +250,10 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
           {hasSelected && (
             <View className="p-4 border-t border-gray-200">
               <TouchableOpacity
-                className="bg-blue-500 rounded-lg py-3 px-4"
+                className={`rounded-lg py-3 px-4 ${
+                  isOverLimit ? "bg-gray-400" : "bg-blue-500"
+                }`}
+                disabled={isOverLimit}
                 onPress={() => {
                   console.log("Confirmed selection:", Array.from(selectedUris));
 
@@ -215,6 +284,7 @@ export const MediaSelect = ({ isShow, onClose, roomId }: Props) => {
                           mimetype:
                             mediaItem?.node.type ||
                             (isVideo ? "video/mp4" : "image/jpeg"),
+                          id: randomId(),
                         },
                       })
                     );

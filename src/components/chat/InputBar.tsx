@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Attachment, MessageItem } from "@app/features/types/msg.type";
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { useDispatch } from "react-redux";
 import msgActions from "@app/features/message/msg.action";
 import { colors } from "@app/styles/main.style";
@@ -90,7 +90,7 @@ export default function InputBar({
           >
             {attachments.map((att, index) => (
               <View
-                key={att.url}
+                key={att.id}
                 className="mr-2 border border-gray-400 rounded"
               >
                 {att.url && (
@@ -108,12 +108,45 @@ export default function InputBar({
         </View>
       )}
 
+      {/* Thông báo giới hạn attachment */}
+      {attachments && attachments.length >= 30 && (
+        <View className="w-full bg-orange-100 px-4 py-2 border-l-4 border-orange-500">
+          <Text className="text-orange-800 text-sm">
+            ⚠️ Đã đạt giới hạn tối đa 30 file đính kèm
+          </Text>
+        </View>
+      )}
+
       <View className="flex-row items-center gap-2   bg-white px-4 py-2">
-        <TouchableOpacity onPress={onPressCamera}>
-          <Ionicons name="camera" size={24} color={colors.color1} />
+        <TouchableOpacity
+          onPress={onPressCamera}
+          disabled={attachments && attachments.length >= 30}
+          style={{
+            opacity: attachments && attachments.length >= 30 ? 0.5 : 1,
+          }}
+        >
+          <Ionicons
+            name="camera"
+            size={24}
+            color={
+              attachments && attachments.length >= 30 ? "gray" : colors.color1
+            }
+          />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowMediaSelect(true)}>
-          <Ionicons name="image" size={24} color={colors.color1} />
+        <TouchableOpacity
+          onPress={() => setShowMediaSelect(true)}
+          disabled={attachments && attachments.length >= 30}
+          style={{
+            opacity: attachments && attachments.length >= 30 ? 0.5 : 1,
+          }}
+        >
+          <Ionicons
+            name="image"
+            size={24}
+            color={
+              attachments && attachments.length >= 30 ? "gray" : colors.color1
+            }
+          />
         </TouchableOpacity>
         <TextInput
           value={value}
@@ -134,6 +167,7 @@ export default function InputBar({
         roomId={roomdId || ""}
         isShow={showMediaSelect}
         onClose={() => setShowMediaSelect(false)}
+        attachments={attachments}
       />
     </View>
   );

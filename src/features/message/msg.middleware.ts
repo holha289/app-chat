@@ -221,35 +221,65 @@ const HandleUpLoadFile = () => {
   startAppListening({
     actionCreator: msgActions.uploadAttachments,
     effect: async (action, listenerApi) => {
-      try {
-        const { roomId, msgId, attachments } = action.payload;
-        const formDatta = new FormData();
-        formDatta.append("roomId", roomId);
-        formDatta.append("msgId", msgId);
-        attachments.forEach((att, index) => {
-          formDatta.append("files", {
-            uri: att.url,
-            name: att.name,
-            type: att.mimetype,
-          } as any);
-        });
-        console.log("🚀 ~ HandleUpLoadFile ~ attachments:", attachments);
-        const result = await apiService.postForm<ApiResponse<{ result: { attachments: Attachment[] } }>>("/upload/msg", formDatta);
-        console.log("🚀 ~ HandleUpLoadFile ~ result:", result);
-        listenerApi.dispatch(
-          msgActions.uploadAttachmentsSuccess({
-            roomId,
-            msgId,
-            attachments: result?.metadata?.result.attachments as Attachment[],
-          })
-        );
-      } catch (error) {
-        console.error("Upload attachments failed:", error);
-        const errorMessage =
-          typeof error === "object" && error !== null && "message" in error
-            ? (error as { message: string }).message
-            : String(error);
-        listenerApi.dispatch(msgActions.uploadAttachmentsFailed(errorMessage));
+      const maxRetries = 2;
+      let currentRetry = 0;
+      
+      while (currentRetry <= maxRetries) {
+        try {
+          const { roomId, msgId, attachments } = action.payload;
+          const formDatta = new FormData();
+          formDatta.append("roomId", roomId);
+          formDatta.append("msgId", msgId);
+          
+          attachments.forEach((att, index) => {
+            formDatta.append("files", {
+              uri: att.url,
+              name: att.name,
+              type: att.mimetype,
+            } as any);
+          });
+          
+          console.log(`🚀 ~ HandleUpLoadFile ~ attempt ${currentRetry + 1}/${maxRetries + 1}:`, attachments);
+          
+          const result = await apiService.uploadFile<ApiResponse<{ result: { attachments: Attachment[] } }>>(
+            "/upload/msg", 
+            formDatta,
+            (progress) => {
+              console.log(`Upload progress: ${progress}%`);
+              // TODO: Có thể dispatch progress action để show progress bar
+            }
+          );
+          
+          console.log("🚀 ~ HandleUpLoadFile ~ result:", result);
+          listenerApi.dispatch(
+            msgActions.uploadAttachmentsSuccess({
+              roomId,
+              msgId,
+              attachments: result?.metadata?.result.attachments as Attachment[],
+            })
+          );
+          return; // Success - exit retry loop
+        } catch (error) {
+          currentRetry++;
+          console.error(`Upload attempt ${currentRetry} failed:`, error);
+          
+          const isNetworkError = error && typeof error === 'object' && 
+            ('code' in error && (error as any).code === 'ECONNABORTED' || 
+             'message' in error && ((error as any).message?.includes('timeout') || 
+                                    (error as any).message?.includes('Network Error')));
+          
+          if (currentRetry > maxRetries || !isNetworkError) {
+            const errorMessage =
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message: string }).message
+                : String(error);
+            listenerApi.dispatch(msgActions.uploadAttachmentsFailed(errorMessage));
+            return;
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000 * currentRetry));
+        }
       }
     },
   });

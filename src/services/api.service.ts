@@ -29,7 +29,7 @@ class ApiService {
   private constructor() {
     this.axiosInstance = axios.create({
       baseURL: `${API_URL}/api`,
-      timeout: 10000,
+      timeout: 60000, // Tăng timeout lên 60s cho upload file
       headers: { "Content-Type": "application/json" }
     });
 
@@ -277,7 +277,26 @@ class ApiService {
   // Convenience helpers for multipart requests
   public async postForm<T>(url: string, form: FormData): Promise<T> {
     // Interceptor will set multipart header when data is FormData
-    return await this.axiosInstance.post(url, form);
+    return await this.axiosInstance.post(url, form, {
+      timeout: 120000, // 2 phút cho upload file lớn
+    });
+  }
+
+  // Method riêng cho upload file với progress tracking
+  public async uploadFile<T>(
+    url: string, 
+    form: FormData, 
+    onUploadProgress?: (progress: number) => void
+  ): Promise<T> {
+    return await this.axiosInstance.post(url, form, {
+      timeout: 300000, // 5 phút cho file rất lớn
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onUploadProgress) {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          onUploadProgress(Math.round(progress));
+        }
+      },
+    });
   }
 
   public async putForm<T>(url: string, form: FormData): Promise<T> {
