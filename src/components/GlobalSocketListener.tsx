@@ -66,7 +66,6 @@ const GlobalSocketListener = () => {
         console.warn("⚠️ Invalid message payload:", payload);
         return;
       }
-
       const msg = {
         msg_id: m?.id,
         createdAt: m?.createdAt,
@@ -117,10 +116,7 @@ const GlobalSocketListener = () => {
       const m = payload;
 
       const checkEistRoom = rooms?.some((r) => r.id === payload?.roomId);
-      console.log("🚀 ~ GlobalSocketListener ~ rooms:", rooms);
-      console.log("🚀 ~ GlobalSocketListener ~ checkEistRoom:", checkEistRoom);
       const roomId = checkEistRoom ? payload?.roomId : payload?.sendRoomId;
-      console.log("🚀 ~ GlobalSocketListener att ~ roomId:", roomId);
 
       if (!m || !roomId) {
         console.warn("⚠️ error attachment payload:", payload);
