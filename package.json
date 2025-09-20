@@ -8,8 +8,7 @@
     "native:start": "npx react-native start",
     "native:start:reset": "npx react-native start --reset-cache",
     "prebuild:clear": "npx expo prebuild && cd android && gradlew clean && cd ..",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+
     "native:asset": "npx react-native-asset",
     "gradlew:clean": "cd android && gradlew clean && cd ..",
     "build:release": "cd android && gradlew assembleRelease && cd ..",
@@ -50,7 +49,6 @@
     "react-native-gesture-handler": "~2.24.0",
     "react-native-image-picker": "^8.2.1",
     "react-native-incall-manager": "^4.2.1",
-    "react-native-paper": "^5.14.5",
     "react-native-permissions": "^5.4.2",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "~4.11.1",
