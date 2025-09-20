@@ -109,22 +109,70 @@ app-chat/
 
 yarn install
 
-## 🛠️ Cài đặt & Build native
+## 🛠️ Hướng dẫn chạy dưới Local
 
 ### Yêu cầu hệ thống
 - Node.js >= 16
 - npm hoặc yarn
 - Android Studio (Android), Xcode (iOS/macOS)
-- Expo CLI (chỉ để prebuild, không dùng expo start)
+- React Native CLI
+- JDK 17 hoặc mới hơn
 
-### Cài đặt dependencies
+### Cài đặt và chạy ứng dụng
+
+1. **Clone dự án và cài đặt dependencies**
 ```bash
-git clone <repository-url>
+git clone https://github.com/holha289/app-chat.git
 cd app-chat
+
+# Cài đặt dependencies
 npm install
 # hoặc
 yarn install
 ```
+
+2. **Xóa cache và prebuild**
+```bash
+# Xóa cache và clean project
+npm run prebuild:clear
+# hoặc nếu chưa có script này, chạy thủ công:
+# npx expo prebuild --clean --platform android
+```
+
+3. **Khởi chạy với React Native CLI**
+```bash
+# Khởi động Metro bundler
+npm run native:start
+# hoặc
+npx react-native start
+
+# Trong terminal khác, chạy trên Android
+npm run native:android
+# hoặc
+npx react-native run-android
+
+# Hoặc chạy trên iOS (chỉ trên macOS)
+npm run native:ios
+# hoặc
+npx react-native run-ios
+```
+
+### Scripts hỗ trợ
+```bash
+# Reset cache Metro bundler khi gặp lỗi
+npm run native:start:reset
+
+# Clean build Android
+npm run gradlew:clean
+
+# Build APK release
+npm run build:release
+```
+
+### Lưu ý quan trọng
+- Đảm bảo đã cài đặt Android SDK và thiết lập biến môi trường `ANDROID_HOME`
+- Bật USB Debugging trên thiết bị Android hoặc chạy Android Emulator
+- Với iOS, cần có Xcode và iOS Simulator
 
 ### 🔄 **Option 1: Sử dụng APK có sẵn (Khuyên dùng)**
 ```bash
